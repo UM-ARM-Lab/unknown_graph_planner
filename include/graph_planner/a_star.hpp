@@ -96,7 +96,15 @@ std::vector<int> A_star(int start_ind, int goal_ind, const Graph &g)
                 g.E[edge_ind].weight;
                 // heuristic_cost_estimate(g.V[current_ind], g.V[neighbor]);
 
-            open_set.insert(neighbor);
+            if(!set_contains(open_set, neighbor))
+            {
+                open_set.insert(neighbor);
+            }
+            else if(g_score.count(neighbor) && tentative_g_score >= g_score[neighbor])
+            {
+                continue;
+            }
+            
             came_from[neighbor] = current_ind;
             g_score[neighbor] = tentative_g_score;
             f_score[neighbor] = g_score[neighbor] +
