@@ -37,12 +37,12 @@ graph_marker toVisualizationMsg(Graph g)
     valid_lines.header.frame_id = "/graph_frame";
     valid_lines.type = visualization_msgs::Marker::LINE_LIST;
     valid_lines.pose.orientation.w = 1.0;
-    valid_lines.scale.x = 0.001;
+    valid_lines.scale.x = 0.0015;
     valid_lines.color.a = 0.9;
     unknown_lines.header.frame_id = "/graph_frame";
     unknown_lines.type = visualization_msgs::Marker::LINE_LIST;
     unknown_lines.pose.orientation.w = 1.0;
-    unknown_lines.scale.x = 0.001;
+    unknown_lines.scale.x = 0.0005;
     unknown_lines.color.a = 0.1;
     // lines.color.g = 1.0;
 
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
     ros::Publisher path_pub = n.advertise<visualization_msgs::Marker>("path", 10);
     ros::Publisher points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
     ros::Publisher obs_pub = n.advertise<visualization_msgs::MarkerArray>("obs", 10);
-    ros::Rate r(30);
+    ros::Rate r(10);
 
     Obstacles2D::Obstacles obs = makeObstacles();
 
@@ -174,18 +174,18 @@ int main(int argc, char **argv)
 
     while(ros::ok())
     {
-        std::vector<int> path = A_star(start, end, g);
-        if(forwardLazyCheck(path, g, obs))
-        {
-            std::cout << "Done!\n";
-        }
+        std::vector<int> path = A_star(points[0], points[1], g);
+        
+        // forwardLazyCheck(path, g, obs);
+        points[0] = forwardMove(path, g, obs);
+        
         graph_marker gm = toVisualizationMsg(g);
         graph_valid_pub.publish(gm.first);
         graph_unknown_pub.publish(gm.second);
         path_pub.publish(toVisualizationMsg(path, g));
         points_pub.publish(pointsToVisualizationMsg(points, g));
         obs_pub.publish(obs.toMarkerArray());
-        r.sleep();
+        // r.sleep();
     }
 
     

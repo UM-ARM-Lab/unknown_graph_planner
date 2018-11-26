@@ -31,4 +31,29 @@ bool forwardLazyCheck(const std::vector<int> &path, Graph &g, const Obstacles2D:
 }
 
 
+
+int forwardMove(const std::vector<int> &path, Graph &g, const Obstacles2D::Obstacles &obs)
+{
+    if(path.size() <= 1)
+    {
+        return path[0];
+    }
+    
+    Edge &e = g.getEdge(path[0], path[1]);
+    assert(e.validity != EDGE_VALIDITY::INVALID);
+
+    if(e.validity == EDGE_VALIDITY::UNKNOWN)
+    {
+        e.validity = obs.isValid(e, g) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID;
+    }
+
+    int robot_location = path[0];
+    if(e.validity == EDGE_VALIDITY::VALID)
+    {
+        robot_location = (path[0] == e.v1_ind) ? e.v2_ind : e.v1_ind;
+    }
+    return robot_location;
+}
+
+
 #endif

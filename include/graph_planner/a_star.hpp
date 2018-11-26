@@ -67,7 +67,7 @@ std::vector<int> A_star(int start_ind, int goal_ind, const Graph &g)
                                         [&f_score](int a, int b){return f_score[a] < f_score[b];});
         if(current_ind == goal_ind)
         {
-            std::cout << "SHORTEST PATH FOUND with cost " << g_score[goal_ind] << " \n";
+            // std::cout << "SHORTEST PATH FOUND with cost " << g_score[goal_ind] << " \n";
             return constructPath(came_from, start_ind, goal_ind);
         }
 
