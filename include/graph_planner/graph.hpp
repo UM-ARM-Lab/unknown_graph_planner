@@ -3,6 +3,8 @@
 
 
 #include <vector>
+#include <cmath>
+
 
 enum EDGE_VALIDITY
 {
@@ -38,7 +40,21 @@ public:
     Graph(int num_vert);
     std::vector<Node> toNodes(std::vector<std::vector<double>> points);
     void addEdges(double max_dist);
+
+    Edge& getEdge(int v1_ind, int v2_ind);
 };
+
+double distance(const Node &n1, const Node &n2)
+{
+    double sum = 0;
+    for(int i=0; i<n1.q.size(); i++)
+    {
+        sum += (n1.q[i] - n2.q[i]) * (n1.q[i] - n2.q[i]);
+    }
+    return std::sqrt(sum);
+}
+
+
 
 
 #endif

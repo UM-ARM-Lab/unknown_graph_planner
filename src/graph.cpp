@@ -1,19 +1,10 @@
 #include "graph.hpp"
 #include "halton.hpp"
-#include <cmath>
+
 
 #define EDGE_DISTANCE 0.1
 
 
-double distance(const Node &n1, const Node &n2)
-{
-    double sum = 0;
-    for(int i=0; i<n1.q.size(); i++)
-    {
-        sum += (n1.q[i] - n2.q[i]) * (n1.q[i] - n2.q[i]);
-    }
-    return std::sqrt(sum);
-}
 
 Graph::Graph(int num_vert)
 {
@@ -60,6 +51,18 @@ std::vector<Node> Graph::toNodes(std::vector<std::vector<double>> points)
 }
 
 
-
+Edge& Graph::getEdge(int v1_ind, int v2_ind)
+{
+    Node v1 = V[v1_ind];
+    for(int edge_ind: v1.edge_inds)
+    {
+        Edge& e = E[edge_ind];
+        if(e.v1_ind == v2_ind || e.v2_ind == v2_ind)
+        {
+            return e;
+        }
+    }
+    assert(false);
+}
 
 

@@ -1,0 +1,34 @@
+#ifndef LAZYSP_HPP
+#define LAZYSP_HPP
+
+#include "a_star.hpp"
+#include "2d_obstacles.hpp"
+
+
+bool forwardLazyCheck(const std::vector<int> &path, Graph &g, const Obstacles2D::Obstacles &obs)
+{
+    // std::vector<int> path = A_star(start_ind, goal_ind, g);
+
+    std::cout << "Forward Check\n";
+    int i = 0;
+    while(i < path.size()-1)
+    {
+        Edge &e = g.getEdge(path[i], path[i+1]);
+        if(e.validity == EDGE_VALIDITY::VALID)
+        {
+            i++;
+            continue;
+        }
+
+        e.validity = obs.isValid(e, g) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID;
+        
+        std::cout << "Edge from point " << path[i] << " is " << 
+            ((e.validity == EDGE_VALIDITY::VALID) ? "valid" : "invalid") << "\n";
+        // std::cout << "Edge from point " << i << " is " << e.validity << "\n";
+        return false;
+    }
+    return true;
+}
+
+
+#endif

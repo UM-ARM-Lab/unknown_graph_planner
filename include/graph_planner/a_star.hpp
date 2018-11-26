@@ -9,12 +9,13 @@
 
 double heuristic_cost_estimate(const Node &n1, const Node &n2)
 {
-    double sum = 0;
-    for(int i=0; i<n1.q.size(); i++)
-    {
-        sum += (n1.q[i] - n2.q[i]) * (n1.q[i] - n2.q[i]);
-    }
-    return std::sqrt(sum);
+    // double sum = 0;
+    // for(int i=0; i<n1.q.size(); i++)
+    // {
+    //     sum += (n1.q[i] - n2.q[i]) * (n1.q[i] - n2.q[i]);
+    // }
+    // return std::sqrt(sum);
+    return distance(n1, n2);
 }
 
 
@@ -66,7 +67,7 @@ std::vector<int> A_star(int start_ind, int goal_ind, const Graph &g)
                                         [&f_score](int a, int b){return f_score[a] < f_score[b];});
         if(current_ind == goal_ind)
         {
-            // std::cout << "SHORTEST PATH FOUND\n";
+            std::cout << "SHORTEST PATH FOUND with cost " << g_score[goal_ind] << " \n";
             return constructPath(came_from, start_ind, goal_ind);
         }
 
@@ -75,6 +76,8 @@ std::vector<int> A_star(int start_ind, int goal_ind, const Graph &g)
         // std::cout << "    neighbors: ";
         for(int edge_ind:g.V[current_ind].edge_inds)
         {
+            if(g.E[edge_ind].validity == EDGE_VALIDITY::INVALID)
+                continue;
 
             int neighbor = g.E[edge_ind].v1_ind;
 
@@ -90,7 +93,8 @@ std::vector<int> A_star(int start_ind, int goal_ind, const Graph &g)
             }
 
             double tentative_g_score = g_score[current_ind] +
-                heuristic_cost_estimate(g.V[current_ind], g.V[neighbor]);
+                g.E[edge_ind].weight;
+                // heuristic_cost_estimate(g.V[current_ind], g.V[neighbor]);
 
             open_set.insert(neighbor);
             came_from[neighbor] = current_ind;
