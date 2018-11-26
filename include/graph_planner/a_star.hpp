@@ -19,7 +19,34 @@ double heuristic_cost_estimate(const Node &n1, const Node &n2)
 
 
 
-void A_star(int start_ind, int goal_ind, Graph g)
+bool set_contains(const std::set<int> &set, int val)
+{
+    for(int elem: set)
+    {
+        if(elem == val)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+std::vector<int> constructPath(const std::map<int, int> &came_from, int start_ind, int goal_ind)
+{
+    std::vector<int> path{goal_ind};
+    int current_ind = goal_ind;
+    while(current_ind != start_ind)
+    {
+        current_ind = came_from.at(current_ind);
+        path.push_back(current_ind);
+    }
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
+
+std::vector<int> A_star(int start_ind, int goal_ind, const Graph &g)
 {
     std::set<int> closed_set;
     std::set<int> open_set{start_ind};
@@ -35,21 +62,47 @@ void A_star(int start_ind, int goal_ind, Graph g)
 
     while(!open_set.empty())
     {
-        int current = *std::min_element(open_set.begin(), open_set.end(),
+        int current_ind = *std::min_element(open_set.begin(), open_set.end(),
                                         [&f_score](int a, int b){return f_score[a] < f_score[b];});
-        if(current == goal_ind)
+        if(current_ind == goal_ind)
         {
-            std::cout << "SHORTEST PATH FOUND";
-            return;
+            // std::cout << "SHORTEST PATH FOUND\n";
+            return constructPath(came_from, start_ind, goal_ind);
         }
 
-        open_set.erase(current);
-        closed_set.insert(current);
+        open_set.erase(current_ind);
+        closed_set.insert(current_ind);
+        // std::cout << "    neighbors: ";
+        for(int edge_ind:g.V[current_ind].edge_inds)
+        {
 
+            int neighbor = g.E[edge_ind].v1_ind;
 
-        !!!!!!!!!!!!!Not finished
+            if(neighbor == current_ind)
+            {
+                neighbor = g.E[edge_ind].v2_ind;
+            }
+            // std::cout << neighbor << ", ";
+
+            if(set_contains(closed_set, neighbor))
+            {
+                continue;
+            }
+
+            double tentative_g_score = g_score[current_ind] +
+                heuristic_cost_estimate(g.V[current_ind], g.V[neighbor]);
+
+            open_set.insert(neighbor);
+            came_from[neighbor] = current_ind;
+            g_score[neighbor] = tentative_g_score;
+            f_score[neighbor] = g_score[neighbor] +
+                heuristic_cost_estimate(g.V[neighbor], g.V[goal_ind]);
+        }
+        // std::cout << "\n";
+        
     }
-    
+    std::cout << "NO SOLUTION\n";
+    return std::vector<int>();
 }
 
 
