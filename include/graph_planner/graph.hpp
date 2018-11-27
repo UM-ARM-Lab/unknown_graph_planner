@@ -35,11 +35,15 @@ public:
 class Graph
 {
 public:
+    double edge_dist;
     std::vector<Node> V;
     std::vector<Edge> E;
+    Graph(){};
     Graph(int num_vert);
     std::vector<Node> toNodes(std::vector<std::vector<double>> points);
-    void addEdges(double max_dist);
+    int insertVertex(Node node);
+    void addEdgesForNode(int ind);
+    // void addEdges(double max_dist);
 
     Edge& getEdge(int v1_ind, int v2_ind);
 };

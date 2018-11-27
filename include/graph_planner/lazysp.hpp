@@ -32,6 +32,10 @@ bool forwardLazyCheck(const std::vector<int> &path, Graph &g, const Obstacles2D:
 
 
 
+/***
+ *   Takes a single step on the path provided
+ *    Check and updated edge validity
+ */
 int forwardMove(const std::vector<int> &path, Graph &g, const Obstacles2D::Obstacles &obs)
 {
     if(path.size() <= 1)
