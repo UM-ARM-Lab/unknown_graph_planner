@@ -6,7 +6,7 @@
 #include "lazysp.hpp"
 #include <utility>
 
-typedef std::pair<visualization_msgs::Marker, visualization_msgs::Marker> graph_marker;
+typedef std::vector<visualization_msgs::Marker> GraphMarker;
 
 // visualization_msgs::Marker toVisualizationMsg(Graph g)
 // {
@@ -30,15 +30,20 @@ typedef std::pair<visualization_msgs::Marker, visualization_msgs::Marker> graph_
 //     return points;
 // }
 
-graph_marker toVisualizationMsg(Graph g)
+GraphMarker toVisualizationMsg(Graph g)
 {
-    visualization_msgs::Marker valid_lines;
-    visualization_msgs::Marker unknown_lines;
+    visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
     valid_lines.type = visualization_msgs::Marker::LINE_LIST;
     valid_lines.pose.orientation.w = 1.0;
     valid_lines.scale.x = 0.0015;
     valid_lines.color.a = 0.9;
+    invalid_lines.header.frame_id = "/graph_frame";
+    invalid_lines.type = visualization_msgs::Marker::LINE_LIST;
+    invalid_lines.pose.orientation.w = 1.0;
+    invalid_lines.scale.x = 0.0015;
+    invalid_lines.color.a = 0.3;
+    invalid_lines.color.r = 0.9;
     unknown_lines.header.frame_id = "/graph_frame";
     unknown_lines.type = visualization_msgs::Marker::LINE_LIST;
     unknown_lines.pose.orientation.w = 1.0;
@@ -64,21 +69,27 @@ graph_marker toVisualizationMsg(Graph g)
         p2.x = v2.q[0];
         p2.y = v2.q[1];
 
-        if(e.validity == EDGE_VALIDITY::UNKNOWN)
+        switch(e.validity)
         {
+        case EDGE_VALIDITY::UNKNOWN:
             unknown_lines.points.push_back(p1);
             unknown_lines.points.push_back(p2);
-        }
-        if(e.validity == EDGE_VALIDITY::VALID)
-        {
+            break;
+        case EDGE_VALIDITY::VALID:
             valid_lines.points.push_back(p1);
             valid_lines.points.push_back(p2);
+            break;
+        case EDGE_VALIDITY::INVALID:
+            invalid_lines.points.push_back(p1);
+            invalid_lines.points.push_back(p2);
+            break;            
         }
 
     }
 
-    visualization_msgs::MarkerArray graph_lines;
-    return std::make_pair(valid_lines, unknown_lines);
+    // visualization_msgs::MarkerArray graph_lines;
+    
+    return std::vector<visualization_msgs::Marker>{valid_lines, unknown_lines, invalid_lines};
     // graph_lines.markers.push_back(valid_lines);
     // graph_lines.markers.push_back(unknown_lines);
     // return graph_lines;
@@ -157,10 +168,11 @@ int main(int argc, char **argv)
 
     ros::Publisher graph_valid_pub = n.advertise<visualization_msgs::Marker>("valid_graph", 10);
     ros::Publisher graph_unknown_pub = n.advertise<visualization_msgs::Marker>("unknown_graph", 10);
+    ros::Publisher graph_invalid_pub = n.advertise<visualization_msgs::Marker>("invalid_graph", 10);
     ros::Publisher path_pub = n.advertise<visualization_msgs::Marker>("path", 10);
     ros::Publisher points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
     ros::Publisher obs_pub = n.advertise<visualization_msgs::MarkerArray>("obs", 10);
-    ros::Rate r(10);
+    ros::Rate r(20);
 
     Obstacles2D::Obstacles obs = makeObstacles();
 
@@ -172,6 +184,20 @@ int main(int argc, char **argv)
     // validateEdges(g, obs);
 
 
+    ros::Duration(1).sleep();
+    
+    GraphMarker gm = toVisualizationMsg(g);
+    graph_valid_pub.publish(gm[0]);
+    graph_unknown_pub.publish(gm[1]);
+    points_pub.publish(pointsToVisualizationMsg(points, g));
+    obs_pub.publish(obs.toMarkerArray());
+
+    r.sleep();
+    std::string unused;
+    std::cout << "Waiting for user input...\n";
+    std::getline(std::cin, unused);
+
+
     while(ros::ok())
     {
         std::vector<int> path = A_star(points[0], points[1], g);
@@ -179,13 +205,14 @@ int main(int argc, char **argv)
         // forwardLazyCheck(path, g, obs);
         points[0] = forwardMove(path, g, obs);
         
-        graph_marker gm = toVisualizationMsg(g);
-        graph_valid_pub.publish(gm.first);
-        graph_unknown_pub.publish(gm.second);
+        GraphMarker gm = toVisualizationMsg(g);
+        graph_valid_pub.publish(gm[0]);
+        graph_unknown_pub.publish(gm[1]);
+        graph_invalid_pub.publish(gm[2]);
         path_pub.publish(toVisualizationMsg(path, g));
         points_pub.publish(pointsToVisualizationMsg(points, g));
         obs_pub.publish(obs.toMarkerArray());
-        // r.sleep();
+        r.sleep();
     }
 
     
