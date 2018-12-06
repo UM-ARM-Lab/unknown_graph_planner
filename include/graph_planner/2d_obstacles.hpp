@@ -3,6 +3,7 @@
 
 
 #include "graph.hpp"
+#include "cspace_halton_graph.hpp"
 #include "ros/ros.h"
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
@@ -109,6 +110,14 @@ namespace Obstacles2D
         {
             std::vector<double> q1 = g.V[e.v1_ind].q;
             std::vector<double> q2 = g.V[e.v2_ind].q;
+            return isValid(q1, q2);
+        }
+
+        bool isValid(arc_dijkstras::GraphEdge e, const CSpaceHaltonGraph &g) const
+        {
+            std::vector<double> q1 = g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable();
+            std::vector<double> q2 = g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable();
+            // std::vector<double> q2 = g.V[e.v2_ind].q;
             return isValid(q1, q2);
         }
 

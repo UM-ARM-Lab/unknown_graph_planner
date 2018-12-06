@@ -1,4 +1,6 @@
-#include "graph.hpp"
+// #include "graph.hpp"
+#include "cspace_halton_graph.hpp"
+#include <arc_utilities/dijkstras.hpp>
 #include "ros/ros.h"
 #include "visualization_msgs/Marker.h"
 #include "a_star.hpp"
@@ -30,7 +32,7 @@ typedef std::vector<visualization_msgs::Marker> GraphMarker;
 //     return points;
 // }
 
-GraphMarker toVisualizationMsg(Graph g)
+GraphMarker toVisualizationMsg(CSpaceHaltonGraph g)
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
@@ -51,38 +53,43 @@ GraphMarker toVisualizationMsg(Graph g)
     unknown_lines.color.a = 0.1;
     // lines.color.g = 1.0;
 
-    for(auto e:g.E)
+    for(const auto n:g.GetNodesImmutable())
     {
-        // if(e.validity == EDGE_VALIDITY::INVALID)
-        // {
-        //     continue;
-        // }
-
-        
-        geometry_msgs::Point p1;
-        auto v1 = g.V[e.v1_ind];
-        p1.x = v1.q[0];
-        p1.y = v1.q[1];
-        
-        geometry_msgs::Point p2;
-        auto v2 = g.V[e.v2_ind];
-        p2.x = v2.q[0];
-        p2.y = v2.q[1];
-
-        switch(e.validity)
+        for(const auto e:n.GetOutEdgesImmutable())
         {
-        case EDGE_VALIDITY::UNKNOWN:
-            unknown_lines.points.push_back(p1);
-            unknown_lines.points.push_back(p2);
-            break;
-        case EDGE_VALIDITY::VALID:
-            valid_lines.points.push_back(p1);
-            valid_lines.points.push_back(p2);
-            break;
-        case EDGE_VALIDITY::INVALID:
-            invalid_lines.points.push_back(p1);
-            invalid_lines.points.push_back(p2);
-            break;            
+            // if(e.validity == EDGE_VALIDITY::INVALID)
+            // {
+            //     continue;
+            // }
+
+        
+            geometry_msgs::Point p1;
+            
+            const auto q1 = g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable();
+            p1.x = q1[0];
+            p1.y = q1[1];
+        
+            geometry_msgs::Point p2;
+            const auto q2 = g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable();
+            // auto v2 = g.V[e.v2_ind];
+            p2.x = q2[0];
+            p2.y = q2[1];
+
+            switch(e.GetValidity())
+            {
+            case EDGE_VALIDITY::UNKNOWN:
+                unknown_lines.points.push_back(p1);
+                unknown_lines.points.push_back(p2);
+                break;
+            case EDGE_VALIDITY::VALID:
+                valid_lines.points.push_back(p1);
+                valid_lines.points.push_back(p2);
+                break;
+            case EDGE_VALIDITY::INVALID:
+                invalid_lines.points.push_back(p1);
+                invalid_lines.points.push_back(p2);
+                break;            
+            }
         }
 
     }
@@ -96,7 +103,7 @@ GraphMarker toVisualizationMsg(Graph g)
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(std::vector<int> path, Graph g)
+visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, CSpaceHaltonGraph g)
 {
     visualization_msgs::Marker lines;
     lines.header.frame_id = "/graph_frame";
@@ -109,16 +116,16 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int> path, Graph g)
     for(auto ind: path)
     {
         geometry_msgs::Point p1;
-        auto v = g.V[ind];
-        p1.x = v.q[0];
-        p1.y = v.q[1];
+        const auto v = g.GetNodeImmutable(ind).GetValueImmutable();
+        p1.x = v[0];
+        p1.y = v[1];
         lines.points.push_back(p1);
     }
     return lines;
 }
 
 
-visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, Graph g)
+visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, CSpaceHaltonGraph g)
 {
     visualization_msgs::Marker points;
     points.header.frame_id = "/graph_frame";
@@ -131,10 +138,10 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, Graph g
 
     for(auto ind:ps)
     {
-        auto v = g.V[ind];
+        const auto v = g.GetNodeImmutable(ind).GetValueImmutable();
         geometry_msgs::Point p;
-        p.x = v.q[0];
-        p.y = v.q[1];
+        p.x = v[0];
+        p.y = v[1];
         points.points.push_back(p);
     }
 
@@ -176,7 +183,8 @@ int main(int argc, char **argv)
 
     Obstacles2D::Obstacles obs = makeObstacles();
 
-    Graph g(1000);
+    // Graph g(1000);
+    CSpaceHaltonGraph g(1000);
     int start = 0;
     int end = 5;
     std::vector<int> points{start, end};
@@ -200,8 +208,11 @@ int main(int argc, char **argv)
 
     while(ros::ok())
     {
-        std::vector<int> path = A_star(points[0], points[1], g);
-        
+        // std::vector<int> path = A_star(points[0], points[1], g);
+        auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
+            g, points[0], points[1], &distanceHeuristic, true);
+
+        auto path = result.first;
         // forwardLazyCheck(path, g, obs);
         points[0] = forwardMove(path, g, obs);
         
