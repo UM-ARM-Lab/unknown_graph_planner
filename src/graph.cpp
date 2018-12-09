@@ -11,7 +11,7 @@ Graph::Graph(int num_vert)
     edge_dist = EDGE_DISTANCE;
     std::vector<int> bases{2,3};
     std::vector<int> offsets{100, 120};
-    auto nodes = toNodes(haltonPoints(bases, num_vert, offsets));
+    auto nodes = toNodes(halton::haltonPoints(bases, num_vert, offsets));
     for(auto n: nodes)
     {
         insertVertex(n);

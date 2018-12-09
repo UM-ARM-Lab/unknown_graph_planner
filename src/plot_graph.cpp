@@ -1,9 +1,8 @@
-// #include "graph.hpp"
 #include "cspace_halton_graph.hpp"
 #include <arc_utilities/dijkstras.hpp>
+#include <arc_utilities/timing.hpp>
 #include "ros/ros.h"
 #include "visualization_msgs/Marker.h"
-#include "a_star.hpp"
 #include "2d_obstacles.hpp"
 #include "lazysp.hpp"
 #include <utility>
@@ -184,7 +183,7 @@ int main(int argc, char **argv)
     Obstacles2D::Obstacles obs = makeObstacles();
 
     // Graph g(1000);
-    CSpaceHaltonGraph g(1000);
+    CSpaceHaltonGraph g(1000, 0.1);
     int start = 0;
     int end = 5;
     std::vector<int> points{start, end};
@@ -206,16 +205,26 @@ int main(int argc, char **argv)
     std::getline(std::cin, unused);
 
 
-    while(ros::ok())
+    while(ros::ok() && (points[0] != points[1]))
     {
+        PROFILE_START("cycle");
         // std::vector<int> path = A_star(points[0], points[1], g);
+        PROFILE_START("astar");
+        
         auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
             g, points[0], points[1], &distanceHeuristic, true);
+        
+        double astar_time = PROFILE_RECORD("astar");
+        std::cout << "Astar took: " << astar_time << "\n";
 
         auto path = result.first;
         // forwardLazyCheck(path, g, obs);
+
+        PROFILE_START("forward_move");
         points[0] = forwardMove(path, g, obs);
-        
+        std::cout << "forward move took: " << PROFILE_RECORD("forward_move") << "\n";
+
+        PROFILE_START("visualize");
         GraphMarker gm = toVisualizationMsg(g);
         graph_valid_pub.publish(gm[0]);
         graph_unknown_pub.publish(gm[1]);
@@ -223,7 +232,9 @@ int main(int argc, char **argv)
         path_pub.publish(toVisualizationMsg(path, g));
         points_pub.publish(pointsToVisualizationMsg(points, g));
         obs_pub.publish(obs.toMarkerArray());
-        r.sleep();
+        std::cout << "visualize took " << PROFILE_RECORD("visualize") << "\n";
+        std::cout << "cycle took " << PROFILE_RECORD("cycle") << "\n";
+        // r.sleep();
     }
 
     

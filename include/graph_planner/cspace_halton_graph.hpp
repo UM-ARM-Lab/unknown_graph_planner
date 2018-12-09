@@ -9,13 +9,12 @@
 
 
 
+
 double distanceHeuristic(std::vector<double> q1, std::vector<double> q2)
 {
     return EigenHelpers::Distance(q1, q2);
 }
 
-
-#define EDGE_DISTANCE 0.1
 
 class CSpaceHaltonGraph : public arc_dijkstras::Graph<std::vector<double>>
 {
@@ -36,12 +35,10 @@ public:
         return new_node_ind;
     }
     
-    CSpaceHaltonGraph(int num_vert)
+    CSpaceHaltonGraph(int num_vert, double max_edge_dist)
     {
-        r_disc = EDGE_DISTANCE;
-        std::vector<int> bases{2,3};
-        std::vector<int> offsets{100, 120};
-        auto qs = haltonPoints(bases, num_vert, offsets);
+        r_disc = max_edge_dist;
+        auto qs = halton::haltonPoints(num_vert, 2);
         for(auto q: qs)
         {
             addVertexAndEdges(q);
