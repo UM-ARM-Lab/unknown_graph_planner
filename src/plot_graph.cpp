@@ -31,7 +31,7 @@ typedef std::vector<visualization_msgs::Marker> GraphMarker;
 //     return points;
 // }
 
-GraphMarker toVisualizationMsg(CSpaceHaltonGraph g)
+GraphMarker toVisualizationMsg(const CSpaceHaltonGraph &g)
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
@@ -102,7 +102,7 @@ GraphMarker toVisualizationMsg(CSpaceHaltonGraph g)
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, CSpaceHaltonGraph g)
+visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const CSpaceHaltonGraph &g)
 {
     visualization_msgs::Marker lines;
     lines.header.frame_id = "/graph_frame";
@@ -124,7 +124,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, CSpaceH
 }
 
 
-visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, CSpaceHaltonGraph g)
+visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const CSpaceHaltonGraph &g)
 {
     visualization_msgs::Marker points;
     points.header.frame_id = "/graph_frame";
