@@ -20,7 +20,7 @@ double distanceHeuristic(std::vector<double> q1, std::vector<double> q2)
 
 
 
-class CSpaceHaltonGraph : public arc_dijkstras::Graph<std::vector<double>>
+class HaltonGraph : public arc_dijkstras::Graph<std::vector<double>>
 {
 public:
     double r_disc;
@@ -39,7 +39,7 @@ public:
         return new_node_ind;
     }
     
-    CSpaceHaltonGraph(int num_vert, double max_edge_dist)
+    HaltonGraph(int num_vert, double max_edge_dist)
     {
         r_disc = max_edge_dist;
         auto qs = halton::haltonPoints(num_vert, 2);
@@ -49,9 +49,9 @@ public:
         }
     }
 
-    CSpaceHaltonGraph(const std::string& filepath)
+    HaltonGraph(const std::string& filepath)
     {
-        CSpaceHaltonGraph(0,0);
+        HaltonGraph(0,0);
         loadFromFile(filepath);
     }
 

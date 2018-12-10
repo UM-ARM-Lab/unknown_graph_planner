@@ -63,7 +63,7 @@ int forwardMove(const std::vector<int> &path, Graph &g, const Obstacles2D::Obsta
 
 // Arc Graph
 bool forwardLazyCheck(const std::vector<int64_t> &path,
-                      CSpaceHaltonGraph &g, const Obstacles2D::Obstacles &obs)
+                      HaltonGraph &g, const Obstacles2D::Obstacles &obs)
 {
     // std::vector<int> path = A_star(start_ind, goal_ind, g);
 
@@ -100,7 +100,7 @@ bool forwardLazyCheck(const std::vector<int64_t> &path,
  *   Takes a single step on the path provided
  *    Check and updated edge validity
  */
-int forwardMove(const std::vector<int64_t> &path, CSpaceHaltonGraph &g,
+int forwardMove(const std::vector<int64_t> &path, HaltonGraph &g,
                 const Obstacles2D::Obstacles &obs)
 {
     if(path.size() <= 1)

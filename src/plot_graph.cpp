@@ -1,4 +1,4 @@
-#include "cspace_halton_graph.hpp"
+#include "halton_graph.hpp"
 #include <arc_utilities/dijkstras.hpp>
 #include <arc_utilities/timing.hpp>
 #include "ros/ros.h"
@@ -31,7 +31,7 @@ typedef std::vector<visualization_msgs::Marker> GraphMarker;
 //     return points;
 // }
 
-GraphMarker toVisualizationMsg(const CSpaceHaltonGraph &g)
+GraphMarker toVisualizationMsg(const HaltonGraph &g)
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
@@ -102,7 +102,7 @@ GraphMarker toVisualizationMsg(const CSpaceHaltonGraph &g)
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const CSpaceHaltonGraph &g)
+visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const HaltonGraph &g)
 {
     visualization_msgs::Marker lines;
     lines.header.frame_id = "/graph_frame";
@@ -124,7 +124,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const C
 }
 
 
-visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const CSpaceHaltonGraph &g)
+visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const HaltonGraph &g)
 {
     visualization_msgs::Marker points;
     points.header.frame_id = "/graph_frame";
@@ -184,10 +184,10 @@ int main(int argc, char **argv)
 
     std::string filepath = "/home/bradsaund/catkin_ws/src/graph_planner/graphs/2D_1000.graph";
     
-    // CSpaceHaltonGraph g(1000, 0.1);
+    // HaltonGraph g(1000, 0.1);
     // g.saveToFile(filepath);
 
-    CSpaceHaltonGraph g(filepath);
+    HaltonGraph g(filepath);
 
     
     

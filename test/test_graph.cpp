@@ -1,5 +1,5 @@
 // Bring in my package's API, which is what I'm testing
-#include "cspace_halton_graph.hpp"
+#include "halton_graph.hpp"
 // Bring in gtest
 #include <gtest/gtest.h>
 
@@ -9,7 +9,7 @@
 TEST(GraphTestSuite, weight)
 {
     double max_dist = 0.4;
-    auto g = CSpaceHaltonGraph(1000, max_dist);
+    auto g = HaltonGraph(1000, max_dist);
     for(auto &n: g.GetNodesMutable())
     {
         for(auto &e: n.GetInEdgesMutable())
@@ -23,10 +23,10 @@ TEST(GraphTestSuite, weight)
 
 TEST(GraphTestSuite, saveAndLoad)
 {
-    auto g1 = CSpaceHaltonGraph(1000, 0.4);
+    auto g1 = HaltonGraph(1000, 0.4);
     std::string filepath = "/tmp/test_graph_storage.graph";
     g1.saveToFile(filepath);
-    auto g2 = CSpaceHaltonGraph(filepath);
+    auto g2 = HaltonGraph(filepath);
 
     EXPECT_EQ(g1.GetNodesImmutable().size(), g2.GetNodesImmutable().size());
 
