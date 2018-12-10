@@ -5,6 +5,8 @@
 
 #define DIFF 0.0000001
 
+using namespace halton;
+
 // Declare a test
 TEST(TestSuite, halton_ind)
 {

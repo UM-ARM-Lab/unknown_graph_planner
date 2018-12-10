@@ -3,6 +3,8 @@
 
 #include <arc_utilities/dijkstras.hpp>
 #include <arc_utilities/eigen_helpers.hpp>
+#include <arc_utilities/zlib_helpers.hpp>
+#include <arc_utilities/serialization.hpp>
 #include "halton.hpp"
 #include <vector>
 #include <cmath>
@@ -14,6 +16,8 @@ double distanceHeuristic(std::vector<double> q1, std::vector<double> q2)
 {
     return EigenHelpers::Distance(q1, q2);
 }
+
+
 
 
 class CSpaceHaltonGraph : public arc_dijkstras::Graph<std::vector<double>>
@@ -43,6 +47,56 @@ public:
         {
             addVertexAndEdges(q);
         }
+    }
+
+    uint64_t SerializeSelf(std::vector<uint8_t>& buffer,
+                           const std::function<uint64_t(const std::vector<double>&, std::vector<uint8_t>&)>& value_serializer) const
+    {
+        uint64_t bytes_written = arc_dijkstras::Graph<std::vector<double>>::SerializeSelf(buffer, value_serializer);
+        bytes_written += arc_utilities::SerializeFixedSizePOD<double>(r_disc, buffer);
+        return bytes_written;
+    }
+
+    uint64_t DeserializeSelf(
+            const std::vector<uint8_t>& buffer,
+            const uint64_t current,
+            const std::function<std::pair<std::vector<double>, uint64_t>(const std::vector<uint8_t>&, const uint64_t)>& value_deserializer)
+    {
+        double c = arc_dijkstras::Graph<std::vector<double>>::DeserializeSelf(buffer, current, value_deserializer);
+        auto v = arc_utilities::DeserializeFixedSizePOD<double>(buffer, c);
+        r_disc = v.first;
+        return v.second;
+    }
+
+
+    void saveToFile(const std::string& filepath)
+    {
+        std::vector<uint8_t> buffer;
+
+        const auto value_serializer_fn = [] (const std::vector<double>& value,
+                                             std::vector<uint8_t>& buffer)
+        {
+            return arc_utilities::SerializeVector<double>(value, buffer,
+                                                          arc_utilities::SerializeFixedSizePOD<double>);
+        };
+        
+        SerializeSelf(buffer, value_serializer_fn);
+
+        ZlibHelpers::CompressAndWriteToFile(buffer, filepath);
+    }
+
+    void loadFromFile(const std::string& filepath)
+    {
+        const auto value_deserializer_fn = [] (const std::vector<uint8_t>& buffer,
+                                               const uint64_t current)
+                                             
+        {
+            return arc_utilities::DeserializeVector<double>(buffer, current,
+                                                            arc_utilities::DeserializeFixedSizePOD<double>);
+        };
+        
+        std::vector<uint8_t> buffer = ZlibHelpers::LoadFromFileAndDecompress(filepath);
+        DeserializeSelf(buffer, (uint64_t)0, value_deserializer_fn);
     }
 
 };

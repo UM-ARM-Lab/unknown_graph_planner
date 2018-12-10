@@ -11,6 +11,19 @@ TEST(GraphTestSuite, creation)
     CSpaceHaltonGraph(20, 0.1);
 }
 
+TEST(GraphTestSuite, saveAndLoad)
+{
+    auto g = CSpaceHaltonGraph(20, 0.1);
+    std::string filepath = "/tmp/test_graph_storage.graph";
+    g.saveToFile(filepath);
+    auto g2 = CSpaceHaltonGraph(0, 0);
+    g2.loadFromFile(filepath);
+    EXPECT_EQ(g.GetNodesImmutable().size(), 20);
+    EXPECT_EQ(g.GetNodesImmutable().size(), g2.GetNodesImmutable().size());
+
+    EXPECT_EQ(g.r_disc, g2.r_disc);
+}
+
 
 
 
