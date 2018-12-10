@@ -182,8 +182,15 @@ int main(int argc, char **argv)
 
     Obstacles2D::Obstacles obs = makeObstacles();
 
-    // Graph g(1000);
-    CSpaceHaltonGraph g(1000, 0.1);
+    std::string filepath = "/home/bradsaund/catkin_ws/src/graph_planner/graphs/2D_1000.graph";
+    
+    // CSpaceHaltonGraph g(1000, 0.1);
+    // g.saveToFile(filepath);
+
+    CSpaceHaltonGraph g(filepath);
+
+    
+    
     int start = 0;
     int end = 5;
     std::vector<int> points{start, end};
