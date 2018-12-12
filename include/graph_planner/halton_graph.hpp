@@ -39,10 +39,10 @@ public:
         return new_node_ind;
     }
     
-    HaltonGraph(int num_vert, double max_edge_dist)
+    HaltonGraph(int num_vert, double max_edge_dist, int dim=2)
     {
         r_disc = max_edge_dist;
-        auto qs = halton::haltonPoints(num_vert, 2);
+        auto qs = halton::haltonPoints(num_vert, dim);
         for(auto q: qs)
         {
             addVertexAndEdges(q);
@@ -72,6 +72,16 @@ public:
         auto v = arc_utilities::DeserializeFixedSizePOD<double>(buffer, c);
         r_disc = v.first;
         return v.second;
+    }
+
+    size_t countEdges()
+    {
+        size_t count = 0;
+        for(auto &n:nodes_)
+        {
+            count += n.GetOutEdgesImmutable().size();
+        }
+        return count;
     }
 
 

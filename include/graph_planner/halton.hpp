@@ -11,8 +11,8 @@ namespace halton
     const std::vector<int> primes{2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
             31, 37, 41, 43, 47, 53, 59, 61};
 
-    const std::vector<int> hardcoded_offsets{100, 120, 804, 203, 102,
-            102, 403, 203, 120, 203, 203, 403, 203, 203, 120, 1045, 302, 102};
+    const std::vector<int> hardcoded_offsets{100, 120, 234, 182, 102,
+            192, 476, 203, 120, 203, 203, 403, 203, 203, 120, 1045, 302, 102};
     
     double haltonElement(int index, int base)
     {

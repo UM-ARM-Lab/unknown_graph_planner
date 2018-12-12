@@ -6,7 +6,7 @@
 #define DIFF 0.0000001
 
 // Declare a test
-TEST(GraphTestSuite, weight)
+TEST(GraphTestSuite, construction)
 {
     double max_dist = 0.4;
     auto g = HaltonGraph(1000, max_dist);
@@ -19,6 +19,15 @@ TEST(GraphTestSuite, weight)
             EXPECT_FALSE(e.GetFromIndex() == e.GetToIndex());
         }
     }
+
+}
+
+TEST(GraphTestSuite, countEdges)
+{
+    auto g = HaltonGraph(10, 2);
+    EXPECT_EQ(g.countEdges(), 10*9);
+    g = HaltonGraph(10, 0);
+    EXPECT_EQ(g.countEdges(), 0);
 }
 
 TEST(GraphTestSuite, saveAndLoad)
