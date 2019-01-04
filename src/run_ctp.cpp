@@ -7,7 +7,9 @@
 #include "lazysp.hpp"
 #include <utility>
 #include "graph_visualization.hpp"
+#include "ctp.hpp"
 
+using namespace CTP;
 
 
 Obstacles2D::Obstacles makeObstacles()
@@ -31,17 +33,15 @@ int main(int argc, char **argv)
     ros::Publisher graph_invalid_pub = n.advertise<visualization_msgs::Marker>("invalid_graph", 10);
     ros::Publisher path_pub = n.advertise<visualization_msgs::Marker>("path", 10);
     ros::Publisher points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
-    ros::Publisher obs_pub = n.advertise<visualization_msgs::MarkerArray>("obs", 10);
     ros::Rate r(20);
 
-    Obstacles2D::Obstacles obs = makeObstacles();
 
-    std::string filepath = "/home/bradsaund/catkin_ws/src/graph_planner/graphs/2D_1000.graph";
+    std::string filepath = "/home/bradsaund/catkin_ws/src/graph_planner/graphs/CTP_2D_1000.graph";
     
-    // HaltonGraph g(1000, 0.1);
+    CtpGraph g(20, 0.5);
     // g.saveToFile(filepath);
 
-    HaltonGraph g(filepath);
+    // HaltonGraph g(filepath);
 
     
     
@@ -58,7 +58,6 @@ int main(int argc, char **argv)
     graph_valid_pub.publish(gm[0]);
     graph_unknown_pub.publish(gm[1]);
     points_pub.publish(pointsToVisualizationMsg(points, g));
-    obs_pub.publish(obs.toMarkerArray());
 
     r.sleep();
     std::string unused;
@@ -72,17 +71,17 @@ int main(int argc, char **argv)
         // std::vector<int> path = A_star(points[0], points[1], g);
         PROFILE_START("astar");
         
-        auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
-            g, points[0], points[1], &distanceHeuristic, true);
+        // auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
+        //     g, points[0], points[1], &distanceHeuristic, true);
         
-        double astar_time = PROFILE_RECORD("astar");
-        std::cout << "Astar took: " << astar_time << "\n";
+        // double astar_time = PROFILE_RECORD("astar");
+        // std::cout << "Astar took: " << astar_time << "\n";
 
-        auto path = result.first;
+        // auto path = result.first;
         // forwardLazyCheck(path, g, obs);
 
         PROFILE_START("forward_move");
-        points[0] = forwardMove(path, g, obs);
+        // points[0] = forwardMove(path, g, obs);
         std::cout << "forward move took: " << PROFILE_RECORD("forward_move") << "\n";
 
         PROFILE_START("visualize");
@@ -90,9 +89,8 @@ int main(int argc, char **argv)
         graph_valid_pub.publish(gm[0]);
         graph_unknown_pub.publish(gm[1]);
         graph_invalid_pub.publish(gm[2]);
-        path_pub.publish(toVisualizationMsg(path, g));
+        // path_pub.publish(toVisualizationMsg(path, g));
         points_pub.publish(pointsToVisualizationMsg(points, g));
-        obs_pub.publish(obs.toMarkerArray());
         std::cout << "visualize took " << PROFILE_RECORD("visualize") << "\n";
         std::cout << "cycle took " << PROFILE_RECORD("cycle") << "\n";
         // r.sleep();

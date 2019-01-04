@@ -131,7 +131,13 @@ add_executable(plot_graph
   )
 target_link_libraries(plot_graph
   ${catkin_LIBRARIES}
-  graph
+  )
+
+add_executable(run_ctp
+  src/run_ctp.cpp
+  )
+target_link_libraries(run_ctp
+  ${catkin_LIBRARIES}
   )
 
 
