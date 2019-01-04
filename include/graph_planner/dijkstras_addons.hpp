@@ -97,16 +97,23 @@ namespace arc_dijkstras
         {
             EvaluatedEdges evaluatedEdges;
 
+            int num_astar_iters = 0;
+
             while(true)
             {
+                PROFILE_START("a_star");
                 auto prelim_result = PerformAstarForLazySP(g, start_index, goal_index,
                                                            heuristic_fn, limit_pqueue_duplicates,
                                                            evaluatedEdges);
+                std::cout << "a_star took " << PROFILE_RECORD("a_star") << "s\n";
+                num_astar_iters++;
+                
                 auto path = prelim_result.first;
 
                 auto path_indicies_to_check = ForwardSelector(path, g, evaluatedEdges);
                 if(path_indicies_to_check.size() == 0)
                 {
+                    std::cout << "Num A* iterations: " << num_astar_iters << "\n";
                     return prelim_result;
                 }
 
@@ -118,6 +125,7 @@ namespace arc_dijkstras
                     evaluatedEdges[getHashable(e)] = eval_edge_fn(g, e);
                 }
             }
+            
             
                
         }
