@@ -5,59 +5,59 @@
 #include "2d_obstacles.hpp"
 #include <arc_utilities/dijkstras.hpp>
 
-bool forwardLazyCheck(const std::vector<int> &path, Graph &g, const Obstacles2D::Obstacles &obs)
-{
-    // std::vector<int> path = A_star(start_ind, goal_ind, g);
+// bool forwardLazyCheck(const std::vector<int> &path, Graph &g, const Obstacles2D::Obstacles &obs)
+// {
+//     // std::vector<int> path = A_star(start_ind, goal_ind, g);
 
-    std::cout << "Forward Check\n";
-    int i = 0;
-    while(i < path.size()-1)
-    {
-        Edge &e = g.getEdge(path[i], path[i+1]);
-        if(e.validity == EDGE_VALIDITY::VALID)
-        {
-            i++;
-            continue;
-        }
+//     std::cout << "Forward Check\n";
+//     int i = 0;
+//     while(i < path.size()-1)
+//     {
+//         Edge &e = g.getEdge(path[i], path[i+1]);
+//         if(e.validity == EDGE_VALIDITY::VALID)
+//         {
+//             i++;
+//             continue;
+//         }
 
-        e.validity = obs.isValid(e, g) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID;
+//         e.validity = obs.isValid(e, g) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID;
         
-        std::cout << "Edge from point " << path[i] << " is " << 
-            ((e.validity == EDGE_VALIDITY::VALID) ? "valid" : "invalid") << "\n";
-        // std::cout << "Edge from point " << i << " is " << e.validity << "\n";
-        return false;
-    }
-    return true;
-}
+//         std::cout << "Edge from point " << path[i] << " is " << 
+//             ((e.validity == EDGE_VALIDITY::VALID) ? "valid" : "invalid") << "\n";
+//         // std::cout << "Edge from point " << i << " is " << e.validity << "\n";
+//         return false;
+//     }
+//     return true;
+// }
 
 
 
-/***
- *   Takes a single step on the path provided
- *    Check and updated edge validity
- */
-int forwardMove(const std::vector<int> &path, Graph &g, const Obstacles2D::Obstacles &obs)
-{
-    if(path.size() <= 1)
-    {
-        return path[0];
-    }
+// /***
+//  *   Takes a single step on the path provided
+//  *    Check and updated edge validity
+//  */
+// int forwardMove(const std::vector<int> &path, Graph &g, const Obstacles2D::Obstacles &obs)
+// {
+//     if(path.size() <= 1)
+//     {
+//         return path[0];
+//     }
     
-    Edge &e = g.getEdge(path[0], path[1]);
-    assert(e.validity != EDGE_VALIDITY::INVALID);
+//     Edge &e = g.getEdge(path[0], path[1]);
+//     assert(e.validity != EDGE_VALIDITY::INVALID);
 
-    if(e.validity == EDGE_VALIDITY::UNKNOWN)
-    {
-        e.validity = obs.isValid(e, g) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID;
-    }
+//     if(e.validity == EDGE_VALIDITY::UNKNOWN)
+//     {
+//         e.validity = obs.isValid(e, g) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID;
+//     }
 
-    int robot_location = path[0];
-    if(e.validity == EDGE_VALIDITY::VALID)
-    {
-        robot_location = (path[0] == e.v1_ind) ? e.v2_ind : e.v1_ind;
-    }
-    return robot_location;
-}
+//     int robot_location = path[0];
+//     if(e.validity == EDGE_VALIDITY::VALID)
+//     {
+//         robot_location = (path[0] == e.v1_ind) ? e.v2_ind : e.v1_ind;
+//     }
+//     return robot_location;
+// }
 
 
 

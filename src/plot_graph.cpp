@@ -158,13 +158,6 @@ Obstacles2D::Obstacles makeObstacles()
 }
 
 
-void validateEdges(Graph &g, Obstacles2D::Obstacles &obs)
-{
-    for(auto &e: g.E)
-    {
-        e.validity = obs.isValid(e, g) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID;
-    }
-}
 
 
 int main(int argc, char **argv)

@@ -2,19 +2,18 @@
 #define OBSTACLES2D_HPP
 
 
-#include "graph.hpp"
+// #include "graph.hpp"
 #include "halton_graph.hpp"
 #include "ros/ros.h"
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
+#include <arc_utilities/eigen_helpers.hpp>
 
 
 #define EDGE_DISCRETIZATION 0.001
 
 namespace Obstacles2D
 {
-
-
     
     class Obstacle
     {
@@ -90,7 +89,8 @@ namespace Obstacles2D
         bool isValid(std::vector<double> q1, std::vector<double> q2) const
         {
             std::vector<double> q = q1;
-            double d = distance(q1, q2);
+            double d = EigenHelpers::Distance(q1, q2);
+            // double d = distance(q1, q2);
             int num_point_checks = (int)(d/EDGE_DISCRETIZATION) + 1;
             double dx = (q2[0] - q1[0])/num_point_checks;
             double dy = (q2[1] - q1[1])/num_point_checks;
@@ -106,12 +106,12 @@ namespace Obstacles2D
             return true;
         }
 
-        bool isValid(Edge e, const Graph &g) const
-        {
-            std::vector<double> q1 = g.V[e.v1_ind].q;
-            std::vector<double> q2 = g.V[e.v2_ind].q;
-            return isValid(q1, q2);
-        }
+        // bool isValid(Edge e, const Graph &g) const
+        // {
+        //     std::vector<double> q1 = g.V[e.v1_ind].q;
+        //     std::vector<double> q2 = g.V[e.v2_ind].q;
+        //     return isValid(q1, q2);
+        // }
 
         bool isValid(arc_dijkstras::GraphEdge e, const HaltonGraph &g) const
         {

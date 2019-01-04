@@ -125,9 +125,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(graph
-  src/graph.cpp
-  )
 
 add_executable(plot_graph
   src/plot_graph.cpp
