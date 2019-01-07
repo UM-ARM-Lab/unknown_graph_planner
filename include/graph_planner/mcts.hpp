@@ -3,16 +3,12 @@
 
 
 #include "halton_graph.hpp"
+#include "ctp.hpp"
+typedef CTP::CtpProblem State;
 
 namespace MCTS{
     typedef int Action;
 
-    class State
-    {
-    public:
-        // Belief
-        
-    };
 
     class StateNode;
 
@@ -30,14 +26,16 @@ namespace MCTS{
             return summed_cost/visit_count;
         }
     };
-    
+
     class StateNode
     {
     public:
-        State s;
+        State state;
         std::vector<ActionNode*> children;
         int visit_count;
         ActionNode* parent; // not sure if we should use this
+
+        StateNode(State s) : state(s){};
     };
 
     class Tree
@@ -46,11 +44,9 @@ namespace MCTS{
         
         StateNode* root;
         
-        Tree()
+        Tree(State b)
         {
-            State s;
-            root = new StateNode();
-            root->s = s;
+            root = new StateNode(b);
             root->parent = nullptr;
             root->visit_count = 0;
         }
@@ -84,21 +80,18 @@ namespace MCTS{
             return child;
         }
 
-        StateNode* addNode(ActionNode* parent)
+        StateNode* addNode(ActionNode* parent, State s)
         {
-            StateNode* child = new StateNode();
+            StateNode* child = new StateNode(s);
             parent->children.push_back(child);
             child->parent = parent;
             return child;
         }
 
 
-        void rollout()
-        {
-        }
         
     };
-
+    
     class MCTS
     {
     public:
@@ -107,7 +100,12 @@ namespace MCTS{
         
         virtual ActionNode* selectPromisingAction(StateNode* node) = 0;
 
-        
+        void rollout()
+        {
+            // State b = tree.root->state;
+            
+        }
+
         
     };
 

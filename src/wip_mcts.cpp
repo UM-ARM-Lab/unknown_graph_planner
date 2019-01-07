@@ -4,12 +4,12 @@
 
 void makeTree()
 {
-    MCTS::Tree tree;
+    // MCTS::Tree tree;
 
-    for(int i=0; i<1000000; i++)
-    {
-        tree.addNode(tree.root);
-    }
+    // for(int i=0; i<1000000; i++)
+    // {
+    //     tree.addNode(tree.root);
+    // }
     
     // std::string unused;
     // std::cout << "Waiting for user input\n";

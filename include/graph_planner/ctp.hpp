@@ -228,6 +228,11 @@ namespace CTP{
             agent.current_node = new_node;
             updateBeliefGraph();
         }
+
+        void sampleInstance()
+        {
+            true_graph = belief_graph.sampleInstance();
+        }
         
     };
 }
