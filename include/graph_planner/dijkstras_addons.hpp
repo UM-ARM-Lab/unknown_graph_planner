@@ -3,16 +3,45 @@
 
 #include <arc_utilities/dijkstras.hpp>
 
+typedef arc_dijkstras::Graph<std::vector<double>> GraphD;
+
 namespace arc_dijkstras
 {
     typedef std::pair<int64_t, int64_t> HashableEdge;
     typedef std::map<HashableEdge, double> EvaluatedEdges;
+
+    
     enum FORWARD_LAZY_CHECK_RESULT {EDGE_INVALID, EDGE_VALID, PATH_VALID};
 
     static inline HashableEdge getHashable(const GraphEdge& edge)
     {
         return std::make_pair(edge.GetFromIndex(), edge.GetToIndex());
     }
+
+
+    /*
+     *  Returns true iff all edges have same validity in g1 and g2
+     *  Assumes topology is the same
+     */
+    static bool haveSameEdgeValidity(const GraphD& g1, const GraphD& g2)
+    {
+        for(size_t n_id = 0; n_id <g1.GetNodesImmutable().size(); n_id++)
+        {
+            const auto &n1 = g1.GetNodeImmutable(n_id);
+            const auto &n2 = g2.GetNodeImmutable(n_id);
+            for(size_t e_id = 0; e_id < n1.GetOutEdgesImmutable().size(); e_id++)
+            {
+                if(n1.GetOutEdgesImmutable()[e_id].GetValidity() !=
+                   n2.GetOutEdgesImmutable()[e_id].GetValidity())
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
     
     template<typename NodeValueType, typename Allocator = std::allocator<NodeValueType>>
     class LazySP
@@ -101,11 +130,11 @@ namespace arc_dijkstras
 
             while(true)
             {
-                PROFILE_START("a_star");
+                // PROFILE_START("a_star");
                 auto prelim_result = PerformAstarForLazySP(g, start_index, goal_index,
                                                            heuristic_fn, limit_pqueue_duplicates,
                                                            evaluatedEdges);
-                std::cout << "a_star took " << PROFILE_RECORD("a_star") << "s\n";
+                // std::cout << "a_star took " << PROFILE_RECORD("a_star") << "s\n";
                 num_astar_iters++;
                 
                 auto path = prelim_result.first;

@@ -22,6 +22,19 @@ TEST(GraphTestSuite, construction)
 
 }
 
+TEST(GraphTestSuite, graphComparison)
+{
+    HaltonGraph g1(1000, 0.4);
+    HaltonGraph g2(g1);
+    
+    EXPECT_TRUE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
+
+    g2.GetNodeMutable(100).GetOutEdgesMutable()[0].SetValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
+    EXPECT_FALSE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
+    g1.GetNodeMutable(100).GetOutEdgesMutable()[0].SetValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
+    EXPECT_TRUE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
+}
+
 TEST(GraphTestSuite, countEdges)
 {
     auto g = HaltonGraph(10, 2);

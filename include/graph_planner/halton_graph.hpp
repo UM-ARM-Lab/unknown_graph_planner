@@ -6,7 +6,7 @@
 #include <arc_utilities/eigen_helpers.hpp>
 #include <arc_utilities/zlib_helpers.hpp>
 #include <arc_utilities/serialization.hpp>
-// #include "dijkstras_addons.hpp"
+#include "dijkstras_addons.hpp"
 #include <vector>
 #include <cmath>
 
@@ -65,7 +65,7 @@ public:
         return bytes_written;
     }
 
-    uint64_t DeserializeSeflf(
+    uint64_t DeserializeSelf(
             const std::vector<uint8_t>& buffer,
             const uint64_t current,
             const std::function<std::pair<std::vector<double>, uint64_t>(const std::vector<uint8_t>&, const uint64_t)>& value_deserializer)
