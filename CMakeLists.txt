@@ -125,7 +125,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-
 add_executable(plot_graph
   src/plot_graph.cpp
   )
@@ -139,6 +138,15 @@ add_executable(run_ctp
 target_link_libraries(run_ctp
   ${catkin_LIBRARIES}
   )
+
+add_executable(run_bctp
+  src/run_bctp.cpp
+  )
+target_link_libraries(run_bctp
+  ${catkin_LIBRARIES}
+  )
+
+add_executable(wip_mcts src/wip_mcts.cpp)
 
 
 ## Add cmake target dependencies of the library

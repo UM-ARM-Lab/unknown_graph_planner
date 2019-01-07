@@ -1,11 +1,12 @@
 #ifndef CSPACE_HALTON_GRAPH_HPP
 #define CSPACE_HALTON_GRAPH_HPP
 
+#include "halton.hpp"
 #include <arc_utilities/dijkstras.hpp>
 #include <arc_utilities/eigen_helpers.hpp>
 #include <arc_utilities/zlib_helpers.hpp>
 #include <arc_utilities/serialization.hpp>
-#include "halton.hpp"
+// #include "dijkstras_addons.hpp"
 #include <vector>
 #include <cmath>
 
@@ -19,8 +20,9 @@ double distanceHeuristic(std::vector<double> q1, std::vector<double> q2)
 
 
 
+typedef arc_dijkstras::Graph<std::vector<double>> GraphD;
 
-class HaltonGraph : public arc_dijkstras::Graph<std::vector<double>>
+class HaltonGraph : public GraphD
 {
 public:
     double r_disc;
@@ -63,7 +65,7 @@ public:
         return bytes_written;
     }
 
-    uint64_t DeserializeSelf(
+    uint64_t DeserializeSeflf(
             const std::vector<uint8_t>& buffer,
             const uint64_t current,
             const std::function<std::pair<std::vector<double>, uint64_t>(const std::vector<uint8_t>&, const uint64_t)>& value_deserializer)

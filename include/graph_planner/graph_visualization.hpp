@@ -3,6 +3,7 @@
 
 #include "visualization_msgs/Marker.h"
 #include <arc_utilities/dijkstras.hpp>
+#include "ctp.hpp"
 
 
 typedef std::vector<visualization_msgs::Marker> GraphMarker;
@@ -29,7 +30,7 @@ typedef std::vector<visualization_msgs::Marker> GraphMarker;
 //     return points;
 // }
 
-GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<std::vector<double>> &g)
+GraphMarker toVisualizationMsg(const GraphD &g)
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
@@ -100,7 +101,7 @@ GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<std::vector<double>> &
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const HaltonGraph &g)
+visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const GraphD &g)
 {
     visualization_msgs::Marker lines;
     lines.header.frame_id = "/graph_frame";
@@ -122,7 +123,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const H
 }
 
 
-visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const HaltonGraph &g)
+visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const GraphD &g)
 {
     visualization_msgs::Marker points;
     points.header.frame_id = "/graph_frame";
@@ -145,5 +146,11 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const H
     return points;
 }
 
+
+visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
+{
+    std::vector<int> p{a.current_node, a.goal_node};
+    return pointsToVisualizationMsg(p, g);
+}
 
 #endif
