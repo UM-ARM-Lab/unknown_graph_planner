@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     // HaltonGraph g(filepath);
     
     Agent agent(0, 5);
-    CtpProblem ctp(g, g.sampleInstance(), agent);
+    CtpProblem<CtpGraph> ctp(g, g.sampleInstance(), agent);
     
 
 

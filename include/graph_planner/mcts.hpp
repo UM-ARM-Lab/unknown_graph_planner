@@ -4,7 +4,9 @@
 
 #include "halton_graph.hpp"
 #include "ctp.hpp"
-typedef CTP::CtpProblem State;
+// #include "graph_visualization.hpp"
+
+typedef CTP::CtpProblem<CTP::BctpGrid> State;
 
 namespace MCTS{
     typedef int Action;
@@ -72,11 +74,12 @@ namespace MCTS{
             delete root;
         }
 
-        ActionNode* addNode(StateNode* parent)
+        ActionNode* addNode(StateNode* parent, Action a)
         {
             ActionNode* child = new ActionNode();
             parent->children.push_back(child);
             child->parent = parent;
+            child->action = a;
             return child;
         }
 
@@ -97,16 +100,103 @@ namespace MCTS{
     public:
         Tree tree;
         int expansion_count = 1;
+
+        MCTS(State s): tree(s) 
+        {
+            addActions(tree.root);
+        }
         
         virtual ActionNode* selectPromisingAction(StateNode* node) = 0;
 
-        void rollout()
+        bool hasChild(ActionNode* n, const State& s)
         {
-            // State b = tree.root->state;
-            
+            for(StateNode* child:n->children)
+            {
+                if(child->state.isEquiv(s))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
-        
+        StateNode* getChild(ActionNode* n, const State& s)
+        {
+            for(StateNode* child:n->children)
+            {
+                if(child->state.isEquiv(s))
+                {
+                    return child;
+                }
+            }
+            return nullptr;
+        }
+
+        void addActions(StateNode* n)
+        {
+            for(Action action : n->state.getActions())
+            {
+                tree.addNode(n, action);
+            }
+        }
+
+        void expand(ActionNode* parent, const State& s)
+        {
+            StateNode* child = tree.addNode(parent, s);
+            addActions(child);
+        }
+
+        Action fastPolicy(State ctp)
+        {
+            auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
+                ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, true);
+
+            
+            return result.first[1];
+        }
+
+        void backprop(std::vector<double> costs, StateNode* state)
+        {
+            double cost = 0;
+            for(int i=(int)costs.size()-1; i>=0; i--)
+            {
+                cost += costs[i];
+                state->visit_count++;
+                state->parent->visit_count++;
+                state->parent->summed_cost += cost;
+                state = state->parent->parent;
+            }
+            assert(state = tree.root);
+        }
+
+        void rollout()
+        {
+            State b = tree.root->state;
+            std::vector<double> costs;
+            b.sampleInstance();
+            StateNode* node = tree.root;
+            bool in_tree = true;
+            while(b.inprogress && in_tree)
+            {
+                ActionNode* an = selectPromisingAction(node);
+                costs.push_back(b.move(an->action));
+                in_tree = hasChild(an, b);
+                   
+                if(!in_tree)
+                {
+                    expand(an, b);
+                    break;
+                }
+                node = getChild(an, b);
+            }
+
+            while(b.inprogress)
+            {
+                Action a = fastPolicy(b);
+                costs.back() += b.move(a);
+            }
+            backprop(costs, node);
+        }
     };
 
     class UCT : public MCTS
@@ -115,13 +205,14 @@ namespace MCTS{
         double exploration_const = 1.41;
         
     public:
+
+        UCT(State s) : MCTS(s){};
+        
+        
         ActionNode* selectPromisingAction(StateNode* node)
         {
-            if(node->children.size()>0)
-            {
-                return findBestUctChild(node);
-            }
-            return node->children[0]; //really should be fast policy
+            assert(node->children.size()>0);
+            return findBestUctChild(node);
         }
 
         double uctValue(int parent_visits, double child_cost, double child_visits)

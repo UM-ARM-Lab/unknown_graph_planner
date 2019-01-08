@@ -153,4 +153,55 @@ visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
     return pointsToVisualizationMsg(p, g);
 }
 
+
+
+class GraphVisualizer
+{
+public:
+    ros::Publisher graph_valid_pub;
+    ros::Publisher graph_unknown_pub;
+    ros::Publisher graph_invalid_pub;
+    ros::Publisher path_pub;
+    ros::Publisher points_pub;
+    ros::Publisher ob_pub;
+
+    
+    GraphVisualizer(ros::NodeHandle &n)
+    {
+        graph_valid_pub = n.advertise<visualization_msgs::Marker>("valid_graph", 10);
+        graph_unknown_pub = n.advertise<visualization_msgs::Marker>("unknown_graph", 10);
+        graph_invalid_pub = n.advertise<visualization_msgs::Marker>("invalid_graph", 10);
+        path_pub= n.advertise<visualization_msgs::Marker>("path", 10);
+        points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
+        ob_pub = n.advertise<visualization_msgs::Marker>("ob", 10);
+    }
+
+    void vizGraph(const GraphD &g)
+    {
+        GraphMarker gm = toVisualizationMsg(g);
+        graph_valid_pub.publish(gm[0]);
+        graph_unknown_pub.publish(gm[1]);
+        graph_invalid_pub.publish(gm[2]);
+    }
+
+    void vizAgent(CTP::Agent &a, const GraphD &g)
+    {
+        points_pub.publish(toVisualizationMsg(a, g));
+    }
+
+
+    void vizCtp(CTP::CtpProblem<CTP::BctpGrid> &ctp)
+    {
+        vizGraph(ctp.belief_graph);
+        vizAgent(ctp.agent, ctp.belief_graph);
+        ob_pub.publish(ctp.belief_graph.storm.toMarker());
+    }
+
+    void vizPath(const std::vector<int64_t> &path, const GraphD &g)
+    {
+        points_pub.publish(toVisualizationMsg(path, g));
+    }
+};
+
+
 #endif

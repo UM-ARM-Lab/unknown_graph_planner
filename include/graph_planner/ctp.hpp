@@ -179,17 +179,20 @@ namespace CTP{
     };
 
 
+    template <typename BeliefGraph>
     class CtpProblem
     {
     public:
-        BctpGraph &belief_graph;
+        BeliefGraph belief_graph;
         GraphD true_graph;
         Agent agent;
+        bool inprogress = true;
+
 
         /*
          *  the belief graph and true graph must have the same topology
          */
-        CtpProblem(BctpGraph &g, GraphD t, Agent a) :
+        CtpProblem(BeliefGraph g, GraphD t, Agent a) :
             belief_graph(g), true_graph(t), agent(a)
         {
             updateBeliefGraph();
@@ -218,7 +221,11 @@ namespace CTP{
             }
         }
 
-        void move(int new_node)
+
+        /*
+         *  Moves the agent to the new node. Returns the cost
+         */
+        double move(int new_node)
         {
             auto &e = true_graph.GetNodeMutable(agent.current_node).GetEdgeMutable(new_node);
             if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::VALID)
@@ -227,11 +234,34 @@ namespace CTP{
             }
             agent.current_node = new_node;
             updateBeliefGraph();
+            return e.GetWeight();
         }
 
         void sampleInstance()
         {
             true_graph = belief_graph.sampleInstance();
+        }
+
+        std::vector<int> getActions()
+        {
+            std::vector<int> actions;
+            for(const auto& e:belief_graph.GetNodeImmutable(agent.current_node).GetOutEdgesImmutable())
+            {
+                if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID)
+                {
+                    actions.push_back(e.GetToIndex());
+                }
+            }
+            return actions;
+        }
+
+        bool isEquiv(const CtpProblem<BeliefGraph> &other)
+        {
+            if(agent.current_node != other.agent.current_node)
+            {
+                return false;
+            }
+            return arc_dijkstras::haveSameEdgeValidity(belief_graph, other.belief_graph);
         }
         
     };
