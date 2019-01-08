@@ -8,6 +8,31 @@
 
 typedef std::vector<visualization_msgs::Marker> GraphMarker;
 
+
+
+static inline std_msgs::ColorRGBA colorLookup(std::string color)
+{
+    std_msgs::ColorRGBA cm;
+    cm.a = 1.0;
+    if(color=="blue")
+    {
+        cm.b=1.0;
+    }
+    else if(color=="red")
+    {
+        cm.r=1.0;
+    }
+    else if(color=="green")
+    {
+        cm.g = 1.0;
+    }
+    else if(color=="purple")
+    {
+        cm.b = 1.0; cm.r=1.0;
+    }
+    return cm;
+}
+
 // visualization_msgs::Marker toVisualizationMsg(Graph g)
 // {
 //     visualization_msgs::Marker points;
@@ -55,7 +80,7 @@ GraphMarker toVisualizationMsg(const GraphD &g)
     {
         for(const auto e:n.GetOutEdgesImmutable())
         {
-            // if(e.validity == EDGE_VALIDITY::INVALID)
+            // if(e.validity == arc_dijkstras::EDGE_VALIDITY::INVALID)
             // {
             //     continue;
             // }
@@ -75,15 +100,15 @@ GraphMarker toVisualizationMsg(const GraphD &g)
 
             switch(e.GetValidity())
             {
-            case EDGE_VALIDITY::UNKNOWN:
+            case arc_dijkstras::EDGE_VALIDITY::UNKNOWN:
                 unknown_lines.points.push_back(p1);
                 unknown_lines.points.push_back(p2);
                 break;
-            case EDGE_VALIDITY::VALID:
+            case arc_dijkstras::EDGE_VALIDITY::VALID:
                 valid_lines.points.push_back(p1);
                 valid_lines.points.push_back(p2);
                 break;
-            case EDGE_VALIDITY::INVALID:
+            case arc_dijkstras::EDGE_VALIDITY::INVALID:
                 invalid_lines.points.push_back(p1);
                 invalid_lines.points.push_back(p2);
                 break;            
@@ -101,15 +126,16 @@ GraphMarker toVisualizationMsg(const GraphD &g)
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const GraphD &g)
+visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const GraphD &g,
+                                              int id=0, std::string color="blue")
 {
     visualization_msgs::Marker lines;
     lines.header.frame_id = "/graph_frame";
     lines.type = visualization_msgs::Marker::LINE_STRIP;
     lines.pose.orientation.w = 1.0;
     lines.scale.x = 0.007;
-    lines.color.a = 1.0;
-    lines.color.b = 1.0;
+    lines.color = colorLookup(color);
+    lines.id = id;
 
     for(auto ind: path)
     {
@@ -153,6 +179,33 @@ visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
     return pointsToVisualizationMsg(p, g);
 }
 
+visualization_msgs::MarkerArray toVisualizationMsg(std::vector<std::string> texts,
+                                                   std::vector<std::vector<double>> loc)
+{
+    visualization_msgs::MarkerArray tms;
+    for(size_t i=0; i<10; i++)
+    {
+        visualization_msgs::Marker tm;
+        tm.id = i;
+        tm.header.frame_id = "/graph_frame";
+        tm.type=visualization_msgs::Marker::TEXT_VIEW_FACING;
+        tm.text = "";
+        tm.pose.position.x = 1000;
+        tm.pose.position.y = 1000;
+        
+        if(i < texts.size())
+        {
+            tm.text = texts[i];
+            tm.pose.position.x = loc[i][0];
+            tm.pose.position.y = loc[i][1];
+        }
+        tm.scale.z = 0.03;
+        tm.color.a = 1.0;
+
+        tms.markers.push_back(tm);
+    }
+    return tms;
+}
 
 
 class GraphVisualizer
@@ -164,7 +217,7 @@ public:
     ros::Publisher path_pub;
     ros::Publisher points_pub;
     ros::Publisher ob_pub;
-
+    ros::Publisher text_pub;
     
     GraphVisualizer(ros::NodeHandle &n)
     {
@@ -174,6 +227,7 @@ public:
         path_pub= n.advertise<visualization_msgs::Marker>("path", 10);
         points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
         ob_pub = n.advertise<visualization_msgs::Marker>("ob", 10);
+        text_pub = n.advertise<visualization_msgs::MarkerArray>("text", 10);
     }
 
     void vizGraph(const GraphD &g)
@@ -197,9 +251,33 @@ public:
         ob_pub.publish(ctp.belief_graph.storm.toMarker());
     }
 
-    void vizPath(const std::vector<int64_t> &path, const GraphD &g)
+    void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "blue")
     {
-        points_pub.publish(toVisualizationMsg(path, g));
+        points_pub.publish(toVisualizationMsg(path, g, id, color));
+    }
+
+    void vizTexts(std::vector<std::string> texts, std::vector<std::vector<double>> points)
+    {
+        text_pub.publish(toVisualizationMsg(texts, points));
+    }
+            
+    void vizDoubles(std::vector<double> vals, std::vector<std::vector<double>> points)
+    {
+        std::vector<std::string> texts;
+        for(double d: vals)
+        {
+            std::stringstream ss;
+            ss << d;
+            texts.push_back(ss.str());
+            std::cout << "Visualizing " << texts.back() << "\n";
+        }
+        for(auto p:points)
+        {
+            std::cout << "(" << p[0] << ", " << p[1] << "), ";
+        }
+        std::cout << "\n";
+        
+        text_pub.publish(toVisualizationMsg(texts, points));
     }
 };
 

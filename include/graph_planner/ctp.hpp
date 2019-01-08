@@ -234,6 +234,7 @@ namespace CTP{
             }
             agent.current_node = new_node;
             updateBeliefGraph();
+            inprogress = agent.current_node != agent.goal_node;
             return e.GetWeight();
         }
 

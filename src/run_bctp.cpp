@@ -24,7 +24,8 @@ int main(int argc, char **argv)
 
     std::string filepath = "/home/bradsaund/catkin_ws/src/graph_planner/graphs/BCTP_2D_10x10.graph";
 
-    int rows=10;
+    int rows=4;
+    
     BctpGrid g(rows);
     // g.saveToFile(filepath);
 
@@ -34,7 +35,7 @@ int main(int argc, char **argv)
 
     CtpProblem<BctpGrid> ctp(g, g.sampleInstance(), agent);
     
-    MCTS::UCT mcts(ctp);
+
 
     ros::Duration(1).sleep();
 
@@ -43,14 +44,16 @@ int main(int argc, char **argv)
     viz.vizAgent(ctp.agent, ctp.true_graph);
 
     r.sleep();
-    std::string unused;
-    std::cout << "Waiting for user input...\n";
-    std::getline(std::cin, unused);
-
-    
+    arc_helpers::WaitForInput();
 
     while(ros::ok() && !ctp.solved())
     {
+        MCTS::UCT mcts(ctp, viz);
+        for(int i=0; i<100; i++)
+        {
+            mcts.rollout();
+        }
+
         PROFILE_START("cycle");
         // std::vector<int> path = A_star(points[0], points[1], g);
         PROFILE_START("astar");
@@ -70,16 +73,12 @@ int main(int argc, char **argv)
 
         
         PROFILE_START("visualize");
-
-
         viz.vizCtp(ctp);
         std::cout << "visualize took " << PROFILE_RECORD("visualize") << "\n";
         std::cout << "cycle took " << PROFILE_RECORD("cycle") << "\n";
         
         // r.sleep();
-        std::cout << "Waiting for user input...\n";
-        std::getline(std::cin, unused);
-
+        arc_helpers::WaitForInput();
     }
 
     
