@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
     while(ros::ok() && !ctp.solved())
     {
-        MCTS::UCT mcts(ctp, viz);
+        MCTS::UCTH mcts(ctp, viz);
         for(int i=0; i<100; i++)
         {
             mcts.rollout();

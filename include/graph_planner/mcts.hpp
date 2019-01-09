@@ -159,23 +159,17 @@ namespace MCTS{
             viz.vizDoubles(vals, locs);
         }
 
-
-        void addActions(StateNode* n)
+        virtual arc_helpers::AstarResult heuristicPath(const State &s, int from_node)
         {
-            int cur_node = n->state.agent.current_node;
+            return arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
+                s.belief_graph, from_node, s.agent.goal_node, &distanceHeuristic, true);
+        }
+        
+        virtual void addActions(StateNode* n)
+        {
             for(Action action : n->state.getActions())
             {
-                ActionNode* an = tree.addNode(n, action);
-                int next_node = action;
-                double action_cost = n->state.belief_graph.GetEdgeMutable(cur_node, next_node).GetWeight();
-                an->summed_cost = action_cost;
-                if(next_node != n->state.agent.goal_node)
-                {
-                    auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
-                        n->state.belief_graph, next_node, n->state.agent.goal_node, &distanceHeuristic, true);
-                    an->summed_cost += result.second;
-                }
-                an->visit_count++;
+                tree.addNode(n, action);
             }
         }
 
@@ -188,11 +182,8 @@ namespace MCTS{
 
         Action fastPolicy(State ctp)
         {
-            auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
-                ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, true);
-
-            viz.vizCtp(ctp);
-            
+            auto result = heuristicPath(ctp, ctp.agent.current_node);
+            // viz.vizCtp(ctp);
             return result.first[1];
         }
 
@@ -304,6 +295,87 @@ namespace MCTS{
             }
             std::cout << "best action " << best->action << "\n";
             return best;
+        }
+    };
+
+
+    class UCTH : public UCT
+    {
+    public:
+        arc_dijkstras::EvaluatedEdges edge_probability;
+        UCTH(State s, GraphVisualizer &viz) : UCT(s, viz)
+        {
+            gatherEdgeStatistics();
+            updateActionsWithHeuristic(tree.root);
+        }
+
+        void gatherEdgeStatistics()
+        {
+            State &rs = tree.root->state;
+            int num_trials = 100;
+            for(int i=0; i<num_trials; i++)
+            {
+                State instance(rs);
+                instance.sampleInstance(rng);
+                for(const auto &n:instance.true_graph.GetNodesImmutable())
+                {
+                    for(const auto &e:n.GetOutEdgesImmutable())
+                    {
+                        if(e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::INVALID)
+                        {
+                            continue;
+                        }
+                        auto edge_key = arc_dijkstras::getHashable(e);
+                        if(!edge_probability.count(edge_key))
+                        {
+                            edge_probability[edge_key] = 0;
+                        }
+                        edge_probability[edge_key] += 1.0/(double)num_trials;
+                    }
+                }
+            }
+        }
+
+        void updateActionsWithHeuristic(StateNode* n)
+        {
+            int cur_node = n->state.agent.current_node;
+            for(ActionNode* an:n->children)
+            {
+                int next_node = an->action;
+                double action_cost = n->state.belief_graph.GetEdgeMutable(cur_node, next_node).GetWeight();
+                an->summed_cost = action_cost;
+                if(next_node != n->state.agent.goal_node)
+                {
+                    auto result = heuristicPath(n->state, next_node);
+                    an->summed_cost += result.second;
+                }
+                // std::cout << "updating action from " << cur_node << " to " << next_node;
+                // std::cout << " to " << an->summed_cost << "\n";
+                an->visit_count++;
+            }
+        }
+
+        virtual void addActions(StateNode* n) override
+        {
+            for(Action action : n->state.getActions())
+            {
+                tree.addNode(n, action);
+            }
+            updateActionsWithHeuristic(n);
+        }
+
+        virtual arc_helpers::AstarResult heuristicPath(const State &s, int from_node) override
+        {
+            State s_copy(s);
+            const auto eval_fun = [this](GraphD &g, arc_dijkstras::GraphEdge &e)
+            {
+                double alpha = 1.0;
+                double p_cost = -std::log(edge_probability[arc_dijkstras::getHashable(e)]);
+                double l_cost = e.GetWeight();
+                return l_cost + alpha * p_cost;
+            };
+            return arc_dijkstras::LazySP<std::vector<double>>::PerformLazySP(
+                s_copy.belief_graph, from_node, s.agent.goal_node, &distanceHeuristic, eval_fun, true);
         }
 
     };
