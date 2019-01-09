@@ -56,22 +56,25 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
 //     return points;
 // }
 
-GraphMarker toVisualizationMsg(const GraphD &g)
+GraphMarker toVisualizationMsg(const GraphD &g, std::string name="graph")
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
     valid_lines.type = visualization_msgs::Marker::LINE_LIST;
+    valid_lines.ns = name;
     valid_lines.pose.orientation.w = 1.0;
     valid_lines.scale.x = 0.0015;
     valid_lines.color.a = 0.9;
     invalid_lines.header.frame_id = "/graph_frame";
     invalid_lines.type = visualization_msgs::Marker::LINE_LIST;
+    invalid_lines.ns = name;
     invalid_lines.pose.orientation.w = 1.0;
     invalid_lines.scale.x = 0.0015;
     invalid_lines.color.a = 0.3;
     invalid_lines.color.r = 0.9;
     unknown_lines.header.frame_id = "/graph_frame";
     unknown_lines.type = visualization_msgs::Marker::LINE_LIST;
+    unknown_lines.ns = name;
     unknown_lines.pose.orientation.w = 1.0;
     unknown_lines.scale.x = 0.0005;
     unknown_lines.color.a = 0.1;
@@ -231,9 +234,9 @@ public:
         text_pub = n.advertise<visualization_msgs::MarkerArray>("text", 10);
     }
 
-    void vizGraph(const GraphD &g)
+    void vizGraph(const GraphD &g, std::string name="graph")
     {
-        GraphMarker gm = toVisualizationMsg(g);
+        GraphMarker gm = toVisualizationMsg(g, name);
         graph_valid_pub.publish(gm[0]);
         graph_unknown_pub.publish(gm[1]);
         graph_invalid_pub.publish(gm[2]);
@@ -245,11 +248,18 @@ public:
     }
 
 
-    void vizCtp(CTP::CtpProblem<CTP::BctpGrid> &ctp)
+    template <typename BeliefGraph>
+    void vizCtp(CTP::CtpProblem<BeliefGraph> &ctp)
     {
         vizGraph(ctp.belief_graph);
         vizAgent(ctp.agent, ctp.belief_graph);
-        ob_pub.publish(ctp.belief_graph.storm.toMarker());
+        vizGraph(ctp.true_graph, "true_graph");
+    }
+
+    void vizCtp(CTP::CtpProblem<CTP::BctpGrid> &ctp)
+    {
+        vizCtp<CTP::BctpGrid>(ctp);
+        ob_pub.publish(ctp.belief_graph.getObstacle().toMarker());
     }
 
     void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "blue")
