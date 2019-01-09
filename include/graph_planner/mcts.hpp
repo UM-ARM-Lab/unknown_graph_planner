@@ -95,6 +95,7 @@ namespace MCTS{
     class MCTS
     {
     public:
+        std::mt19937 rng;
         Tree tree;
         GraphVisualizer &viz;
         // int expansion_count = 1;
@@ -190,6 +191,7 @@ namespace MCTS{
             auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
                 ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, true);
 
+            viz.vizCtp(ctp);
             
             return result.first[1];
         }
@@ -219,7 +221,8 @@ namespace MCTS{
             std::vector<int64_t> path{b.agent.current_node};
             viz.vizPath(path, b.belief_graph, 1, "blue");
             std::vector<double> costs;
-            b.sampleInstance();
+            b.sampleInstance(rng);
+            viz.vizGraph(b.true_graph, "sampled_instance");
             StateNode* node = tree.root;
             bool in_tree = true;
             while(b.inprogress && in_tree)

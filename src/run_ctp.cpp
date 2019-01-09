@@ -18,11 +18,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "graph_publisher");
     ros::NodeHandle n;
 
-    ros::Publisher graph_valid_pub = n.advertise<visualization_msgs::Marker>("valid_graph", 10);
-    ros::Publisher graph_unknown_pub = n.advertise<visualization_msgs::Marker>("unknown_graph", 10);
-    ros::Publisher graph_invalid_pub = n.advertise<visualization_msgs::Marker>("invalid_graph", 10);
-    ros::Publisher path_pub = n.advertise<visualization_msgs::Marker>("path", 10);
-    ros::Publisher points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
+    std::mt19937 rng;
+    GraphVisualizer viz(n);
     ros::Rate r(0.5);
 
 
@@ -34,17 +31,13 @@ int main(int argc, char **argv)
     // HaltonGraph g(filepath);
     
     Agent agent(0, 5);
-    CtpProblem<CtpGraph> ctp(g, g.sampleInstance(), agent);
+    CtpProblem<CtpGraph> ctp(g, g.sampleInstance(rng), agent);
     
 
 
     ros::Duration(1).sleep();
     
-    GraphMarker gm = toVisualizationMsg(ctp.true_graph);
-    graph_valid_pub.publish(gm[0]);
-    graph_unknown_pub.publish(gm[1]);
-    // graph_invalid_pub.publish(gm[2]);
-    points_pub.publish(toVisualizationMsg(ctp.agent, g));
+    viz.vizCtp(ctp);
 
     r.sleep();
     std::string unused;
@@ -74,12 +67,8 @@ int main(int argc, char **argv)
 
         
         PROFILE_START("visualize");
-        GraphMarker gm = toVisualizationMsg(ctp.belief_graph);
-        graph_valid_pub.publish(gm[0]);
-        graph_unknown_pub.publish(gm[1]);
-        graph_invalid_pub.publish(gm[2]);
-        path_pub.publish(toVisualizationMsg(path, g));
-        points_pub.publish(toVisualizationMsg(ctp.agent, g));
+        viz.vizCtp(ctp);
+        viz.vizPath(path, ctp.true_graph);
         std::cout << "visualize took " << PROFILE_RECORD("visualize") << "\n";
         std::cout << "cycle took " << PROFILE_RECORD("cycle") << "\n";
         r.sleep();

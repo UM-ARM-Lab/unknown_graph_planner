@@ -14,7 +14,7 @@ namespace CTP{
     {
     public:
         BctpGraph(): HaltonGraph(0,0) {}; //This constructor call is ignored
-        virtual GraphD sampleInstance() =0;
+        virtual GraphD sampleInstance(std::mt19937 &rng) =0;
     };
     
 
@@ -46,7 +46,7 @@ namespace CTP{
         }
 
 
-        GraphD sampleInstance()
+        GraphD sampleInstance(std::mt19937 &rng) override
         {
             GraphD instance(*this);
             std::uniform_real_distribution<> dist(0.0, 1.0);
@@ -80,16 +80,20 @@ namespace CTP{
     class BctpGrid : public BctpGraph
     {
     public:
-        std::mt19937 rng;
-        std::vector<HaltonGraph> templates;
+        // std::vector<HaltonGraph> templates;
         Obstacles2D::Rect storm;
+
+        Obstacles2D::Rect getObstacle()
+        {
+            return storm;
+        }
         
         BctpGrid(int rows) : HaltonGraph(0,0), storm(0,0,0,0)
         {
             int cols = rows;
             r_disc = 1.0/((double)rows - 1.00001) * 1.4143;
             initGrid(rows, cols);
-            generateTemplates(100);
+            // generateTemplates(100, std::mt19937());
         }
 
         void initGrid(int rows, int cols)
@@ -104,19 +108,17 @@ namespace CTP{
             }
         }
 
-        void generateTemplates(int num_templates)
-        {
-            for(int i=0; i<num_templates; i++)
-            {
-                HaltonGraph g(*this);
-                Obstacles2D::Rect rect = sampleRect();
-                
-                
-                templates.push_back(g);
-            }
-        }
+        // void generateTemplates(int num_templates, std::mt19937 &rng)
+        // {
+        //     for(int i=0; i<num_templates; i++)
+        //     {
+        //         HaltonGraph g(*this);
+        //         Obstacles2D::Rect rect = sampleRect(rng);
+        //         templates.push_back(g);
+        //     }
+        // }
 
-        Obstacles2D::Rect sampleRect()
+        Obstacles2D::Rect sampleRect(std::mt19937 &rng)
         {
             std::uniform_real_distribution<> dist(0.0, 1.0);
             double w = dist(rng)*0.4 + 0.1;
@@ -128,10 +130,10 @@ namespace CTP{
             return Obstacles2D::Rect(x1, y1, x1 + w, y1 + h);
         }
 
-        GraphD sampleInstance()
+        GraphD sampleInstance(std::mt19937 &rng) override
         {
             GraphD instance(*this);
-            storm = sampleRect();
+            storm = sampleRect(rng);
 
             std::uniform_real_distribution<> dist(0.0, 1.0);
             
@@ -161,7 +163,7 @@ namespace CTP{
                     //
                     //  TEMPORARILY MAKE ALL EDGES VALID
                     //
-                    validity = arc_dijkstras::EDGE_VALIDITY::VALID;
+                    // validity = arc_dijkstras::EDGE_VALIDITY::VALID;
 
                     
                     e.SetValidity(validity);
@@ -245,9 +247,9 @@ namespace CTP{
             return e.GetWeight();
         }
 
-        void sampleInstance()
+        void sampleInstance(std::mt19937 &rng)
         {
-            true_graph = belief_graph.sampleInstance();
+            true_graph = belief_graph.sampleInstance(rng);
         }
 
         std::vector<int> getActions()

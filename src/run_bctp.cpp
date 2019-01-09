@@ -16,6 +16,8 @@ using namespace CTP;
 
 int main(int argc, char **argv)
 {
+    std::mt19937 rng;
+
     ros::init(argc, argv, "graph_publisher");
     ros::NodeHandle n;
 
@@ -33,15 +35,15 @@ int main(int argc, char **argv)
     
     Agent agent(rows + 1, rows*(rows-1)-2);
 
-    CtpProblem<BctpGrid> ctp(g, g.sampleInstance(), agent);
+    CtpProblem<BctpGrid> ctp(g, g.sampleInstance(rng), agent);
     
 
 
     ros::Duration(1).sleep();
 
 
-    viz.vizGraph(ctp.true_graph);
-    viz.vizAgent(ctp.agent, ctp.true_graph);
+    viz.vizCtp(ctp);
+    viz.vizGraph(ctp.true_graph, "true_graph");
 
     r.sleep();
     arc_helpers::WaitForInput();

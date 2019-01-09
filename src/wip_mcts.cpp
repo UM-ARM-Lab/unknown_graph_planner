@@ -19,13 +19,13 @@ void makeTree()
 
 int main()
 {
-
+    std::mt19937 rng;
     int rows = 10;
     BctpGrid g(rows);
     
     Agent agent(rows + 1, rows*(rows-1)-2);
 
-    CtpProblem<BctpGrid> ctp(g, g.sampleInstance(), agent);
+    CtpProblem<BctpGrid> ctp(g, g.sampleInstance(rng), agent);
 
 
     
