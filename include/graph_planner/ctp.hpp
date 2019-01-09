@@ -123,11 +123,13 @@ namespace CTP{
             std::uniform_real_distribution<> dist(0.0, 1.0);
             double w = dist(rng)*0.4 + 0.1;
             double h = dist(rng)*0.4 + 0.1;
+            std::cout << "w is " << w << "\n";
             
             double x1 = dist(rng)*(1-w);
             double y1 = dist(rng)*(1-h);
             
-            return Obstacles2D::Rect(x1, y1, x1 + w, y1 + h);
+            // return Obstacles2D::Rect(x1, y1, x1 + w, y1 + h);
+            return Obstacles2D::Rect(0.7, 0.2, 0.8, 1.01);
         }
 
         GraphD sampleInstance(std::mt19937 &rng) override
@@ -146,7 +148,7 @@ namespace CTP{
                         continue;
                     }
 
-                    double p_free = 0.4;
+                    double p_free = 0.0;
                     auto n2 = GetNodeImmutable(e.GetToIndex());
                     if(storm.isValid(n.GetValueImmutable()) && storm.isValid(n2.GetValueImmutable()))
                     {
