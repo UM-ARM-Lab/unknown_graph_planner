@@ -142,7 +142,7 @@ namespace arc_dijkstras
                 auto path_indicies_to_check = ForwardSelector(path, g, evaluatedEdges);
                 if(path_indicies_to_check.size() == 0)
                 {
-                    std::cout << "Num A* iterations: " << num_astar_iters << "\n";
+                    // std::cout << "Num A* iterations: " << num_astar_iters << "\n";
                     return prelim_result;
                 }
 
@@ -154,12 +154,7 @@ namespace arc_dijkstras
                     evaluatedEdges[getHashable(e)] = eval_edge_fn(g, e);
                 }
             }
-            
-            
-               
         }
-                      
-                      
     };
 }
 #endif

@@ -123,7 +123,6 @@ namespace CTP{
             std::uniform_real_distribution<> dist(0.0, 1.0);
             double w = dist(rng)*0.4 + 0.1;
             double h = dist(rng)*0.4 + 0.1;
-            std::cout << "w is " << w << "\n";
             
             double x1 = dist(rng)*(1-w);
             double y1 = dist(rng)*(1-h);
@@ -152,7 +151,7 @@ namespace CTP{
                     auto n2 = GetNodeImmutable(e.GetToIndex());
                     if(storm.isValid(n.GetValueImmutable()) && storm.isValid(n2.GetValueImmutable()))
                     {
-                        p_free = 0.9;
+                        p_free = 1.0;
                     }
                     
                     arc_dijkstras::EDGE_VALIDITY validity = arc_dijkstras::EDGE_VALIDITY::INVALID;
@@ -261,6 +260,7 @@ namespace CTP{
             {
                 if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID)
                 {
+                    // std::cout << "to_index: " << e.GetToIndex() << "\n";
                     actions.push_back(e.GetToIndex());
                 }
             }
