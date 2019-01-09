@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
     std::string filepath = "/home/bradsaund/catkin_ws/src/graph_planner/graphs/BCTP_2D_10x10.graph";
 
-    int rows=4;
+    int rows=10;
     
     BctpGrid g(rows);
     // g.saveToFile(filepath);

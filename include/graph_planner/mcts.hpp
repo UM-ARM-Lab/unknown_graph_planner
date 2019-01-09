@@ -102,6 +102,7 @@ namespace MCTS{
         MCTS(State s, GraphVisualizer &viz): tree(s), viz(viz)
         {
             addActions(tree.root);
+            tree.root->visit_count= 1;
         }
         
         virtual ActionNode* selectPromisingAction(StateNode* node) = 0;
@@ -139,11 +140,12 @@ namespace MCTS{
 
             for(ActionNode* child:parent->children)
             {
-                if(child->children.size() == 0)
-                {
-                    continue;
-                }
-                int agent_node_id = child->children[0]->state.agent.current_node;
+                // if(child->children.size() == 0)
+                // {
+                //     continue;
+                // }
+                // int agent_node_id = child->children[0]->state.agent.current_node;
+                int agent_node_id = child->action;
                 std::vector<double> pc = parent->state.true_graph.GetNodeImmutable(agent_node_id).GetValueImmutable();
 
                 std::vector<double> loc(2);
@@ -159,9 +161,20 @@ namespace MCTS{
 
         void addActions(StateNode* n)
         {
+            int cur_node = n->state.agent.current_node;
             for(Action action : n->state.getActions())
             {
-                tree.addNode(n, action);
+                ActionNode* an = tree.addNode(n, action);
+                int next_node = action;
+                double action_cost = n->state.belief_graph.GetEdgeMutable(cur_node, next_node).GetWeight();
+                an->summed_cost = action_cost;
+                if(next_node != n->state.agent.goal_node)
+                {
+                    auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
+                        n->state.belief_graph, next_node, n->state.agent.goal_node, &distanceHeuristic, true);
+                    an->summed_cost += result.second;
+                }
+                an->visit_count++;
             }
         }
 
@@ -249,6 +262,7 @@ namespace MCTS{
     {
     public:
         double exploration_const = 1.41;
+        // double exploration_const = 0.000141;
         
     public:
 
@@ -274,7 +288,7 @@ namespace MCTS{
         ActionNode* findBestUctChild(StateNode* parent)
         {
             ActionNode* best = parent->children[0];
-            double best_val = std::numeric_limits<double>::min();
+            double best_val = std::numeric_limits<double>::lowest();
             for(ActionNode* child:parent->children)
             { 
                 double v = uctValue(parent->visit_count, child->getCostEstimate(), child->visit_count);
@@ -285,6 +299,7 @@ namespace MCTS{
                     best = child;
                 }
             }
+            std::cout << "best action " << best->action << "\n";
             return best;
         }
 

@@ -157,6 +157,13 @@ namespace CTP{
                         validity = arc_dijkstras::EDGE_VALIDITY::VALID;
                     }
 
+
+                    //
+                    //  TEMPORARILY MAKE ALL EDGES VALID
+                    //
+                    validity = arc_dijkstras::EDGE_VALIDITY::VALID;
+
+                    
                     e.SetValidity(validity);
                     //set reverse edge as well, since arc_dijkstras is a directed graph,
                     //but validity applies symmetrically in CTP

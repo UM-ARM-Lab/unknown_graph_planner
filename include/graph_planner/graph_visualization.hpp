@@ -3,6 +3,7 @@
 
 #include "visualization_msgs/Marker.h"
 #include <arc_utilities/dijkstras.hpp>
+#include <iomanip>
 #include "ctp.hpp"
 
 
@@ -155,7 +156,7 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const G
     points.header.frame_id = "/graph_frame";
     points.type = visualization_msgs::Marker::POINTS;
     points.pose.orientation.w = 1.0;
-    points.scale.x = 0.03;
+    points.scale.x = 0.015;
     points.scale.x = 0.03;
     points.color.a = 1.0;
     points.color.b = 1.0;
@@ -267,7 +268,7 @@ public:
         for(double d: vals)
         {
             std::stringstream ss;
-            ss << d;
+            ss << std::fixed << std::setprecision(2) << d;
             texts.push_back(ss.str());
             std::cout << "Visualizing " << texts.back() << "\n";
         }
