@@ -128,6 +128,15 @@ namespace CTP{
             double y1 = dist(rng)*(1-h);
             
             // return Obstacles2D::Rect(x1, y1, x1 + w, y1 + h);
+            double r = dist(rng);
+            if(r < 1.0/3.0)
+            {
+                return Obstacles2D::Rect(0.5, 0.2, 0.6, 1.01);
+            }
+            if(r < 2.0/3.0)
+            {
+                return Obstacles2D::Rect(0.6, 0.2, 0.7, 1.01);
+            }
             return Obstacles2D::Rect(0.7, 0.2, 0.8, 1.01);
         }
 
