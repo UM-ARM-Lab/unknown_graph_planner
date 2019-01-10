@@ -141,11 +141,6 @@ namespace MCTS{
 
             for(ActionNode* child:parent->children)
             {
-                // if(child->children.size() == 0)
-                // {
-                //     continue;
-                // }
-                // int agent_node_id = child->children[0]->state.agent.current_node;
                 int agent_node_id = child->action;
                 std::vector<double> pc = parent->state.true_graph.GetNodeImmutable(agent_node_id).GetValueImmutable();
 
@@ -213,9 +208,12 @@ namespace MCTS{
             viz.vizPath(path, b.belief_graph, 1, "blue");
             std::vector<double> costs;
             b.sampleInstance(rng);
-            viz.vizGraph(b.true_graph, "sampled_instance");
+            // viz.vizGraph(b.true_graph, "sampled_instance");
+            viz.vizCtp(b);
+
             StateNode* node = tree.root;
             bool in_tree = true;
+            viz.vizText("UCT action selection", 1002, 1.1, 0.5);
             while(b.inprogress && in_tree)
             {
                 showChildrenValues(node);
@@ -237,16 +235,19 @@ namespace MCTS{
             arc_helpers::WaitForInput();
             path.resize(0);
             path.push_back(b.agent.current_node);
+
+            
+
             while(b.inprogress)
             {
-
                 Action a = fastPolicy(b);
                 costs.back() += b.move(a);
                 path.push_back(b.agent.current_node);
-
             }
             
+            viz.vizText("Fast Policy Rollout", 1002, 1.1, 0.5);
             viz.vizPath(path, b.belief_graph, 1, "purple");
+            
             backprop(costs, node);
             arc_helpers::WaitForInput();
         }
@@ -261,6 +262,29 @@ namespace MCTS{
     public:
 
         UCT(State s, GraphVisualizer &viz) : MCTS(s, viz){};
+
+        Action findAction()
+        {
+            for(int i=0; i<100; i++)
+            {
+                viz.vizTitle("MCTS Sampled Instance " + std::to_string(i));
+                rollout();
+            }
+            double lowest_cost = std::numeric_limits<double>::max();
+            Action a = -1;
+            for(ActionNode* child:tree.root->children)
+            {
+                if(child->getCostEstimate() < lowest_cost)
+                {
+                    lowest_cost = child->getCostEstimate();
+                    a = child->action;
+                }
+            }
+            std::vector<int64_t> empty_path;
+            viz.vizPath(empty_path, tree.root->state.belief_graph, 1, "blue");
+            viz.vizPath(empty_path, tree.root->state.belief_graph, 2, "blue");
+            return a;    
+        }
         
         
         ActionNode* selectPromisingAction(StateNode* node)

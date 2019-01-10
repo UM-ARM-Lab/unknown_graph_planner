@@ -44,6 +44,8 @@ int main(int argc, char **argv)
 
     viz.vizCtp(ctp);
     viz.vizGraph(ctp.true_graph, "true_graph");
+    viz.vizTitle("True Graph");
+    viz.vizText("Heuristic Cost = L - log(prob)", 1001, 1.2, 0.5);
 
     r.sleep();
     arc_helpers::WaitForInput();
@@ -51,35 +53,41 @@ int main(int argc, char **argv)
     while(ros::ok() && !ctp.solved())
     {
         MCTS::UCTH mcts(ctp, viz);
-        for(int i=0; i<100; i++)
-        {
-            mcts.rollout();
-        }
+        // for(int i=0; i<100; i++)
+        // {
+        //     mcts.rollout();
+        // }
+        int a = mcts.findAction();
 
         PROFILE_START("cycle");
         // std::vector<int> path = A_star(points[0], points[1], g);
         PROFILE_START("astar");
         
-        auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
-            ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, true);
+        // auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
+        //     ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, true);
         
         // double astar_time = PROFILE_RECORD("astar");
         // std::cout << "Astar took: " << astar_time << "\n";
 
-        auto path = result.first;
+        // auto path = result.first;
         // forwardLazyCheck(path, g, ctp.true_graph.storm);
 
         PROFILE_START("forward_move");
-        ctp.move(path[1]);
-        std::cout << "forward move took: " << PROFILE_RECORD("forward_move") << "\n";
+        viz.vizCtp(ctp);
+        viz.vizTitle("True Graph");
+        viz.vizText("True Move", 1002, 1.1, 0.5);
+
+        ctp.move(a);
+        arc_helpers::WaitForInput();
+        ros::Duration(2).sleep();
+
+
+        viz.vizCtp(ctp);
 
         
-        PROFILE_START("visualize");
-        viz.vizCtp(ctp);
-        std::cout << "visualize took " << PROFILE_RECORD("visualize") << "\n";
-        std::cout << "cycle took " << PROFILE_RECORD("cycle") << "\n";
-        
         // r.sleep();
+        arc_helpers::WaitForInput();
+        ros::Duration(2).sleep();
         arc_helpers::WaitForInput();
     }
 

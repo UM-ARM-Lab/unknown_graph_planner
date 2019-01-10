@@ -267,6 +267,27 @@ public:
         points_pub.publish(toVisualizationMsg(path, g, id, color));
     }
 
+    void vizTitle(std::string text)
+    {
+        vizText(text, 1000, -0.1, 0.5);
+    }
+
+    void vizText(std::string text, int id, double x, double y)
+    {
+        visualization_msgs::Marker m;
+        m.id = id;
+        m.header.frame_id = "/graph_frame";
+        m.type=visualization_msgs::Marker::TEXT_VIEW_FACING;
+        m.text = text;
+        m.pose.position.x = x;
+        m.pose.position.y = y;
+        m.scale.z = 0.05;
+        m.color.a = 1.0;
+        visualization_msgs::MarkerArray ma;
+        ma.markers.push_back(m);
+        text_pub.publish(ma);
+    }
+
     void vizTexts(std::vector<std::string> texts, std::vector<std::vector<double>> points)
     {
         text_pub.publish(toVisualizationMsg(texts, points));
