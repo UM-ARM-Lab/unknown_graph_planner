@@ -7,6 +7,7 @@
 #include "2d_obstacles.hpp"
 
 namespace CTP{
+    typedef int64_t Action;
 
     class Agent
     {
@@ -28,7 +29,7 @@ namespace CTP{
         Agent agent;
         bool inprogress = true;
 
-
+    public:
         /*
          *  the belief graph and true graph must have the same topology
          */
@@ -65,7 +66,7 @@ namespace CTP{
         /*
          *  Moves the agent to the new node. Returns the cost
          */
-        double move(int new_node)
+        double move(Action new_node)
         {
             auto &e = true_graph.GetNodeMutable(agent.current_node).GetEdgeMutable(new_node);
             if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::VALID)
@@ -83,9 +84,9 @@ namespace CTP{
             true_graph = belief_graph.sampleInstance(rng);
         }
 
-        std::vector<int> getActions()
+        std::vector<Action> getActions()
         {
-            std::vector<int> actions;
+            std::vector<Action> actions;
             for(const auto& e:belief_graph.GetNodeImmutable(agent.current_node).GetOutEdgesImmutable())
             {
                 if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID)

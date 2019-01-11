@@ -10,7 +10,6 @@
 typedef CTP::CtpProblem<CTP::BctpGrid> State;
 
 namespace MCTS{
-    typedef int Action;
 
     class StateNode;
 
@@ -21,7 +20,7 @@ namespace MCTS{
         int visit_count;
         std::vector<StateNode*> children;
         StateNode* parent;
-        Action action;
+        CTP::Action action;
 
         double getCostEstimate()
         {
@@ -74,7 +73,7 @@ namespace MCTS{
             delete root;
         }
 
-        ActionNode* addNode(StateNode* parent, Action a)
+        ActionNode* addNode(StateNode* parent, CTP::Action a)
         {
             ActionNode* child = new ActionNode();
             parent->children.push_back(child);
@@ -162,7 +161,7 @@ namespace MCTS{
         
         virtual void addActions(StateNode* n)
         {
-            for(Action action : n->state.getActions())
+            for(CTP::Action action : n->state.getActions())
             {
                 tree.addNode(n, action);
             }
@@ -175,7 +174,7 @@ namespace MCTS{
             return child;
         }
 
-        Action fastPolicy(State ctp)
+        CTP::Action fastPolicy(State ctp)
         {
             auto result = heuristicPath(ctp, ctp.agent.current_node);
             // viz.vizCtp(ctp);
@@ -251,7 +250,7 @@ namespace MCTS{
             double cost = 0;
             while(b.inprogress)
             {
-                Action a = fastPolicy(b);
+                CTP::Action a = fastPolicy(b);
                 cost += b.move(a);
                 path.push_back(b.agent.current_node);
             }
@@ -275,7 +274,7 @@ namespace MCTS{
 
         UCT(State s, GraphVisualizer &viz) : MCTS(s, viz){};
 
-        Action findAction()
+        CTP::Action findAction()
         {
             for(int i=0; i<100; i++)
             {
@@ -283,7 +282,7 @@ namespace MCTS{
                 rollout();
             }
             double lowest_cost = std::numeric_limits<double>::max();
-            Action a = -1;
+            CTP::Action a = -1;
             for(ActionNode* child:tree.root->children)
             {
                 if(child->getCostEstimate() < lowest_cost)
@@ -393,7 +392,7 @@ namespace MCTS{
 
         virtual void addActions(StateNode* n) override
         {
-            for(Action action : n->state.getActions())
+            for(CTP::Action action : n->state.getActions())
             {
                 tree.addNode(n, action);
             }
@@ -476,7 +475,7 @@ namespace MCTS{
             double cost = 0;
             while(b.inprogress)
             {
-                Action a = fastPolicy(b);
+                CTP::Action a = fastPolicy(b);
                 cost += b.move(a);
                 path.push_back(b.agent.current_node);
             }
