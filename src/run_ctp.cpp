@@ -8,6 +8,7 @@
 #include <utility>
 #include "graph_visualization.hpp"
 #include "ctp.hpp"
+#include "ctp_worlds.hpp"
 
 using namespace CTP;
 

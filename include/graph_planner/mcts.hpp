@@ -5,6 +5,7 @@
 #include "halton_graph.hpp"
 #include "ctp.hpp"
 #include "graph_visualization.hpp"
+#include "ctp_worlds.hpp"
 
 typedef CTP::CtpProblem<CTP::BctpGrid> State;
 

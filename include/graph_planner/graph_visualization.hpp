@@ -5,6 +5,7 @@
 #include <arc_utilities/dijkstras.hpp>
 #include <iomanip>
 #include "ctp.hpp"
+#include "ctp_worlds.hpp"
 
 
 typedef std::vector<visualization_msgs::Marker> GraphMarker;
