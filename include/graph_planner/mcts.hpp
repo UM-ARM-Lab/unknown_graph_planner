@@ -202,12 +202,12 @@ namespace MCTS{
 
         void rollout()
         {
-            State b = tree.root->state;
+            State& rs = tree.root->state;
+            State b(rs.belief_graph, rs.belief_graph.sampleInstance(rng), rs.agent);
+            
             std::vector<int64_t> path{b.agent.current_node};
             viz.vizPath(path, b.belief_graph, 1, "blue");
             std::vector<double> costs;
-            b.sampleInstance(rng);
-            // viz.vizGraph(b.true_graph, "sampled_instance");
             viz.vizCtp(b);
 
             StateNode* node = tree.root;
@@ -350,9 +350,8 @@ namespace MCTS{
             int num_trials = 100;
             for(int i=0; i<num_trials; i++)
             {
-                State instance(rs);
-                instance.sampleInstance(rng);
-                for(const auto &n:instance.true_graph.GetNodesImmutable())
+                GraphD instance(rs.belief_graph.sampleInstance(rng));
+                for(const auto &n:instance.GetNodesImmutable())
                 {
                     for(const auto &e:n.GetOutEdgesImmutable())
                     {

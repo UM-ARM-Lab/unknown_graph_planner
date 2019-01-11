@@ -79,11 +79,6 @@ namespace CTP{
             return e.GetWeight();
         }
 
-        void sampleInstance(std::mt19937 &rng)
-        {
-            true_graph = belief_graph.sampleInstance(rng);
-        }
-
         std::vector<Action> getActions()
         {
             std::vector<Action> actions;
@@ -91,7 +86,6 @@ namespace CTP{
             {
                 if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID)
                 {
-                    // std::cout << "to_index: " << e.GetToIndex() << "\n";
                     actions.push_back(e.GetToIndex());
                 }
             }
