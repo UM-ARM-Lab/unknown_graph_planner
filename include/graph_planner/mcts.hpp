@@ -11,7 +11,6 @@ typedef CTP::CtpProblem<CTP::BctpGrid> State;
 namespace MCTS{
     typedef int Action;
 
-
     class StateNode;
 
     class ActionNode
@@ -237,13 +236,7 @@ namespace MCTS{
             path.push_back(b.agent.current_node);
 
             
-
-            while(b.inprogress)
-            {
-                Action a = fastPolicy(b);
-                costs.back() += b.move(a);
-                path.push_back(b.agent.current_node);
-            }
+            costs.back() += rolloutOffTree(b, path);
             
             viz.vizText("Fast Policy Rollout", 1002, 1.1, 0.5);
             viz.vizPath(path, b.belief_graph, 1, "purple");
@@ -251,7 +244,25 @@ namespace MCTS{
             backprop(costs, node);
             arc_helpers::WaitForInput();
         }
+
+        virtual double rolloutOffTree(State &b, std::vector<int64_t> &path)
+        {
+            double cost = 0;
+            while(b.inprogress)
+            {
+                Action a = fastPolicy(b);
+                cost += b.move(a);
+                path.push_back(b.agent.current_node);
+            }
+        }
     };
+
+    
+
+
+    /************************
+     **        UCT
+     ************************/
 
     class UCT : public MCTS
     {
@@ -403,7 +414,80 @@ namespace MCTS{
         }
 
     };
+
+
+
+    struct PathCost
+    {
+        PathCost(double l, double p) : length(l), prob(p){}
+        double length;
+        double prob;
+    };
+
+    static inline double getPathLength(std::vector<int64_t> path, GraphD &g)
+    {
+        double cost = 0;
+        for(size_t i=0; i<path.size() - 1; i++)
+        {
+            const auto &e = g.GetEdgeMutable(path[i], path[i+1]);
+            cost += e.GetWeight();
+        }
+        return cost;
+    }
+
+    /**********************
+    **    UTCU
+    ***********************/
+    class UCTU : public UCTH
+    {
+    public:
+        double alpha;
         
+        UCTU(State s, GraphVisualizer &viz) : UCTH(s, viz), alpha(0.0001)
+        {
+        }
+
+        virtual arc_helpers::AstarResult heuristicPath(const State &s, int from_node) override
+        {
+            State s_copy(s);
+            const auto eval_fun = [this](GraphD &g, arc_dijkstras::GraphEdge &e)
+            {
+                double p_cost = -std::log(edge_probability[arc_dijkstras::getHashable(e)]);
+                double l_cost = e.GetWeight();
+                return l_cost + alpha * p_cost;
+            };
+            return arc_dijkstras::LazySP<std::vector<double>>::PerformLazySP(
+                s_copy.belief_graph, from_node, s.agent.goal_node, &distanceHeuristic, eval_fun, true);
+        }
+
+        PathCost getPathCost(arc_helpers::AstarResult path_and_cost, GraphD &g)
+        {
+            double l = getPathLength(path_and_cost.first, g);
+            double p = (path_and_cost.second - l)/alpha;
+            return PathCost(l, p);
+        }
+
+        virtual double rolloutOffTree(State &b, std::vector<int64_t> &path)
+        {
+            auto expected_path = heuristicPath(b, b.agent.current_node);
+            PathCost pc = getPathCost(expected_path, b.belief_graph);
+                
+            double cost = 0;
+            while(b.inprogress)
+            {
+                Action a = fastPolicy(b);
+                cost += b.move(a);
+                path.push_back(b.agent.current_node);
+            }
+
+
+            // std::cout << "Expected cost. l: " << pc.length << ", p: " << pc.prob << "\n";
+            // std::cout << "Actual cost: " << cost << "\n";
+            // alpha = (cost - pc.length)/pc.prob;
+            // std::cout << "Setting alpha to " << alpha << "\n";
+        }
+
+    };
 }
 
 #endif
