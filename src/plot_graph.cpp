@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     
     int start = 0;
     int end = 5;
-    std::vector<int> points{start, end};
+    std::vector<int64_t> points{start, end};
 
     // validateEdges(g, obs);
 

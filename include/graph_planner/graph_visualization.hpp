@@ -154,7 +154,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const G
 }
 
 
-visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const GraphD &g)
+visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> ps, const GraphD &g)
 {
     visualization_msgs::Marker points;
     points.header.frame_id = "/graph_frame";
@@ -180,7 +180,7 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<int> ps, const G
 
 visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
 {
-    std::vector<int> p{a.current_node, a.goal_node};
+    std::vector<CTP::Location> p{a.current_node, a.goal_node};
     return pointsToVisualizationMsg(p, g);
 }
 
