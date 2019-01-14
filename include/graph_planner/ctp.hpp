@@ -41,7 +41,6 @@ namespace CTP{
         NltpProblem(BeliefGraph g, GraphD t, Agent a, int look_ahead) :
             belief_graph(g), true_graph(t), agent(a), look_ahead(look_ahead)
         {
-            std::cout << "Constructing Nltp\n";
             updateBeliefGraph();
         }
 

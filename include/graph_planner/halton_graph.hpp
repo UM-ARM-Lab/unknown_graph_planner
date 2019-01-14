@@ -57,6 +57,10 @@ public:
         loadFromFile(filepath);
     }
 
+    HaltonGraph() : HaltonGraph(0, 0)
+    {
+    }
+
     uint64_t SerializeSelf(std::vector<uint8_t>& buffer,
                            const std::function<uint64_t(const std::vector<double>&, std::vector<uint8_t>&)>& value_serializer) const
     {

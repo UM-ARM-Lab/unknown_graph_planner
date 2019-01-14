@@ -188,7 +188,7 @@ visualization_msgs::MarkerArray toVisualizationMsg(std::vector<std::string> text
                                                    std::vector<std::vector<double>> loc)
 {
     visualization_msgs::MarkerArray tms;
-    for(size_t i=0; i<10; i++)
+    for(size_t i=0; i<40; i++)
     {
         visualization_msgs::Marker tm;
         tm.id = i;
@@ -265,7 +265,7 @@ public:
 
     void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "blue")
     {
-        points_pub.publish(toVisualizationMsg(path, g, id, color));
+        path_pub.publish(toVisualizationMsg(path, g, id, color));
     }
 
     void vizTitle(std::string text)

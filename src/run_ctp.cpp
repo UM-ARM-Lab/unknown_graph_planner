@@ -20,30 +20,28 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     std::mt19937 rng;
+    rng.seed(std::random_device()());
     GraphVisualizer viz(n);
     ros::Rate r(0.5);
 
-
     std::string filepath = "/home/bradsaund/catkin_ws/src/graph_planner/graphs/CTP_2D_1000.graph";
     
-    CtpGraph g(20, 0.5, 2, 0.5);
+    CtpPitfall g;
     // g.saveToFile(filepath);
-
     // HaltonGraph g(filepath);
     
-    Agent agent(0, 5);
-    CtpProblem<CtpGraph> ctp(g, g.sampleInstance(rng), agent);
+    Agent agent(0, 1);
+    CtpProblem<CtpPitfall> ctp(g, g.sampleInstance(rng), agent);
     
 
 
     ros::Duration(1).sleep();
     
     viz.vizCtp(ctp);
+    auto msg = ctp.belief_graph.getEdgeMsgs();
+    viz.vizTexts(msg.first, msg.second);
 
-    r.sleep();
-    std::string unused;
-    std::cout << "Waiting for user input...\n";
-    std::getline(std::cin, unused);
+    arc_helpers::WaitForInput();
 
     
 
@@ -72,13 +70,12 @@ int main(int argc, char **argv)
         viz.vizPath(path, ctp.true_graph);
         std::cout << "visualize took " << PROFILE_RECORD("visualize") << "\n";
         std::cout << "cycle took " << PROFILE_RECORD("cycle") << "\n";
-        r.sleep();
-        std::cout << "Waiting for user input...\n";
-        std::getline(std::cin, unused);
+        // r.sleep();
+        arc_helpers::WaitForInput();
 
     }
 
-    
+    std::cout << "Agent reached goal: " << ctp.agent.current_node << "\n";;
     
     return 0;
 }

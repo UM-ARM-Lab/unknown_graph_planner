@@ -24,6 +24,8 @@ namespace CTP
         std::mt19937 rng;
         
     public:
+        CtpGraph(){};
+        
         CtpGraph(int num_vert, double max_edge_dist, int dim=2, double edge_probabilities=0.9):
             HaltonGraph(num_vert, max_edge_dist, dim)
         {
@@ -72,6 +74,93 @@ namespace CTP
         }
     };
 
+    /***************************
+     **  Tricky CTP
+     **************************/
+    class CtpPitfall : public CtpGraph
+    {
+    public:
+        CtpPitfall(): CtpGraph(0, 0, 2, 1.0)
+        {
+            using namespace arc_dijkstras;
+            auto v0 = AddNode(std::vector<double>{0.5, 0.0});
+            auto vf = AddNode(std::vector<double>{0.5, 1.0});
+            auto v7 = AddNode(std::vector<double>{0.9, 0.5});
+
+            auto v1 = AddNode(std::vector<double>{0.5, 0.2});
+
+            auto v2 = AddNode(std::vector<double>{0.6, 0.6});
+            auto v3 = AddNode(std::vector<double>{0.52, 0.6});
+            auto v4 = AddNode(std::vector<double>{0.4, 0.6});
+            auto v5 = AddNode(std::vector<double>{0.1, 0.5});
+            auto v6 = AddNode(std::vector<double>{0.1, 0.9});
+
+            addProbabililisticEdge(v0, v7, 50); //e07
+            addProbabililisticEdge(v7, vf, 50); //e01
+            addProbabililisticEdge(v0, v1, 10); //e01
+            addProbabililisticEdge(v1, v2, 60, 0.99); //12
+            addProbabililisticEdge(v1, v3, 60, 0.99); //13
+            addProbabililisticEdge(v1, v4, 60, 0.99); //14
+            addProbabililisticEdge(v2, vf, 0, 0.5); //2f
+            addProbabililisticEdge(v3, vf, 0, 0.5); //3f
+            addProbabililisticEdge(v4, vf, 0, 0.5); //4f
+            addProbabililisticEdge(v0, v5, 20); //05
+            addProbabililisticEdge(v5, v6, 40, 0.99); //56
+            addProbabililisticEdge(v6, vf, 0, 0.01); //6f
+            addProbabililisticEdge(v5, vf, 70, 0.99); //5f
+        }
+
+        void addProbabililisticEdge(int64_t n0, int64_t n1, double weight, double p=1.0)
+        {
+            auto es = AddEdgesBetweenNodes(n0, n1, weight);
+            updateEdgeProbabilities(es, p);
+        }
+
+        void updateEdgeProbabilities(std::pair<const arc_dijkstras::GraphEdge,
+                                     const arc_dijkstras::GraphEdge> es,
+                                     double p)
+        {
+            using namespace arc_dijkstras;
+            edge_probabilities[getHashable(es.first)] = p;
+            edge_probabilities[getHashable(es.second)] = p;
+        }
+
+
+        std::pair<std::vector<std::string>, std::vector<std::vector<double>>>
+        getEdgeMsgs()
+        {
+            using namespace arc_dijkstras;
+            std::vector<std::string> texts;
+            std::vector<std::vector<double>> locs;
+            for(auto& n:GetNodesMutable())
+            {
+                for(auto& e:n.GetOutEdgesMutable())
+                {
+                    std::stringstream ss;
+                    ss << std::fixed << std::setprecision(2);
+                    double p = edge_probabilities[getHashable(e)];
+                    if(p < 1.0)
+                        ss << "p " << p << " : " ;
+                    ss << e.GetWeight();
+                    texts.push_back(ss.str());
+                    std::vector<double> loc(2);
+                    auto &p1 = n.GetValueImmutable();
+                    auto &p2 = GetNodeMutable(e.GetToIndex()).GetValueImmutable();
+                    loc[0] = 0.5* p1[0] + 0.5 * p2[0] + 0.01;
+                    loc[1] = 0.5* p1[1] + 0.5 * p2[1];
+                    locs.push_back(loc);
+                }
+            }
+            return std::make_pair(texts, locs);
+        }
+    };
+
+
+    
+
+    /****************************
+     **    BCTP Grid Worlds
+     ***************************/
 
     class BctpGrid : public BctpGraph
     {
