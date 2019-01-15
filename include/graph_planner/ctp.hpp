@@ -9,6 +9,7 @@
 namespace CTP{
     typedef int64_t Action;
     typedef int64_t Location;
+    typedef std::vector<int64_t> Path;
 
     class Agent
     {

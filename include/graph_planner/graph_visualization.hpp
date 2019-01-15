@@ -32,6 +32,11 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
     {
         cm.b = 1.0; cm.r=1.0;
     }
+    else if(color=="clear blue")
+    {
+        cm.b=1.0;
+        cm.a=0.3;
+    }
     return cm;
 }
 
@@ -250,7 +255,7 @@ public:
 
 
     template <typename BeliefGraph>
-    void vizCtp(CTP::CtpProblem<BeliefGraph> &ctp)
+    void vizCtp(CTP::NltpProblem<BeliefGraph> &ctp)
     {
         vizGraph(ctp.belief_graph);
         vizAgent(ctp.agent, ctp.belief_graph);
@@ -263,7 +268,7 @@ public:
         ob_pub.publish(ctp.belief_graph.getObstacle().toMarker());
     }
 
-    void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "blue")
+    void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "clear blue")
     {
         path_pub.publish(toVisualizationMsg(path, g, id, color));
     }

@@ -9,6 +9,7 @@
 #include "graph_visualization.hpp"
 #include "ctp.hpp"
 #include "ctp_worlds.hpp"
+#include "ctp_heuristics.hpp"
 
 using namespace CTP;
 
@@ -31,7 +32,8 @@ int main(int argc, char **argv)
     // HaltonGraph g(filepath);
     
     Agent agent(0, 1);
-    CtpProblem<CtpPitfall> ctp(g, g.sampleInstance(rng), agent);
+    int lookahead = 1;
+    NltpProblem<CtpPitfall> ctp(g, g.sampleInstance(rng), agent, lookahead);
     
 
 
@@ -43,39 +45,23 @@ int main(int argc, char **argv)
 
     arc_helpers::WaitForInput();
 
+    double cost = 0.0;
     
 
     while(ros::ok() && !ctp.solved())
     {
-        PROFILE_START("cycle");
-        // std::vector<int> path = A_star(points[0], points[1], g);
-        PROFILE_START("astar");
-        
-        auto result = arc_dijkstras::SimpleGraphAstar<std::vector<double>>::PerformAstar(
-            ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, true);
-        
-        // double astar_time = PROFILE_RECORD("astar");
-        // std::cout << "Astar took: " << astar_time << "\n";
+        Action a = OMT(ctp, viz);
+        // Action a = POMT(ctp, 100.0, viz);
 
-        auto path = result.first;
-        // forwardLazyCheck(path, g, obs);
+        cost += ctp.move(a);
 
-        PROFILE_START("forward_move");
-        ctp.move(path[1]);
-        std::cout << "forward move took: " << PROFILE_RECORD("forward_move") << "\n";
-
-        
-        PROFILE_START("visualize");
         viz.vizCtp(ctp);
-        viz.vizPath(path, ctp.true_graph);
-        std::cout << "visualize took " << PROFILE_RECORD("visualize") << "\n";
-        std::cout << "cycle took " << PROFILE_RECORD("cycle") << "\n";
-        // r.sleep();
+
         arc_helpers::WaitForInput();
-
     }
+    viz.vizPath(std::vector<Location>{}, ctp.true_graph);
 
-    std::cout << "Agent reached goal: " << ctp.agent.current_node << "\n";;
+    std::cout << "Agent reached goal node " << ctp.agent.current_node << " with cost of " << cost << "\n";;
     
     return 0;
 }

@@ -1,7 +1,7 @@
 #ifndef LAZYSP_HPP
 #define LAZYSP_HPP
 
-#include "a_star.hpp"
+// #include "a_star.hpp"
 #include "2d_obstacles.hpp"
 #include <arc_utilities/dijkstras.hpp>
 
