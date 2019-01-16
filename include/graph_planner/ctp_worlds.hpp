@@ -85,14 +85,14 @@ namespace CTP
             using namespace arc_dijkstras;
             auto v0 = AddNode(std::vector<double>{0.5, 0.0});
             auto vf = AddNode(std::vector<double>{0.5, 1.0});
-            auto v7 = AddNode(std::vector<double>{0.9, 0.5});
+            auto v7 = AddNode(std::vector<double>{1.0, 0.5});
 
             auto v1 = AddNode(std::vector<double>{0.5, 0.2});
 
             auto v2 = AddNode(std::vector<double>{0.6, 0.6});
             auto v3 = AddNode(std::vector<double>{0.52, 0.6});
             auto v4 = AddNode(std::vector<double>{0.4, 0.6});
-            auto v5 = AddNode(std::vector<double>{0.1, 0.5});
+            auto v5 = AddNode(std::vector<double>{0.0, 0.5});
             auto v6 = AddNode(std::vector<double>{0.1, 0.9});
 
             addProbabililisticEdge(v0, v7, 50); //e07
