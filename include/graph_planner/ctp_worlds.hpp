@@ -6,10 +6,12 @@
 
 namespace CTP
 {
-    class BctpGraph : public virtual HaltonGraph
+    class BctpGraph : public HaltonGraph
     {
     public:
-        BctpGraph(): HaltonGraph(0,0) {}; //This constructor call is ignored
+        BctpGraph(): HaltonGraph(0,0) {};
+        BctpGraph(int num_vert, double max_edge_dist, int dim=2):
+            HaltonGraph(num_vert, max_edge_dist, dim) {};
         virtual GraphD sampleInstance(std::mt19937 &rng) =0;
     };
     
@@ -26,8 +28,7 @@ namespace CTP
     public:
         CtpGraph(){};
         
-        CtpGraph(int num_vert, double max_edge_dist, int dim=2, double edge_probabilities=0.9):
-            HaltonGraph(num_vert, max_edge_dist, dim)
+        CtpGraph(int num_vert, double max_edge_dist, int dim=2, double edge_probabilities=0.9)
         {
             setEdgeProbabilities(edge_probabilities);
         }
@@ -80,7 +81,7 @@ namespace CTP
     class CtpPitfall : public CtpGraph
     {
     public:
-        CtpPitfall(): CtpGraph(0, 0, 2, 1.0)
+        CtpPitfall()
         {
             using namespace arc_dijkstras;
             auto v0 = AddNode(std::vector<double>{0.5, 0.0});
@@ -95,18 +96,18 @@ namespace CTP
             auto v5 = AddNode(std::vector<double>{0.0, 0.5});
             auto v6 = AddNode(std::vector<double>{0.1, 0.9});
 
-            addProbabililisticEdge(v0, v7, 50); //e07
-            addProbabililisticEdge(v7, vf, 50); //e01
-            addProbabililisticEdge(v0, v1, 10); //e01
+            addProbabililisticEdge(v0, v7, 50);       //e07
+            addProbabililisticEdge(v7, vf, 50);       //e01
+            addProbabililisticEdge(v0, v1, 10);       //e01
             addProbabililisticEdge(v1, v2, 60, 0.99); //12
             addProbabililisticEdge(v1, v3, 60, 0.99); //13
             addProbabililisticEdge(v1, v4, 60, 0.99); //14
-            addProbabililisticEdge(v2, vf, 0, 0.5); //2f
-            addProbabililisticEdge(v3, vf, 0, 0.5); //3f
-            addProbabililisticEdge(v4, vf, 0, 0.5); //4f
-            addProbabililisticEdge(v0, v5, 20); //05
+            addProbabililisticEdge(v2, vf, 0, 0.5);   //2f
+            addProbabililisticEdge(v3, vf, 0, 0.5);   //3f
+            addProbabililisticEdge(v4, vf, 0, 0.5);   //4f
+            addProbabililisticEdge(v0, v5, 20);       //05
             addProbabililisticEdge(v5, v6, 40, 0.99); //56
-            addProbabililisticEdge(v6, vf, 0, 0.01); //6f
+            addProbabililisticEdge(v6, vf, 0, 0.01);  //6f
             addProbabililisticEdge(v5, vf, 70, 0.99); //5f
         }
 
@@ -173,7 +174,7 @@ namespace CTP
             return storm;
         }
         
-        BctpGrid(int rows) : HaltonGraph(0,0), storm(0,0,0,0)
+        BctpGrid(int rows) : storm(0,0,0,0)
         {
             int cols = rows;
             r_disc = 1.0/((double)rows - 1.00001) * 1.4143;
