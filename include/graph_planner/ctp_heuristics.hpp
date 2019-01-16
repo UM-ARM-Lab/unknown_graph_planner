@@ -62,13 +62,14 @@ namespace CTP
     /** Currently only for CTP
      */
     template<typename BeliefGraph>
-    void sampleMostLikely(ExplorationState<BeliefGraph> &e)
+    void sampleMostLikely(ExplorationState<BeliefGraph> &e, GraphVisualizer &viz)
     {
         using namespace arc_dijkstras;
         Location loc = e.path.back();
         BeliefGraph &g = e.g;
         double p_sample = 1.0;
-        for(auto &e:g.GetNodeImmutable(loc).GetOutEdgesMutable())
+
+        for(auto &e:g.GetNodeMutable(loc).GetOutEdgesMutable())
         {
             if(e.GetValidity() != EDGE_VALIDITY::UNKNOWN)
             {
@@ -89,42 +90,103 @@ namespace CTP
             }
         }
         e.prob *= p_sample;
+
+        
+        // std::cout << "Cost " << e.cost << " prob: " << e.prob << "\n";
+        // viz.vizGraph(g, "sample");
+        // viz.vizPath(e.path, g);
+        // viz.vizPoints(std::vector<Location>{loc}, g);
+        // arc_helpers::WaitForInput();
+
+    }
+
+    template<typename BeliefGraph>
+    arc_helpers::AstarResult exploitationPath(BeliefGraph &g, Location start, Location goal)
+    {
+        using namespace arc_dijkstras;
+        const auto eval_fun = [&g](GraphD &g, GraphEdge &e)
+        {
+            double p = g.edge_probabilities[getHashable(e)];
+            if(p <= 0.5 && e.GetValidity() == EDGE_VALIDITY::UNKNOWN)
+            {
+                return std::numeric_limits<double>::max();
+            }
+            return e.GetWeight();
+        };
+        return LazySP<std::vector<double>>::PerformLazySP(
+            g, start, goal, &distanceHeuristic, eval_fun, true);
     }
 
     
     template<typename BeliefGraph>
-    Path explorationPath(BeliefGraph &g, Location start)
+    Path explorationPath(BeliefGraph &g, Location start, double max_cost, GraphVisualizer &viz)
     {
         ExplorationState<BeliefGraph> exp(g, std::vector<Location>{start}, 0, 1.0);
-        std::set<ExplorationState<BeliefGraph>> open_set{exp};
+
+        auto cost_compare = [](const ExplorationState<BeliefGraph> &a,
+                               const ExplorationState<BeliefGraph> &b){return a.cost < b.cost;};
+        
+        std::list<ExplorationState<BeliefGraph>> open_set{exp};
 
         while(!open_set.empty())
         {
-            auto exp_it = std::min_element(open_set.begin(), open_set.end(),
-                                           [](ExplorationState<BeliefGraph> &a,
-                                              ExplorationState<BeliefGraph> &b){return a.cost < b.cost;});
+            auto exp_it = std::min_element(open_set.begin(), open_set.end(), cost_compare);
             exp = *exp_it;
             open_set.erase(exp_it);
 
-            sampleMostLikely<BeliefGraph>(exp);
-            
+            sampleMostLikely<BeliefGraph>(exp, viz);
+
+            if(exp.cost >= max_cost)
+            {
+                return Path();
+            }
+
             if(exp.prob <= 0.5)
             {
                 return exp.path;
             }
 
             Location loc = exp.path.back();
-            for(auto &e:g.GetNodeImmutable(loc).GetOutEdgesMutable())
+            for(const auto &e:exp.g.GetNodeImmutable(loc).GetOutEdgesImmutable())
             {
+                if(e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::INVALID)
+                {
+                    continue;
+                }
                 Path p(exp.path);
                 p.push_back(e.GetToIndex());
                 ExplorationState<BeliefGraph> new_exp(exp.g, p, exp.cost + e.GetWeight(), exp.prob);
-                open_set.insert(new_exp);
+                open_set.push_back(new_exp);
             }
         }
         return Path();
     }
 
+    /*********************************************
+     *   Hedged Shortest Path under Determinism
+     *********************************************/
+    template<typename BeliefGraph>
+    Action HSPD(NltpProblem<BeliefGraph> &ctp, GraphVisualizer &viz)
+    {
+        auto exploitation = exploitationPath<BeliefGraph>(ctp.belief_graph, ctp.agent.current_node,
+                                                          ctp.agent.goal_node);
+
+        std::cout << "Exploitation path has cost " << exploitation.second << "\n";
+        
+        Path exploration_path = explorationPath<BeliefGraph>(ctp.belief_graph, ctp.agent.current_node,
+                                                             exploitation.second, viz);
+
+        viz.vizPath(exploitation.first, ctp.belief_graph, 3, "red");
+        viz.vizPath(exploration_path, ctp.belief_graph, 2, "purple");
+        if(exploration_path.size() > 0)
+        {
+            std::cout << "Running exploration path\n";
+            return exploration_path[1];
+        }
+        std::cout << "Running exploitation path with cost " << exploitation.second << "\n";
+        return exploitation.first[1];
+    }
+    
 }
 
 

@@ -50,8 +50,9 @@ int main(int argc, char **argv)
 
     while(ros::ok() && !ctp.solved())
     {
-        Action a = OMT(ctp, viz);
+        // Action a = OMT(ctp, viz);
         // Action a = POMT(ctp, 100.0, viz);
+        Action a = HSPD(ctp, viz);
 
         cost += ctp.move(a);
 

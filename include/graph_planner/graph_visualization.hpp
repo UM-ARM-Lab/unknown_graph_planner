@@ -253,6 +253,11 @@ public:
         points_pub.publish(toVisualizationMsg(a, g));
     }
 
+    void vizPoints(const std::vector<CTP::Location> &p, const GraphD &g)
+    {
+        points_pub.publish(pointsToVisualizationMsg(p, g));
+    }
+
 
     template <typename BeliefGraph>
     void vizCtp(CTP::NltpProblem<BeliefGraph> &ctp)
