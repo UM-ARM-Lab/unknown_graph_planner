@@ -43,9 +43,61 @@ namespace CTP
 
 
 
+    template<typename BeliefGraph>
+    class ExplorationState;
 
+    template<typename BeliefGraph>
+    void sampleMostLikely(ExplorationState<BeliefGraph> &e, GraphVisualizer &viz);
+
+    template<typename BeliefGraph>
+    arc_helpers::AstarResult exploitationPath(BeliefGraph &g, Location start, Location goal);
+
+    template<typename BeliefGraph>
+    Path explorationPath(BeliefGraph &g, Location start, double max_cost, GraphVisualizer &viz);
+
+
+
+
+    /*********************************************
+     *   Hedged Shortest Path under Determinism
+     *********************************************/
+    template<typename BeliefGraph>
+    Action HSPD(NltpProblem<BeliefGraph> &ctp, GraphVisualizer &viz)
+    {
+        auto exploitation = exploitationPath<BeliefGraph>(ctp.belief_graph, ctp.agent.current_node,
+                                                          ctp.agent.goal_node);
+
+        std::cout << "Exploitation path has cost " << exploitation.second << "\n";
+        
+        Path exploration_path = explorationPath<BeliefGraph>(ctp.belief_graph, ctp.agent.current_node,
+                                                             exploitation.second, viz);
+
+        viz.vizPath(exploitation.first, ctp.belief_graph, 3, "red");
+        viz.vizPath(exploration_path, ctp.belief_graph, 2, "purple");
+        if(exploration_path.size() > 0)
+        {
+            std::cout << "Running exploration path\n";
+            return exploration_path[1];
+        }
+        std::cout << "Running exploitation path with cost " << exploitation.second << "\n";
+        return exploitation.first[1];
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     /********************************************
-     *    Hedged Shorted Path under Determinism
+     *    Hedged Shorted Path under Determinism Helpers
      ********************************************/
     template<typename BeliefGraph>
     class ExplorationState
@@ -161,32 +213,6 @@ namespace CTP
         }
         return Path();
     }
-
-    /*********************************************
-     *   Hedged Shortest Path under Determinism
-     *********************************************/
-    template<typename BeliefGraph>
-    Action HSPD(NltpProblem<BeliefGraph> &ctp, GraphVisualizer &viz)
-    {
-        auto exploitation = exploitationPath<BeliefGraph>(ctp.belief_graph, ctp.agent.current_node,
-                                                          ctp.agent.goal_node);
-
-        std::cout << "Exploitation path has cost " << exploitation.second << "\n";
-        
-        Path exploration_path = explorationPath<BeliefGraph>(ctp.belief_graph, ctp.agent.current_node,
-                                                             exploitation.second, viz);
-
-        viz.vizPath(exploitation.first, ctp.belief_graph, 3, "red");
-        viz.vizPath(exploration_path, ctp.belief_graph, 2, "purple");
-        if(exploration_path.size() > 0)
-        {
-            std::cout << "Running exploration path\n";
-            return exploration_path[1];
-        }
-        std::cout << "Running exploitation path with cost " << exploitation.second << "\n";
-        return exploitation.first[1];
-    }
-    
 }
 
 
