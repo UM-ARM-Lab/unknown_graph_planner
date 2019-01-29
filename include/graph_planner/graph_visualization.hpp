@@ -6,6 +6,8 @@
 #include <iomanip>
 #include "ctp.hpp"
 #include "ctp_worlds.hpp"
+#include "increasing_density_search.hpp"
+#include "2d_obstacles.hpp"
 
 
 typedef std::vector<visualization_msgs::Marker> GraphMarker;
@@ -40,27 +42,7 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
     return cm;
 }
 
-// visualization_msgs::Marker toVisualizationMsg(Graph g)
-// {
-//     visualization_msgs::Marker points;
-//     points.header.frame_id = "/graph_frame";
-//     points.type = visualization_msgs::Marker::POINTS;
-//     points.pose.orientation.w = 1.0;
-//     points.scale.x = 0.01;
-//     points.scale.x = 0.01;
-//     points.color.a = 1.0;
-//     points.color.g = 1.0;
 
-//     for(auto v:g.V)
-//     {
-//         geometry_msgs::Point p;
-//         p.x = v.q[0];
-//         p.y = v.q[1];
-//         points.points.push_back(p);
-//     }
-
-//     return points;
-// }
 
 GraphMarker toVisualizationMsg(const GraphD &g, std::string name="graph")
 {
@@ -227,6 +209,7 @@ public:
     ros::Publisher path_pub;
     ros::Publisher points_pub;
     ros::Publisher ob_pub;
+    ros::Publisher obs_pub;
     ros::Publisher text_pub;
     
     GraphVisualizer(ros::NodeHandle &n)
@@ -237,8 +220,10 @@ public:
         path_pub= n.advertise<visualization_msgs::Marker>("path", 10);
         points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
         ob_pub = n.advertise<visualization_msgs::Marker>("ob", 10);
+        obs_pub = n.advertise<visualization_msgs::MarkerArray>("obstacles", 10);
         text_pub = n.advertise<visualization_msgs::MarkerArray>("text", 10);
     }
+
 
     void vizGraph(const GraphD &g, std::string name="graph")
     {
@@ -271,6 +256,11 @@ public:
     {
         vizCtp<CTP::BctpGrid>(ctp);
         ob_pub.publish(ctp.belief_graph.getObstacle().toMarker());
+    }
+
+    void vizObstacles(Obstacles2D::Obstacles &obs)
+    {
+        obs_pub.publish(obs.toMarkerArray());
     }
 
     void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "clear blue")

@@ -66,9 +66,11 @@ namespace Obstacles2D
         visualization_msgs::MarkerArray toMarkerArray() const
         {
             visualization_msgs::MarkerArray m;
+            int id = 0;
             for(auto ob: obs)
             {
                 m.markers.push_back(ob->toMarker());
+                m.markers.back().id=id++;
             }
             return m;
         };
