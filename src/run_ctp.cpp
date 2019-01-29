@@ -4,7 +4,6 @@
 #include "ros/ros.h"
 #include "visualization_msgs/Marker.h"
 #include "2d_obstacles.hpp"
-#include "lazysp.hpp"
 #include <utility>
 #include "graph_visualization.hpp"
 #include "ctp.hpp"

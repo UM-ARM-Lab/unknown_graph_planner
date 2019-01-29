@@ -1,5 +1,5 @@
-#ifndef LAZYSP_HPP
-#define LAZYSP_HPP
+#ifndef PATH_EDGE_CHECKING_HPP
+#define PATH_EDGE_CHECKING_HPP
 
 // #include "a_star.hpp"
 #include "2d_obstacles.hpp"
