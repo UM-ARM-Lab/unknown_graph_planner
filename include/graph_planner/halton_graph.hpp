@@ -13,7 +13,7 @@
 
 
 
-double distanceHeuristic(std::vector<double> q1, std::vector<double> q2)
+inline double distanceHeuristic(std::vector<double> q1, std::vector<double> q2)
 {
     return EigenHelpers::Distance(q1, q2);
 }

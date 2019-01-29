@@ -14,7 +14,7 @@ namespace halton
     const std::vector<int> hardcoded_offsets{100, 120, 234, 182, 102,
             192, 476, 203, 120, 203, 203, 403, 203, 203, 120, 1045, 302, 102};
     
-    double haltonElement(int index, int base)
+    inline double haltonElement(int index, int base)
     {
         double f = 1, r = 0;
         while(index > 0){
@@ -25,7 +25,7 @@ namespace halton
         return r;
     };
 
-    std::vector<double> haltonSeq(int base, int length, int offset)
+    inline std::vector<double> haltonSeq(int base, int length, int offset)
     {
         std::vector<double> seq;
         seq.reserve(length);
@@ -36,9 +36,9 @@ namespace halton
         return seq;
     };
 
-    std::vector<std::vector<double> > haltonPoints(std::vector<int> bases,
-                                                   int length,
-                                                   std::vector<int> offsets)
+    inline std::vector<std::vector<double> > haltonPoints(std::vector<int> bases,
+                                                          int length,
+                                                          std::vector<int> offsets)
     {
         assert(bases.size() == offsets.size());
         std::vector<std::vector<double> > seqs(bases.size());
@@ -58,7 +58,7 @@ namespace halton
         return points;
     };
 
-    std::vector<std::vector<double> > haltonPoints(int length, int dim)
+    inline std::vector<std::vector<double> > haltonPoints(int length, int dim)
     {
         std::vector<int> bases(dim), offsets(dim);
         for(int i=0; i<dim; i++)

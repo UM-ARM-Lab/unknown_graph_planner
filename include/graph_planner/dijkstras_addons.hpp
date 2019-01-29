@@ -18,6 +18,15 @@ namespace arc_dijkstras
         return std::make_pair(edge.GetFromIndex(), edge.GetToIndex());
     }
 
+    static inline HashableEdge getSortedHashable(const GraphEdge& edge)
+    {
+        if(edge.GetFromIndex() < edge.GetToIndex())
+        {
+            return std::make_pair(edge.GetFromIndex(), edge.GetToIndex());
+        }
+        return std::make_pair(edge.GetToIndex(), edge.GetFromIndex());
+    }
+
 
     /*
      *  Returns true iff all edges have same validity in g1 and g2
