@@ -29,13 +29,13 @@ public:
 
     int64_t addVertexAndEdges(std::vector<double> q)
     {
-        int64_t new_node_ind = AddNode(q);
+        int64_t new_node_ind = addNode(q);
         for(int64_t node_ind = 0; node_ind < nodes_.size()-1; node_ind++)
         {
-            double d = EigenHelpers::Distance(nodes_[node_ind].GetValueImmutable(), q);
+            double d = EigenHelpers::Distance(nodes_[node_ind].getValue(), q);
             if(d < r_disc)
             {
-                AddEdgesBetweenNodes(node_ind, new_node_ind, d);
+                addEdgesBetweenNodes(node_ind, new_node_ind, d);
             }
         }
         return new_node_ind;
@@ -61,20 +61,20 @@ public:
     {
     }
 
-    uint64_t SerializeSelf(std::vector<uint8_t>& buffer,
+    uint64_t serializeSelf(std::vector<uint8_t>& buffer,
                            const std::function<uint64_t(const std::vector<double>&, std::vector<uint8_t>&)>& value_serializer) const
     {
-        uint64_t bytes_written = arc_dijkstras::Graph<std::vector<double>>::SerializeSelf(buffer, value_serializer);
+        uint64_t bytes_written = arc_dijkstras::Graph<std::vector<double>>::serializeSelf(buffer, value_serializer);
         bytes_written += arc_utilities::SerializeFixedSizePOD<double>(r_disc, buffer);
         return bytes_written;
     }
 
-    uint64_t DeserializeSelf(
+    uint64_t deserializeSelf(
             const std::vector<uint8_t>& buffer,
             const uint64_t current,
             const std::function<std::pair<std::vector<double>, uint64_t>(const std::vector<uint8_t>&, const uint64_t)>& value_deserializer)
     {
-        double c = arc_dijkstras::Graph<std::vector<double>>::DeserializeSelf(buffer, current, value_deserializer);
+        double c = arc_dijkstras::Graph<std::vector<double>>::deserializeSelf(buffer, current, value_deserializer);
         auto v = arc_utilities::DeserializeFixedSizePOD<double>(buffer, c);
         r_disc = v.first;
         return v.second;
@@ -85,7 +85,7 @@ public:
         size_t count = 0;
         for(auto &n:nodes_)
         {
-            count += n.GetOutEdgesImmutable().size();
+            count += n.getOutEdges().size();
         }
         return count;
     }
@@ -102,7 +102,7 @@ public:
                                                           arc_utilities::SerializeFixedSizePOD<double>);
         };
         
-        SerializeSelf(buffer, value_serializer_fn);
+        serializeSelf(buffer, value_serializer_fn);
 
         ZlibHelpers::CompressAndWriteToFile(buffer, filepath);
     }
@@ -118,7 +118,7 @@ public:
         };
         
         std::vector<uint8_t> buffer = ZlibHelpers::LoadFromFileAndDecompress(filepath);
-        DeserializeSelf(buffer, (uint64_t)0, value_deserializer_fn);
+        deserializeSelf(buffer, (uint64_t)0, value_deserializer_fn);
     }
 
 };

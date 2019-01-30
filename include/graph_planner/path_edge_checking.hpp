@@ -72,8 +72,8 @@ bool forwardLazyCheck(const std::vector<int64_t> &path,
     while(i < path.size()-1)
     {
         
-        arc_dijkstras::GraphEdge &e = g.GetNodeMutable(path[i]).GetEdgeMutable(path[i+1]);
-        if(e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::VALID)
+        arc_dijkstras::GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
+        if(e.getValidity() == arc_dijkstras::EDGE_VALIDITY::VALID)
         {
             i++;
             continue;
@@ -82,9 +82,9 @@ bool forwardLazyCheck(const std::vector<int64_t> &path,
         bool valid = obs.isValid(e, g);
         auto validity = valid ? arc_dijkstras::EDGE_VALIDITY::VALID : arc_dijkstras::EDGE_VALIDITY::INVALID;
 
-        e.SetValidity(validity);
-        arc_dijkstras::GraphEdge &e2 = g.GetNodeMutable(path[i+1]).GetEdgeMutable(path[i]);
-        e2.SetValidity(validity);
+        e.setValidity(validity);
+        arc_dijkstras::GraphEdge &e2 = g.getNode(path[i+1]).getEdgeTo(path[i]);
+        e2.setValidity(validity);
         
         std::cout << "Edge from point " << path[i] << " is " << 
             (valid ? "valid" : "invalid") << "\n";
@@ -108,20 +108,20 @@ int forwardMove(const std::vector<int64_t> &path, HaltonGraph &g,
         return path[0];
     }
     
-    arc_dijkstras::GraphEdge &e = g.GetNodeMutable(path[0]).GetEdgeMutable(path[1]);
-    assert(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID);
+    arc_dijkstras::GraphEdge &e = g.getNode(path[0]).getEdgeTo(path[1]);
+    assert(e.getValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID);
 
-    if(e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
+    if(e.getValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
     {
         auto validity = obs.isValid(e, g) ? arc_dijkstras::EDGE_VALIDITY::VALID :
             arc_dijkstras::EDGE_VALIDITY::INVALID;
-        arc_dijkstras::GraphEdge &e2 = g.GetNodeMutable(path[1]).GetEdgeMutable(path[0]);
-        e.SetValidity(validity);
-        e2.SetValidity(validity);
+        arc_dijkstras::GraphEdge &e2 = g.getNode(path[1]).getEdgeTo(path[0]);
+        e.setValidity(validity);
+        e2.setValidity(validity);
     }
 
     int robot_location = path[0];
-    if(e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::VALID)
+    if(e.getValidity() == arc_dijkstras::EDGE_VALIDITY::VALID)
     {
         robot_location = path[1];
     }

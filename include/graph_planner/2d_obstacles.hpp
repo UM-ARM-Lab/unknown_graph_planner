@@ -118,8 +118,8 @@ namespace Obstacles2D
 
         bool isValid(arc_dijkstras::GraphEdge e, const HaltonGraph &g) const
         {
-            std::vector<double> q1 = g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable();
-            std::vector<double> q2 = g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable();
+            std::vector<double> q1 = g.getNode(e.getFromIndex()).getValue();
+            std::vector<double> q2 = g.getNode(e.getToIndex()).getValue();
             // std::vector<double> q2 = g.V[e.v2_ind].q;
             return isValid(q1, q2);
         }

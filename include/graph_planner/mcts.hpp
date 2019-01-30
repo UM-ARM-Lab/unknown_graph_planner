@@ -136,12 +136,12 @@ namespace MCTS{
             std::vector<double> vals;
             std::vector<std::vector<double>> locs;
             int id = parent->state.agent.current_node;
-            std::vector<double> pp = parent->state.true_graph.GetNodeImmutable(id).GetValueImmutable();
+            std::vector<double> pp = parent->state.true_graph.getNode(id).getValue();
 
             for(ActionNode* child:parent->children)
             {
                 int agent_node_id = child->action;
-                std::vector<double> pc = parent->state.true_graph.GetNodeImmutable(agent_node_id).GetValueImmutable();
+                std::vector<double> pc = parent->state.true_graph.getNode(agent_node_id).getValue();
 
                 std::vector<double> loc(2);
                 loc[0] = 0.3*pp[0] + 0.7*pc[0];
@@ -351,11 +351,11 @@ namespace MCTS{
             for(int i=0; i<num_trials; i++)
             {
                 GraphD instance(rs.belief_graph.sampleInstance(rng));
-                for(const auto &n:instance.GetNodesImmutable())
+                for(const auto &n:instance.getNodes())
                 {
-                    for(const auto &e:n.GetOutEdgesImmutable())
+                    for(const auto &e:n.getOutEdges())
                     {
-                        if(e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::INVALID)
+                        if(e.getValidity() == arc_dijkstras::EDGE_VALIDITY::INVALID)
                         {
                             continue;
                         }
@@ -376,7 +376,7 @@ namespace MCTS{
             for(ActionNode* an:n->children)
             {
                 int next_node = an->action;
-                double action_cost = n->state.belief_graph.GetEdgeMutable(cur_node, next_node).GetWeight();
+                double action_cost = n->state.belief_graph.getEdge(cur_node, next_node).getWeight();
                 an->summed_cost = action_cost;
                 if(next_node != n->state.agent.goal_node)
                 {
@@ -405,7 +405,7 @@ namespace MCTS{
             {
                 double alpha = 1.0;
                 double p_cost = -std::log(edge_probability[arc_dijkstras::getHashable(e)]);
-                double l_cost = e.GetWeight();
+                double l_cost = e.getWeight();
                 return l_cost + alpha * p_cost;
             };
             return arc_dijkstras::LazySP<std::vector<double>>::PerformLazySP(
@@ -428,8 +428,8 @@ namespace MCTS{
         double cost = 0;
         for(size_t i=0; i<path.size() - 1; i++)
         {
-            const auto &e = g.GetEdgeMutable(path[i], path[i+1]);
-            cost += e.GetWeight();
+            const auto &e = g.getEdge(path[i], path[i+1]);
+            cost += e.getWeight();
         }
         return cost;
     }
@@ -452,7 +452,7 @@ namespace MCTS{
             const auto eval_fun = [this](GraphD &g, arc_dijkstras::GraphEdge &e)
             {
                 double p_cost = -std::log(edge_probability[arc_dijkstras::getHashable(e)]);
-                double l_cost = e.GetWeight();
+                double l_cost = e.getWeight();
                 return l_cost + alpha * p_cost;
             };
             return arc_dijkstras::LazySP<std::vector<double>>::PerformLazySP(

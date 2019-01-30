@@ -15,16 +15,16 @@ namespace arc_dijkstras
 
     static inline HashableEdge getHashable(const GraphEdge& edge)
     {
-        return std::make_pair(edge.GetFromIndex(), edge.GetToIndex());
+        return std::make_pair(edge.getFromIndex(), edge.getToIndex());
     }
 
     static inline HashableEdge getSortedHashable(const GraphEdge& edge)
     {
-        if(edge.GetFromIndex() < edge.GetToIndex())
+        if(edge.getFromIndex() < edge.getToIndex())
         {
-            return std::make_pair(edge.GetFromIndex(), edge.GetToIndex());
+            return std::make_pair(edge.getFromIndex(), edge.getToIndex());
         }
-        return std::make_pair(edge.GetToIndex(), edge.GetFromIndex());
+        return std::make_pair(edge.getToIndex(), edge.getFromIndex());
     }
 
 
@@ -34,14 +34,14 @@ namespace arc_dijkstras
      */
     static bool haveSameEdgeValidity(const GraphD& g1, const GraphD& g2)
     {
-        for(size_t n_id = 0; n_id <g1.GetNodesImmutable().size(); n_id++)
+        for(size_t n_id = 0; n_id <g1.getNodes().size(); n_id++)
         {
-            const auto &n1 = g1.GetNodeImmutable(n_id);
-            const auto &n2 = g2.GetNodeImmutable(n_id);
-            for(size_t e_id = 0; e_id < n1.GetOutEdgesImmutable().size(); e_id++)
+            const auto &n1 = g1.getNode(n_id);
+            const auto &n2 = g2.getNode(n_id);
+            for(size_t e_id = 0; e_id < n1.getOutEdges().size(); e_id++)
             {
-                if(n1.GetOutEdgesImmutable()[e_id].GetValidity() !=
-                   n2.GetOutEdgesImmutable()[e_id].GetValidity())
+                if(n1.getOutEdges()[e_id].getValidity() !=
+                   n2.getOutEdges()[e_id].getValidity())
                 {
                     return false;
                 }
@@ -75,12 +75,12 @@ namespace arc_dijkstras
                      const GraphEdge& edge)
                 {
                     UNUSED(search_graph);
-                    if(edge.GetValidity() == EDGE_VALIDITY::INVALID)
+                    if(edge.getValidity() == EDGE_VALIDITY::INVALID)
                     {
                         return false;
                     }
 
-                    return edge.GetWeight() < std::numeric_limits<double>::infinity();
+                    return edge.getWeight() < std::numeric_limits<double>::infinity();
                 };
     
             const auto distance_function =
@@ -94,7 +94,7 @@ namespace arc_dijkstras
                         return evaluatedEdges.at(getHashable(edge));
                     }
                     // std::cout << "Using heuristic weight\n";
-                    return edge.GetWeight();
+                    return edge.getWeight();
                 };
 
             return SimpleGraphAstar<NodeValueType>::PerformLazyAstar(
@@ -111,7 +111,7 @@ namespace arc_dijkstras
             int i=0;
             while(i < path.size() - 1 )
             {
-                GraphEdge &e = g.GetNodeMutable(path[i]).GetEdgeMutable(path[i+1]);
+                GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
                 if(evaluatedEdges.count(getHashable(e)) == 0)
                 {
                     return std::vector<int>{i};
@@ -157,9 +157,9 @@ namespace arc_dijkstras
 
                 for(auto i:path_indicies_to_check)
                 {
-                    GraphEdge &e = g.GetNodeMutable(path[i]).GetEdgeMutable(path[i+1]);
-                    // NodeValueType v1 = g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable();
-                    // NodeValueType v2 = g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable();
+                    GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
+                    // NodeValueType v1 = g.getNode(e.getFromIndex()).getValue();
+                    // NodeValueType v2 = g.getNode(e.getToIndex()).getValue();
                     evaluatedEdges[getHashable(e)] = eval_edge_fn(g, e);
                 }
             }

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
     IncreasingDensityGrid g(5);
 
-    std::cout << "Graph has " << g.GetNodesImmutable().size() << " nodes\n";
+    std::cout << "Graph has " << g.getNodes().size() << " nodes\n";
     
 
     std::vector<double> start{0,0};

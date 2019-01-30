@@ -63,19 +63,19 @@ namespace CTP{
                 return;
             }
             
-            auto &n_b = belief_graph.GetNodeMutable(l);
-            const auto &n_t = true_graph.GetNodeImmutable(l);
+            auto &n_b = belief_graph.getNode(l);
+            const auto &n_t = true_graph.getNode(l);
 
-            auto &e_b = n_b.GetOutEdgesMutable();
-            const auto &e_t = n_t.GetOutEdgesImmutable();
+            auto &e_b = n_b.getOutEdges();
+            const auto &e_t = n_t.getOutEdges();
 
             for(size_t i = 0; i<e_b.size(); i++)
             {
                 auto &e = e_b[i];
-                e.SetValidity(e_t[i].GetValidity());
+                e.setValidity(e_t[i].getValidity());
                 //set reverse edge as well
-                belief_graph.GetReverseEdgeMutable(e).SetValidity(e_t[i].GetValidity());
-                lookAhead(e.GetToIndex(), d-1);
+                belief_graph.getReverseEdge(e).setValidity(e_t[i].getValidity());
+                lookAhead(e.getToIndex(), d-1);
             }
 
         }
@@ -92,14 +92,14 @@ namespace CTP{
          */
         virtual double move(Action new_node)
         {
-            auto &e = true_graph.GetNodeMutable(agent.current_node).GetEdgeMutable(new_node);
-            bool valid = e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::VALID;
+            auto &e = true_graph.getNode(agent.current_node).getEdgeTo(new_node);
+            bool valid = e.getValidity() == arc_dijkstras::EDGE_VALIDITY::VALID;
             if(valid)
             {
                 agent.current_node = new_node;
                 updateBeliefGraph();
                 inprogress = agent.current_node != agent.goal_node;
-                return e.GetWeight();
+                return e.getWeight();
             }
             
             if(look_ahead > 0)
@@ -108,19 +108,19 @@ namespace CTP{
             }
 
             //It is possible with 0 lookahead that we attempt an invalid edge            
-            auto &be = belief_graph.GetNodeMutable(agent.current_node).GetEdgeMutable(new_node);
-            be.SetValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
-            return e.GetWeight(); // This is not accurate for all problems. 
+            auto &be = belief_graph.getNode(agent.current_node).getEdgeTo(new_node);
+            be.setValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
+            return e.getWeight(); // This is not accurate for all problems. 
         }
 
         std::vector<Action> getActions()
         {
             std::vector<Action> actions;
-            for(const auto& e:belief_graph.GetNodeImmutable(agent.current_node).GetOutEdgesImmutable())
+            for(const auto& e:belief_graph.getNode(agent.current_node).getOutEdges())
             {
-                if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID)
+                if(e.getValidity() != arc_dijkstras::EDGE_VALIDITY::INVALID)
                 {
-                    actions.push_back(e.GetToIndex());
+                    actions.push_back(e.getToIndex());
                 }
             }
             return actions;

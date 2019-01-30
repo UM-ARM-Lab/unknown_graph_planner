@@ -48,7 +48,7 @@ public:
     {
         for(int64_t node_ind = 0; node_ind < nodes_.size(); node_ind++)
         {
-            double d = EigenHelpers::Distance(nodes_[node_ind].GetValueImmutable().q, q);
+            double d = EigenHelpers::Distance(nodes_[node_ind].getValue().q, q);
             if(d < eps)
             {
                 return node_ind;
@@ -64,14 +64,14 @@ public:
     
     int64_t addVertexAndEdges(int depth, std::vector<double> q)
     {
-        int64_t new_node_ind = AddNode(IncrementalDensityNode(depth, q));
+        int64_t new_node_ind = addNode(IncrementalDensityNode(depth, q));
         for(int64_t node_ind = 0; node_ind < nodes_.size()-1; node_ind++)
         {
-            double d = EigenHelpers::Distance(nodes_[node_ind].GetValueImmutable().q, q);
+            double d = EigenHelpers::Distance(nodes_[node_ind].getValue().q, q);
             double r_disc = 1.0/std::pow(2, depth);
             if(d < r_disc + eps)
             {
-                AddEdgesBetweenNodes(node_ind, new_node_ind, d*pow(2, depth));
+                addEdgesBetweenNodes(node_ind, new_node_ind, d*pow(2, depth));
             }
         }
         return new_node_ind;
@@ -87,15 +87,15 @@ public:
         GraphD g;
         for(int64_t node_id=0; node_id < nodes_.size(); node_id++)
         {
-            g.AddNode(nodes_[node_id].GetValueImmutable().q);
+            g.addNode(nodes_[node_id].getValue().q);
         }
         
         for(int64_t node_id=0; node_id < nodes_.size(); node_id++)
         {
-            for(const auto e:nodes_[node_id].GetOutEdgesImmutable())
+            for(const auto e:nodes_[node_id].getOutEdges())
             {
-                auto &e_other = g.AddEdgeBetweenNodes(e.GetFromIndex(), e.GetToIndex(), e.GetWeight());
-                e_other.SetValidity(e.GetValidity());
+                auto &e_other = g.addEdgeBetweenNodes(e.getFromIndex(), e.getToIndex(), e.getWeight());
+                e_other.setValidity(e.getValidity());
             }
         }
         return g;

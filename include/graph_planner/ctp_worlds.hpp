@@ -35,9 +35,9 @@ namespace CTP
 
         void setEdgeProbabilities(double universal_probability)
         {
-            for(const auto n:GetNodesImmutable())
+            for(const auto n:getNodes())
             {
-                for(const auto e:n.GetOutEdgesImmutable())
+                for(const auto e:n.getOutEdges())
                 {
                     edge_probabilities[arc_dijkstras::getHashable(e)] = universal_probability;
                 }
@@ -49,11 +49,11 @@ namespace CTP
         {
             GraphD instance(*this);
             std::uniform_real_distribution<> dist(0.0, 1.0);
-            for(auto &n:instance.GetNodesMutable())
+            for(auto &n:instance.getNodes())
             {
-                for(auto &e:n.GetOutEdgesMutable())
+                for(auto &e:n.getOutEdges())
                 {
-                    if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
+                    if(e.getValidity() != arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
                     {
                         continue;
                     }
@@ -65,10 +65,10 @@ namespace CTP
                         validity = arc_dijkstras::EDGE_VALIDITY::VALID;
                     }
 
-                    e.SetValidity(validity);
+                    e.setValidity(validity);
                     //set reverse edge as well, since arc_dijkstras is a directed graph,
                     //but validity applies symmetrically in CTP
-                    instance.GetReverseEdgeMutable(e).SetValidity(validity);
+                    instance.getReverseEdge(e).setValidity(validity);
                 }
             }
             return instance;
@@ -84,17 +84,17 @@ namespace CTP
         CtpPitfall()
         {
             using namespace arc_dijkstras;
-            auto v0 = AddNode(std::vector<double>{0.5, 0.0});
-            auto vf = AddNode(std::vector<double>{0.5, 1.0});
-            auto v7 = AddNode(std::vector<double>{1.0, 0.5});
+            auto v0 = addNode(std::vector<double>{0.5, 0.0});
+            auto vf = addNode(std::vector<double>{0.5, 1.0});
+            auto v7 = addNode(std::vector<double>{1.0, 0.5});
 
-            auto v1 = AddNode(std::vector<double>{0.5, 0.2});
+            auto v1 = addNode(std::vector<double>{0.5, 0.2});
 
-            auto v2 = AddNode(std::vector<double>{0.6, 0.6});
-            auto v3 = AddNode(std::vector<double>{0.52, 0.6});
-            auto v4 = AddNode(std::vector<double>{0.4, 0.6});
-            auto v5 = AddNode(std::vector<double>{0.0, 0.5});
-            auto v6 = AddNode(std::vector<double>{0.1, 0.9});
+            auto v2 = addNode(std::vector<double>{0.6, 0.6});
+            auto v3 = addNode(std::vector<double>{0.52, 0.6});
+            auto v4 = addNode(std::vector<double>{0.4, 0.6});
+            auto v5 = addNode(std::vector<double>{0.0, 0.5});
+            auto v6 = addNode(std::vector<double>{0.1, 0.9});
 
             addProbabililisticEdge(v0, v7, 50);       //e07
             addProbabililisticEdge(v7, vf, 50);       //e01
@@ -113,7 +113,7 @@ namespace CTP
 
         void addProbabililisticEdge(int64_t n0, int64_t n1, double weight, double p=1.0)
         {
-            auto es = AddEdgesBetweenNodes(n0, n1, weight);
+            auto es = addEdgesBetweenNodes(n0, n1, weight);
             updateEdgeProbabilities(es, p);
         }
 
@@ -133,20 +133,20 @@ namespace CTP
             using namespace arc_dijkstras;
             std::vector<std::string> texts;
             std::vector<std::vector<double>> locs;
-            for(auto& n:GetNodesMutable())
+            for(auto& n:getNodes())
             {
-                for(auto& e:n.GetOutEdgesMutable())
+                for(auto& e:n.getOutEdges())
                 {
                     std::stringstream ss;
                     ss << std::fixed << std::setprecision(2);
                     double p = edge_probabilities[getHashable(e)];
                     if(p < 1.0)
                         ss << "p " << p << " : " ;
-                    ss << e.GetWeight();
+                    ss << e.getWeight();
                     texts.push_back(ss.str());
                     std::vector<double> loc(2);
-                    auto &p1 = n.GetValueImmutable();
-                    auto &p2 = GetNodeMutable(e.GetToIndex()).GetValueImmutable();
+                    auto &p1 = n.getValue();
+                    auto &p2 = getNode(e.getToIndex()).getValue();
                     loc[0] = 0.5* p1[0] + 0.5 * p2[0] + 0.01;
                     loc[1] = 0.5* p1[1] + 0.5 * p2[1];
                     locs.push_back(loc);
@@ -233,18 +233,18 @@ namespace CTP
 
             std::uniform_real_distribution<> dist(0.0, 1.0);
             
-            for(auto &n:instance.GetNodesMutable())
+            for(auto &n:instance.getNodes())
             {
-                for(auto &e:n.GetOutEdgesMutable())
+                for(auto &e:n.getOutEdges())
                 {
-                    if(e.GetValidity() != arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
+                    if(e.getValidity() != arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
                     {
                         continue;
                     }
 
                     double p_free = 0.0;
-                    auto n2 = GetNodeImmutable(e.GetToIndex());
-                    if(storm.isValid(n.GetValueImmutable()) && storm.isValid(n2.GetValueImmutable()))
+                    auto n2 = getNode(e.getToIndex());
+                    if(storm.isValid(n.getValue()) && storm.isValid(n2.getValue()))
                     {
                         p_free = 1.0;
                     }
@@ -262,10 +262,10 @@ namespace CTP
                     // validity = arc_dijkstras::EDGE_VALIDITY::VALID;
 
                     
-                    e.SetValidity(validity);
+                    e.setValidity(validity);
                     //set reverse edge as well, since arc_dijkstras is a directed graph,
                     //but validity applies symmetrically in CTP
-                    instance.GetReverseEdgeMutable(e).SetValidity(validity);
+                    instance.getReverseEdge(e).setValidity(validity);
                 }
             }
             

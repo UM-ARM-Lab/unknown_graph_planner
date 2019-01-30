@@ -87,9 +87,9 @@ GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<T> &g, std::string nam
     unknown_lines.color.a = 0.1;
     // lines.color.g = 1.0;
 
-    for(const auto n:g.GetNodesImmutable())
+    for(const auto n:g.getNodes())
     {
-        for(const auto e:n.GetOutEdgesImmutable())
+        for(const auto e:n.getOutEdges())
         {
             // if(e.validity == arc_dijkstras::EDGE_VALIDITY::INVALID)
             // {
@@ -97,10 +97,10 @@ GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<T> &g, std::string nam
             // }
 
         
-            geometry_msgs::Point p1 = to3DPoint(g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable());
-            geometry_msgs::Point p2 = to3DPoint(g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable());
+            geometry_msgs::Point p1 = to3DPoint(g.getNode(e.getFromIndex()).getValue());
+            geometry_msgs::Point p2 = to3DPoint(g.getNode(e.getToIndex()).getValue());
 
-            switch(e.GetValidity())
+            switch(e.getValidity())
             {
             case arc_dijkstras::EDGE_VALIDITY::UNKNOWN:
                 unknown_lines.points.push_back(p1);
@@ -142,7 +142,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const a
 
     for(auto ind: path)
     {
-        lines.points.push_back(to3DPoint(g.GetNodeImmutable(ind).GetValueImmutable()));
+        lines.points.push_back(to3DPoint(g.getNode(ind).getValue()));
     }
     return lines;
 }
@@ -161,7 +161,7 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> p
 
     for(auto ind:ps)
     {
-        const auto v = g.GetNodeImmutable(ind).GetValueImmutable();
+        const auto v = g.getNode(ind).getValue();
         geometry_msgs::Point p;
         p.x = v[0];
         p.y = v[1];

@@ -15,13 +15,13 @@ inline arc_helpers::AstarResult Plan(IncreasingDensityGrid &g,
     using namespace arc_dijkstras;
     const auto eval_fun = [&obs](Graph<IncrementalDensityNode> &g, GraphEdge &e)
     {
-        if(e.GetValidity() == EDGE_VALIDITY::UNKNOWN)
+        if(e.getValidity() == EDGE_VALIDITY::UNKNOWN)
         {
-            std::vector<double> q1 = g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable().q;
-            std::vector<double> q2 = g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable().q;
+            std::vector<double> q1 = g.getNode(e.getFromIndex()).getValue().q;
+            std::vector<double> q2 = g.getNode(e.getToIndex()).getValue().q;
             bool valid = obs.isValid(q1, q2);
-            e.SetValidity(valid ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID);
-            // std::cout << "Edge between " << e.GetFromIndex() << ", " << e.GetToIndex();
+            e.setValidity(valid ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID);
+            // std::cout << "Edge between " << e.getFromIndex() << ", " << e.getToIndex();
             // std::cout << " evaluated to " << (valid ? "Valid" : "Invalid") << "\n";
             if(!valid)
             {
@@ -30,9 +30,9 @@ inline arc_helpers::AstarResult Plan(IncreasingDensityGrid &g,
         }
 
         //We should never be evaluating edges we already know are invalid
-        assert(e.GetValidity() == EDGE_VALIDITY::VALID); 
+        assert(e.getValidity() == EDGE_VALIDITY::VALID); 
         
-        return e.GetWeight();
+        return e.getWeight();
     };
 
     const auto dist_heur = [](const IncrementalDensityNode &n1,
