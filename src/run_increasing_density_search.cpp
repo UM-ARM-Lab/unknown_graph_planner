@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     obs.obs.push_back(&r3);
     
     
-    viz.vizGraph(g.toGraphD());
+    viz.vizGraph(g);
     viz.vizObstacles(obs);
 
     while(ros::ok())
@@ -47,9 +47,9 @@ int main(int argc, char **argv)
         auto result = Plan(g, obs, start, goal);
         // auto result = AstarPlan(g, obs, start, goal);
         std::cout << "Plan complete\n";
-        viz.vizGraph(g.toGraphD());
-        viz.vizPath(result.first, g.toGraphD());
-        viz.vizObstacles(obs);
+        viz.vizGraph(g);
+        viz.vizPath(result.first, g);
+        viz.vizObstacles(obs, -1.0);
         std::cout << "Path: " << PrettyPrint::PrettyPrint(result.first) << "\n";
         std::cout << "Path cost: " << result.second << "\n";
         arc_helpers::WaitForInput();

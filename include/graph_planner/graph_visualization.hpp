@@ -43,8 +43,27 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
 }
 
 
+geometry_msgs::Point to3DPoint(const std::vector<double> &node)
+{
+    geometry_msgs::Point p;
+    p.x = node[0];
+    p.y = node[1];
+    return p;
+}
 
-GraphMarker toVisualizationMsg(const GraphD &g, std::string name="graph")
+geometry_msgs::Point to3DPoint(const IncrementalDensityNode &node)
+{
+    geometry_msgs::Point p;
+    p.x = node.q[0];
+    p.y = node.q[1];
+    p.z = -(double)node.depth / 5.0;
+    return p;
+}
+
+
+
+template <typename T>
+GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<T> &g, std::string name="graph")
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
@@ -78,17 +97,8 @@ GraphMarker toVisualizationMsg(const GraphD &g, std::string name="graph")
             // }
 
         
-            geometry_msgs::Point p1;
-            
-            const auto q1 = g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable();
-            p1.x = q1[0];
-            p1.y = q1[1];
-        
-            geometry_msgs::Point p2;
-            const auto q2 = g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable();
-            // auto v2 = g.V[e.v2_ind];
-            p2.x = q2[0];
-            p2.y = q2[1];
+            geometry_msgs::Point p1 = to3DPoint(g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable());
+            geometry_msgs::Point p2 = to3DPoint(g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable());
 
             switch(e.GetValidity())
             {
@@ -118,7 +128,8 @@ GraphMarker toVisualizationMsg(const GraphD &g, std::string name="graph")
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const GraphD &g,
+template <typename T>
+visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const arc_dijkstras::Graph<T> &g,
                                               int id=0, std::string color="blue")
 {
     visualization_msgs::Marker lines;
@@ -131,11 +142,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const G
 
     for(auto ind: path)
     {
-        geometry_msgs::Point p1;
-        const auto v = g.GetNodeImmutable(ind).GetValueImmutable();
-        p1.x = v[0];
-        p1.y = v[1];
-        lines.points.push_back(p1);
+        lines.points.push_back(to3DPoint(g.GetNodeImmutable(ind).GetValueImmutable()));
     }
     return lines;
 }
@@ -225,7 +232,8 @@ public:
     }
 
 
-    void vizGraph(const GraphD &g, std::string name="graph")
+    template <typename T>
+    void vizGraph(const arc_dijkstras::Graph<T> &g, std::string name="graph")
     {
         GraphMarker gm = toVisualizationMsg(g, name);
         graph_valid_pub.publish(gm[0]);
@@ -258,12 +266,15 @@ public:
         ob_pub.publish(ctp.belief_graph.getObstacle().toMarker());
     }
 
-    void vizObstacles(Obstacles2D::Obstacles &obs)
+    void vizObstacles(Obstacles2D::Obstacles &obs, double z_scale = 0.01)
     {
-        obs_pub.publish(obs.toMarkerArray());
+        obs_pub.publish(obs.toMarkerArray(z_scale));
     }
 
-    void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "clear blue")
+
+    template <typename T>
+    void vizPath(const std::vector<int64_t> &path, const arc_dijkstras::Graph<T> &g, int id = 0,
+                 std::string color = "clear blue")
     {
         path_pub.publish(toVisualizationMsg(path, g, id, color));
     }

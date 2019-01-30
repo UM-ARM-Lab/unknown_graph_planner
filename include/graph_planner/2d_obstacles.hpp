@@ -19,7 +19,7 @@ namespace Obstacles2D
     {
     public:
         virtual bool isValid(std::vector<double> q) const = 0;
-        virtual visualization_msgs::Marker toMarker() const = 0;
+        virtual visualization_msgs::Marker toMarker(double z_scale) const = 0;
     };
     
     class Rect : public Obstacle
@@ -37,7 +37,7 @@ namespace Obstacles2D
             return !(q[0] > x1 && q[0] < x2 && q[1] > y1 && q[1] < y2);
         };
 
-        visualization_msgs::Marker toMarker() const
+        visualization_msgs::Marker toMarker(double z_scale = 0.01) const
         {
             visualization_msgs::Marker cube;
             cube.header.frame_id = "/graph_frame";
@@ -47,9 +47,10 @@ namespace Obstacles2D
             double h = y2-y1;
             cube.scale.x = w;
             cube.scale.y = h;
-            cube.scale.z = 0.01;
+            cube.scale.z = std::abs(z_scale);
             cube.pose.position.x = x1+w/2;
             cube.pose.position.y = y1+h/2;
+            cube.pose.position.z = z_scale / 2;
             cube.color.a = 0.9;
             cube.color.r = 1.0;
             return cube;
@@ -63,13 +64,13 @@ namespace Obstacles2D
 
         std::vector<Obstacle*> obs;
 
-        visualization_msgs::MarkerArray toMarkerArray() const
+        visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const
         {
             visualization_msgs::MarkerArray m;
             int id = 0;
             for(auto ob: obs)
             {
-                m.markers.push_back(ob->toMarker());
+                m.markers.push_back(ob->toMarker(z_scale));
                 m.markers.back().id=id++;
             }
             return m;
