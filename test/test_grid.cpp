@@ -10,7 +10,7 @@ TEST(Grid, Create)
     {
         IncreasingDensityGrid g(i);
         int expected_nodes_per_side = 1 + pow(2, i);
-        EXPECT_EQ(g.GetNodesMutable().size(), std::pow(expected_nodes_per_side, 2)) << "Wrong number of nodes";
+        EXPECT_EQ(g.getNodes().size(), std::pow(expected_nodes_per_side, 2)) << "Wrong number of nodes";
     }
 
 
@@ -18,11 +18,9 @@ TEST(Grid, Create)
     {
         IncreasingDensityGrid g(i);
         int expected_edges = 2*(i+1);
-        EXPECT_EQ(g.GetNodeImmutable(0).GetOutEdgesImmutable().size(), expected_edges) << "Wrong number of edges";
-        EXPECT_EQ(g.GetNodeImmutable(0).GetInEdgesImmutable().size(), expected_edges) << "Wrong number of edges";
+        EXPECT_EQ(g.getNode(0).getOutEdges().size(), expected_edges) << "Wrong number of edges";
+        EXPECT_EQ(g.getNode(0).getInEdges().size(), expected_edges) << "Wrong number of edges";
     }
-
-    
 }
 
 

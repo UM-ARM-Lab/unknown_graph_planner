@@ -50,8 +50,8 @@ inline arc_helpers::AstarResult Plan(IncreasingDensityGrid &g,
         std::cout << "Goal node <" << PrettyPrint::PrettyPrint(goal) << "> is not in graph\n";
     }
 
-    int64_t from_node = g.getNode(start);
-    int64_t goal_node = g.getNode(goal);
+    int64_t from_node = g.getNodeAt(start);
+    int64_t goal_node = g.getNodeAt(goal);
 
     std::cout << "Planning from start: <" << PrettyPrint::PrettyPrint(start) <<
         "> (node " << from_node << ") to <" <<
@@ -74,8 +74,8 @@ inline arc_helpers::AstarResult AstarPlan(IncreasingDensityGrid &g,
             return distanceHeuristic(n1.q, n2.q);;
         };
 
-    int64_t from_node = g.getNode(start);
-    int64_t goal_node = g.getNode(goal);
+    int64_t from_node = g.getNodeAt(start);
+    int64_t goal_node = g.getNodeAt(goal);
 
     return SimpleGraphAstar<IncrementalDensityNode>::PerformAstar(g, from_node, goal_node, dist_heur, true);
 }

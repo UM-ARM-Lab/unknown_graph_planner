@@ -10,13 +10,13 @@ TEST(GraphTestSuite, construction)
 {
     double max_dist = 0.4;
     auto g = HaltonGraph(1000, max_dist);
-    for(auto &n: g.GetNodesMutable())
+    for(auto &n: g.getNodes())
     {
-        for(auto &e: n.GetInEdgesMutable())
+        for(auto &e: n.getInEdges())
         {
-            EXPECT_TRUE(e.GetWeight() <= max_dist);
-            EXPECT_TRUE(e.GetWeight() > 0.00001);
-            EXPECT_FALSE(e.GetFromIndex() == e.GetToIndex());
+            EXPECT_TRUE(e.getWeight() <= max_dist);
+            EXPECT_TRUE(e.getWeight() > 0.00001);
+            EXPECT_FALSE(e.getFromIndex() == e.getToIndex());
         }
     }
 
@@ -29,9 +29,9 @@ TEST(GraphTestSuite, graphComparison)
     
     EXPECT_TRUE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
 
-    g2.GetNodeMutable(100).GetOutEdgesMutable()[0].SetValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
+    g2.getNode(100).getOutEdges()[0].setValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
     EXPECT_FALSE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
-    g1.GetNodeMutable(100).GetOutEdgesMutable()[0].SetValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
+    g1.getNode(100).getOutEdges()[0].setValidity(arc_dijkstras::EDGE_VALIDITY::INVALID);
     EXPECT_TRUE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
 }
 
@@ -50,18 +50,18 @@ TEST(GraphTestSuite, saveAndLoad)
     g1.saveToFile(filepath);
     auto g2 = HaltonGraph(filepath);
 
-    EXPECT_EQ(g1.GetNodesImmutable().size(), g2.GetNodesImmutable().size());
+    EXPECT_EQ(g1.getNodes().size(), g2.getNodes().size());
 
     EXPECT_EQ(g1.r_disc, g2.r_disc);
 
-    for(int i=0; i<g1.GetNodesMutable().size(); i++)
+    for(int i=0; i<g1.getNodes().size(); i++)
     {
-        auto &n1 = g1.GetNodesMutable()[i];
-        auto &n2 = g2.GetNodesMutable()[i];
+        auto &n1 = g1.getNodes()[i];
+        auto &n2 = g2.getNodes()[i];
 
         // Check Node values (configuration) are equal
-        auto &q1 = n1.GetValueMutable();
-        auto &q2 = n2.GetValueMutable();
+        auto &q1 = n1.getValue();
+        auto &q2 = n2.getValue();
         EXPECT_EQ(q1.size(), q2.size());
         for(int j=0; j<q1.size(); j++)
         {
@@ -70,18 +70,18 @@ TEST(GraphTestSuite, saveAndLoad)
 
 
         //Check edges are equal
-        auto &E1 = n1.GetOutEdgesMutable();
-        auto &E2 = n2.GetOutEdgesMutable();
+        auto &E1 = n1.getOutEdges();
+        auto &E2 = n2.getOutEdges();
 
         EXPECT_EQ(E1.size(), E2.size());
 
         for(int j=0; j<E1.size(); j++)
         {
-            EXPECT_TRUE(E1[j].GetWeight() <= 0.4);
-            EXPECT_TRUE(E1[j].GetWeight() > 0.00001);
+            EXPECT_TRUE(E1[j].getWeight() <= 0.4);
+            EXPECT_TRUE(E1[j].getWeight() > 0.00001);
 
-            EXPECT_EQ(E1[j].GetValidity(), E2[j].GetValidity());
-            EXPECT_EQ(E1[j].GetWeight(), E2[j].GetWeight());
+            EXPECT_EQ(E1[j].getValidity(), E2[j].getValidity());
+            EXPECT_EQ(E1[j].getWeight(), E2[j].getWeight());
         }
     }
 }
