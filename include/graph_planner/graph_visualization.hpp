@@ -6,7 +6,7 @@
 #include <iomanip>
 #include "ctp.hpp"
 #include "ctp_worlds.hpp"
-#include "increasing_density_search.hpp"
+#include "increasing_density_grid.hpp"
 #include "2d_obstacles.hpp"
 
 

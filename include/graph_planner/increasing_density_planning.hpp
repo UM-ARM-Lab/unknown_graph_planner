@@ -1,7 +1,7 @@
 #ifndef INCREASING_DENSITY_PLANNING_HPP
 #define INCREASING_DENSITY_PLANNING_HPP
 
-#include "increasing_density_search.hpp"
+#include "increasing_density_grid.hpp"
 
 #include "2d_obstacles.hpp"
 #include <arc_utilities/pretty_print.hpp>

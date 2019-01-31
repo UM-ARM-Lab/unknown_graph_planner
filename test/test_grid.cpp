@@ -1,5 +1,5 @@
 #include "halton_graph.hpp"
-#include "increasing_density_search.hpp"
+#include "increasing_density_grid.hpp"
 #include "increasing_density_planning.hpp"
 #include <gtest/gtest.h>
 
