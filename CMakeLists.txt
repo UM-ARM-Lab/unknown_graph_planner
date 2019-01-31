@@ -147,6 +147,7 @@ target_link_libraries(run_bctp
   )
 
 add_executable(wip_mcts src/wip_mcts.cpp)
+add_executable(wip_flann src/wip_flann.cpp)
 
 add_executable(run_increasing_density_search
   src/run_increasing_density_search.cpp)
