@@ -8,7 +8,7 @@
 
 
 using namespace Obstacles2D;
-
+using namespace Eigen;
 
 int main(int argc, char **argv)
 {
@@ -20,6 +20,9 @@ int main(int argc, char **argv)
     r.sleep();
 
     IncreasingDensityGrid g(5);
+    IncreasingDensityGrid g_evaluated(g);
+    IncreasingDensityGrid g_all_valid(g);
+
 
     std::cout << "Graph has " << g.getNodes().size() << " nodes\n";
     
@@ -29,17 +32,26 @@ int main(int argc, char **argv)
     // Rect r1(
     
     Obstacles obs;
+    evaluateAllEdges(g_all_valid, obs);
 
     Rect r1(-0.1, 0.6, 0.4, 1.1);
     Rect r2(0.7, -0.1, 1.1, 0.6);
     Rect r3(0.4, 0.9, 0.6, 1.1);
+    ConvexPolygon cp1(std::vector<Vector2d>{Vector2d(.4,.6), Vector2d(.4,1.1), Vector2d(0.9,1.1)});
     obs.obs.push_back(&r1);
     obs.obs.push_back(&r2);
     obs.obs.push_back(&r3);
-    
+    obs.obs.push_back(&cp1);
+
+
+    evaluateAllEdges(g_evaluated, obs);    
+    // 
     
     viz.vizGraph(g);
-    viz.vizObstacles(obs);
+    viz.vizGraph(g_evaluated, "evaluated");
+    viz.vizGraph(g_all_valid, "all_edges");
+    viz.vizObstacles(obs, -1.0);
+    arc_helpers::WaitForInput();
 
     while(ros::ok())
     {

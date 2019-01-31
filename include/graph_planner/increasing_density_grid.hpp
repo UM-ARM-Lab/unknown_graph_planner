@@ -34,22 +34,18 @@ public:
         {
             for(double y = 0.0; y <= 1.0; y += 1.0/std::pow(2,depth))
             {
-                std::vector<double> q{x, y};
-                if(!isInGraph(q))
-                {
-                    addVertexAndEdges(depth, q);
-                }
+                addVertexAndEdges(depth, std::vector<double>{x, y});
             }
         }
     }
 
 
-    int64_t getNodeAt(const std::vector<double> &q) const
+    int64_t getNodeAt(int depth, const std::vector<double> &q) const
     {
         for(int64_t node_ind = 0; node_ind < nodes_.size(); node_ind++)
         {
-            double d = EigenHelpers::Distance(nodes_[node_ind].getValue().q, q);
-            if(d < eps)
+            if(nodes_[node_ind].getValue().depth == depth &&
+               EigenHelpers::Distance(nodes_[node_ind].getValue().q, q) < eps)
             {
                 return node_ind;
             }
@@ -57,16 +53,28 @@ public:
         return -1;
     }
 
-    bool isInGraph(const std::vector<double> &q) const
+    bool isInGraph(int depth, const std::vector<double> &q) const
     {
-        return getNodeAt(q) >= 0;
+        return getNodeAt(depth, q) >= 0;
     }
     
     int64_t addVertexAndEdges(int depth, std::vector<double> q)
     {
+        // std::cout << "Adding node " << depth << ", <" << q[0] << ", " << q[1] << ">\n";
         int64_t new_node_ind = addNode(IncrementalDensityNode(depth, q));
+        int64_t above_ind = getNodeAt(depth - 1, q);
+        if(above_ind >= 0)
+        {
+            addEdgesBetweenNodes(new_node_ind, above_ind, 0);
+        }
+        
         for(int64_t node_ind = 0; node_ind < nodes_.size()-1; node_ind++)
         {
+            if(nodes_[node_ind].getValue().depth != depth)
+            {
+                continue;
+            }
+                
             double d = EigenHelpers::Distance(nodes_[node_ind].getValue().q, q);
             double r_disc = 1.0/std::pow(2, depth);
             if(d < r_disc + eps)

@@ -215,7 +215,6 @@ public:
     ros::Publisher graph_invalid_pub;
     ros::Publisher path_pub;
     ros::Publisher points_pub;
-    ros::Publisher ob_pub;
     ros::Publisher obs_pub;
     ros::Publisher text_pub;
     
@@ -226,7 +225,6 @@ public:
         graph_invalid_pub = n.advertise<visualization_msgs::Marker>("invalid_graph", 10);
         path_pub= n.advertise<visualization_msgs::Marker>("path", 10);
         points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
-        ob_pub = n.advertise<visualization_msgs::Marker>("ob", 10);
         obs_pub = n.advertise<visualization_msgs::MarkerArray>("obstacles", 10);
         text_pub = n.advertise<visualization_msgs::MarkerArray>("text", 10);
     }
@@ -263,7 +261,7 @@ public:
     void vizCtp(CTP::CtpProblem<CTP::BctpGrid> &ctp)
     {
         vizCtp<CTP::BctpGrid>(ctp);
-        ob_pub.publish(ctp.belief_graph.getObstacle().toMarker());
+        obs_pub.publish(ctp.belief_graph.getObstacle().toMarkerArray());
     }
 
     void vizObstacles(Obstacles2D::Obstacles &obs, double z_scale = 0.01)

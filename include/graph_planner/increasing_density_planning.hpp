@@ -7,6 +7,33 @@
 #include <arc_utilities/pretty_print.hpp>
 
 
+inline void evaluateEdge(IncreasingDensityGrid &g,
+                          arc_dijkstras::GraphEdge &e, const Obstacles2D::Obstacles &obs)
+{
+    using namespace arc_dijkstras;
+    if(e.getValidity() != EDGE_VALIDITY::UNKNOWN)
+    {
+        return;
+    }
+    
+    std::vector<double> q1 = g.getNode(e.getFromIndex()).getValue().q;
+    std::vector<double> q2 = g.getNode(e.getToIndex()).getValue().q;
+
+    e.setValidity(obs.isValid(q1, q2) ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID);
+}
+
+inline void evaluateAllEdges(IncreasingDensityGrid &g, 
+                             const Obstacles2D::Obstacles &obs)
+{
+    for(auto &n:g.getNodes())
+    {
+        for(auto &e:n.getOutEdges())
+        {
+            evaluateEdge(g, e, obs);
+        }
+    }
+}
+
 inline arc_helpers::AstarResult Plan(IncreasingDensityGrid &g,
                                      const Obstacles2D::Obstacles &obs,
                                      const std::vector<double> &start,
@@ -41,17 +68,17 @@ inline arc_helpers::AstarResult Plan(IncreasingDensityGrid &g,
             return distanceHeuristic(n1.q, n2.q);
         };
 
-    if(!g.isInGraph(start))
+    if(!g.isInGraph(0, start))
     {
         std::cout << "Start node <" << PrettyPrint::PrettyPrint(start) << "> is not in graph\n";
     }
-    if(!g.isInGraph(goal))
+    if(!g.isInGraph(0, goal))
     {
         std::cout << "Goal node <" << PrettyPrint::PrettyPrint(goal) << "> is not in graph\n";
     }
 
-    int64_t from_node = g.getNodeAt(start);
-    int64_t goal_node = g.getNodeAt(goal);
+    int64_t from_node = g.getNodeAt(0, start);
+    int64_t goal_node = g.getNodeAt(0, goal);
 
     std::cout << "Planning from start: <" << PrettyPrint::PrettyPrint(start) <<
         "> (node " << from_node << ") to <" <<
@@ -74,8 +101,8 @@ inline arc_helpers::AstarResult AstarPlan(IncreasingDensityGrid &g,
             return distanceHeuristic(n1.q, n2.q);;
         };
 
-    int64_t from_node = g.getNodeAt(start);
-    int64_t goal_node = g.getNodeAt(goal);
+    int64_t from_node = g.getNodeAt(0, start);
+    int64_t goal_node = g.getNodeAt(0, goal);
 
     return SimpleGraphAstar<IncrementalDensityNode>::PerformAstar(g, from_node, goal_node, dist_heur, true);
 }

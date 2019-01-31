@@ -18,8 +18,8 @@ namespace Obstacles2D
     class Obstacle
     {
     public:
-        virtual bool isValid(std::vector<double> q) const = 0;
-        virtual visualization_msgs::Marker toMarker(double z_scale) const = 0;
+        virtual bool isValid(const std::vector<double> &q) const = 0;
+        virtual visualization_msgs::MarkerArray toMarkerArray(double z_scale) const = 0;
     };
     
     class Rect : public Obstacle
@@ -27,17 +27,20 @@ namespace Obstacles2D
     public:
         double x1, y1, x2, y2;
         
-        Rect(double x1_, double y1_, double x2_, double y2_):
-            x1(x1_), y1(y1_), x2(x2_), y2(y2_)
+        Rect(double x1, double y1, double x2, double y2):
+            x1(x1), y1(y1), x2(x2), y2(y2)
         {
         };
 
-        bool isValid(std::vector<double> q) const
+        Rect(const Eigen::Vector2d &p1, const Eigen::Vector2d &p2) : x1(p1.x()), y1(p1.y()),
+                                                                     x2(p2.x()), y2(p2.y()) {};
+
+        bool isValid(const std::vector<double> &q) const override
         {
             return !(q[0] > x1 && q[0] < x2 && q[1] > y1 && q[1] < y2);
         };
 
-        visualization_msgs::Marker toMarker(double z_scale = 0.01) const
+        visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const override
         {
             visualization_msgs::Marker cube;
             cube.header.frame_id = "/graph_frame";
@@ -53,8 +56,91 @@ namespace Obstacles2D
             cube.pose.position.z = z_scale / 2;
             cube.color.a = 0.9;
             cube.color.r = 1.0;
+
+            visualization_msgs::MarkerArray arr;
+            arr.markers.push_back(cube);
+            return arr;
+        }
+    };
+
+    class ConvexPolygon : public Obstacle
+    {
+    public:
+        std::vector<Eigen::Vector2d> points;
+        ConvexPolygon(const std::vector<Eigen::Vector2d> &points): points(points)
+        {
+            if(!EigenHelpers::CloseEnough(points.front(), points.back(),
+                                          EDGE_DISCRETIZATION/2))
+            {
+                this->points.push_back(points.front());
+            }
+            assert(this->points.size() >= 4 && "Polygon must have 3 distinct vertices");
+        };
+
+        bool isValid(const std::vector<double> &q) const override
+        {
+            auto isRightSide = [](const std::vector<double> &q_test,
+                                  const Eigen::Vector2d &p1, const Eigen::Vector2d &p2)
+            {
+                auto a = Eigen::Vector2d(q_test[0], q_test[1]) -  p1;
+                auto b = p2 - p1;
+                return (a[0]*b[1] - a[1]*b[0]) > 0;
+            };
+            
+            bool first_side_is_right = isRightSide(q, points[0], points[1]);
+            for(size_t i=1; i<points.size()-1; i++)
+            {
+                if(first_side_is_right != isRightSide(q, points[i], points[i+1]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        
+        visualization_msgs::Marker edgeToMarker(const Eigen::Vector2d &p1, const Eigen::Vector2d &p2,
+                                                double z_scale) const
+        {
+            visualization_msgs::Marker cube;
+            cube.header.frame_id = "/graph_frame";
+            cube.type = visualization_msgs::Marker::CUBE;
+
+            cube.scale.x = (p2-p1).norm();;
+            cube.scale.y = 0.01;
+            cube.scale.z = std::abs(z_scale);
+            cube.pose.position.x = (p1.x() + p2.x())/2;
+            cube.pose.position.y = (p1.y() + p2.y())/2;
+            cube.pose.position.z = z_scale / 2;
+
+            Eigen::Vector2d vec = p2 - p1;
+            double cos_theta = vec.x()/vec.norm();
+            double w = std::sqrt((1 - cos_theta)/2);
+            if((vec.x() > 0) != (vec.y() > 0))
+            {
+                w *= -1;
+            }
+            cube.pose.orientation.w = w;
+            cube.pose.orientation.z = std::sqrt(1 - w*w);
+
+            cube.color.a = 0.9;
+            cube.color.r = 1.0;
             return cube;
         }
+        
+        visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const override
+        {
+
+            visualization_msgs::MarkerArray arr;
+            for(size_t i=0; i<points.size()-1; i++)
+            {
+                arr.markers.push_back(edgeToMarker(points[i], points[i+1], z_scale));
+            }
+
+            return arr;
+        }
+
+        
     };
 
     class Obstacles
@@ -66,19 +152,22 @@ namespace Obstacles2D
 
         visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const
         {
-            visualization_msgs::MarkerArray m;
+            visualization_msgs::MarkerArray all_obs;
             int id = 0;
             for(auto ob: obs)
             {
-                m.markers.push_back(ob->toMarker(z_scale));
-                m.markers.back().id=id++;
+                for(const visualization_msgs::Marker &m:ob->toMarkerArray(z_scale).markers)
+                {
+                    all_obs.markers.push_back(m);
+                    all_obs.markers.back().id=id++;
+                }
             }
-            return m;
+            return all_obs;
         };
 
-        bool isValid(std::vector<double> q) const
+        bool isValid(const std::vector<double> &q) const
         {
-            for(auto ob: obs)
+            for(auto &ob: obs)
             {
                 if(!ob->isValid(q))
                 {
