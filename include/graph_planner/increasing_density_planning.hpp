@@ -45,7 +45,7 @@ namespace increasing_density_planning
 
     
     inline void checkAllEdges(IncreasingDensityGrid &g, 
-                                 const Obstacles2D::Obstacles &obs)
+                              const Obstacles2D::Obstacles &obs)
     {
         for(auto &n:g.getNodes())
         {

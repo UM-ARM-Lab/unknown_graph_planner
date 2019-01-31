@@ -148,7 +148,7 @@ namespace Obstacles2D
     public:
         Obstacles() {};
 
-        std::vector<Obstacle*> obs;
+        std::vector<std::shared_ptr<Obstacle>> obs;
 
         visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const
         {

@@ -11,6 +11,20 @@ using namespace Obstacles2D;
 using namespace Eigen;
 using namespace increasing_density_planning;
 
+
+void setScene1(Obstacles &obs)
+{
+    obs.obs.push_back(std::make_shared<Rect>(-0.1, 0.6, 0.4, 1.1));
+    obs.obs.push_back(std::make_shared<Rect>(0.7, -0.1, 1.1, 0.6));
+    obs.obs.push_back(std::make_shared<Rect>(0.4, 0.9, 0.6, 1.1));
+
+    auto cp1 = std::make_shared<ConvexPolygon>(std::vector<Vector2d>{
+            Vector2d(.4,.6),
+                Vector2d(.4,1.1),
+                Vector2d(0.9,1.1)});
+    obs.obs.push_back(cp1);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "graph_publisher");
@@ -34,15 +48,7 @@ int main(int argc, char **argv)
     Obstacles obs;
     checkAllEdges(g_all_valid, obs);
 
-    Rect r1(-0.1, 0.6, 0.4, 1.1);
-    Rect r2(0.7, -0.1, 1.1, 0.6);
-    Rect r3(0.4, 0.9, 0.6, 1.1);
-    ConvexPolygon cp1(std::vector<Vector2d>{Vector2d(.4,.6), Vector2d(.4,1.1), Vector2d(0.9,1.1)});
-    obs.obs.push_back(&r1);
-    obs.obs.push_back(&r2);
-    obs.obs.push_back(&r3);
-    obs.obs.push_back(&cp1);
-
+    setScene1(obs);
 
     checkAllEdges(g_evaluated, obs);    
     // 
