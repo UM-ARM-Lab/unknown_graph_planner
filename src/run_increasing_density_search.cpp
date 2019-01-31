@@ -25,6 +25,68 @@ void setScene1(Obstacles &obs)
     obs.obs.push_back(cp1);
 }
 
+void setScene2(Obstacles &obs)
+{
+    obs.obs.push_back(std::make_shared<Rect>(-0.1, 0.05, 0.8, 0.1));
+    // obs.obs.push_back(std::make_shared<Rect>(-0.1, 0.4, 0.3, 0.6));
+    obs.obs.push_back(std::make_shared<Rect>(0.45, 0.4, 0.9, 0.45));
+    obs.obs.push_back(std::make_shared<Rect>(0.85, 0.4, 0.9, 0.9));
+    obs.obs.push_back(std::make_shared<Rect>(0.8, 0.8, 1.1, 0.9));
+    // obs.obs.push_back(std::make_shared<Rect>(0.7, -0.1, 1.1, 0.6));
+    // obs.obs.push_back(std::make_shared<Rect>(0.4, 0.9, 0.6, 1.1));
+
+    auto cp1 = std::make_shared<ConvexPolygon>(std::vector<Vector2d>{
+            Vector2d(-0.1, 0.4),
+                Vector2d(-0.1, 0.45),
+                Vector2d( 0.3, 0.45),
+                Vector2d( 0.35, 0.425),
+                Vector2d( 0.3, 0.4),
+                });
+    obs.obs.push_back(cp1);
+
+    auto cp2 = std::make_shared<ConvexPolygon>(std::vector<Vector2d>{
+            Vector2d(0.2, 0.6),
+                Vector2d(0.45, 0.4),
+                Vector2d( 0.45, 0.6),
+                });
+    obs.obs.push_back(cp2);
+}
+
+
+void setScene3(Obstacles &obs)
+{
+    auto cp1 = std::make_shared<ConvexPolygon>(std::vector<Vector2d>{
+            Vector2d(0.1, 1.1),
+                Vector2d(0.3, 0.45),
+                Vector2d( 0.69, 0.71),
+                });
+    obs.obs.push_back(cp1);
+
+    auto cp2 = std::make_shared<ConvexPolygon>(std::vector<Vector2d>{
+            Vector2d(1.1, 0.1),
+                Vector2d(0.45, 0.3),
+                Vector2d( 0.71, 0.69),
+                });
+    obs.obs.push_back(cp2);
+}
+
+void setScene4(Obstacles &obs)
+{
+    auto cp1 = std::make_shared<ConvexPolygon>(std::vector<Vector2d>{
+            Vector2d(0.8, 1.1),
+                Vector2d(0.73, 0.78),
+                Vector2d( 0.8, 0.85),
+                });
+    obs.obs.push_back(cp1);
+
+    auto cp2 = std::make_shared<ConvexPolygon>(std::vector<Vector2d>{
+            Vector2d(1.1, 0.8),
+                Vector2d(0.78, 0.73),
+                Vector2d( 0.85, 0.8),
+                });
+    obs.obs.push_back(cp2);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "graph_publisher");
@@ -34,7 +96,8 @@ int main(int argc, char **argv)
     ros::Rate r(0.5);
     r.sleep();
 
-    IncreasingDensityGrid g(5);
+    int depth = 6;
+    IncreasingDensityGrid g(depth);
     IncreasingDensityGrid g_evaluated(g);
     IncreasingDensityGrid g_all_valid(g);
 
@@ -48,7 +111,7 @@ int main(int argc, char **argv)
     Obstacles obs;
     checkAllEdges(g_all_valid, obs);
 
-    setScene1(obs);
+    setScene4(obs);
 
     checkAllEdges(g_evaluated, obs);    
     // 
@@ -56,7 +119,7 @@ int main(int argc, char **argv)
     viz.vizGraph(g);
     viz.vizGraph(g_evaluated, "evaluated");
     viz.vizGraph(g_all_valid, "all_edges");
-    viz.vizObstacles(obs, -1.0);
+    viz.vizObstacles(obs, -(double)depth/5);
     arc_helpers::WaitForInput();
 
     while(ros::ok())

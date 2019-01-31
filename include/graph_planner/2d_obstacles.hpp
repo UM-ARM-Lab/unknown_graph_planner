@@ -116,7 +116,7 @@ namespace Obstacles2D
             Eigen::Vector2d vec = p2 - p1;
             double cos_theta = vec.x()/vec.norm();
             double w = std::sqrt((1 - cos_theta)/2);
-            if((vec.x() > 0) != (vec.y() > 0))
+            if(vec.y() > 0)
             {
                 w *= -1;
             }
