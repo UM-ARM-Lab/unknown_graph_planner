@@ -9,6 +9,7 @@
 
 using namespace Obstacles2D;
 using namespace Eigen;
+using namespace increasing_density_planning;
 
 int main(int argc, char **argv)
 {
@@ -29,10 +30,9 @@ int main(int argc, char **argv)
 
     std::vector<double> start{0,0};
     std::vector<double> goal{1,1};
-    // Rect r1(
     
     Obstacles obs;
-    evaluateAllEdges(g_all_valid, obs);
+    checkAllEdges(g_all_valid, obs);
 
     Rect r1(-0.1, 0.6, 0.4, 1.1);
     Rect r2(0.7, -0.1, 1.1, 0.6);
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     obs.obs.push_back(&cp1);
 
 
-    evaluateAllEdges(g_evaluated, obs);    
+    checkAllEdges(g_evaluated, obs);    
     // 
     
     viz.vizGraph(g);
@@ -56,8 +56,8 @@ int main(int argc, char **argv)
     while(ros::ok())
     {
         std::cout << "Planning from start to goal\n";
-        auto result = Plan(g, obs, start, goal);
-        // auto result = AstarPlan(g, obs, start, goal);
+        // auto result = Plan(g, obs, start, goal);
+        auto result = AstarPlan(g, obs, start, goal);
         std::cout << "Plan complete\n";
         viz.vizGraph(g);
         viz.vizPath(result.first, g);
