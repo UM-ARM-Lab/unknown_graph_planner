@@ -7,12 +7,25 @@
 int main()
 {
     std::vector<double> point{
-        0, 1, 2, 3,
-            0, 1, 2, 4};
-    flann::Matrix<double> mat(point.data(), 2, 4);
+        0, 1, 2, 3};
+    // 0, 1, 2, 4};
+    // mat(point.data(), 2, 4);
+
     
-    flann::Index<flann::L2<double>> index(mat, flann::KDTreeIndexParams(1));
+    flann::Index<flann::L2<double>> index(flann::Matrix<double>(), flann::KDTreeIndexParams(1));
+    // flann::Index<flann::L2<double>> index(flann::Matrix<double>(point.data(), 1, 4),
+    //                                       flann::KDTreeIndexParams(1));
+    index = flann::Index<flann::L2<double>>(flann::Matrix<double>(point.data(), 1, 4),
+                                            flann::KDTreeIndexParams(1));
+
+    // flann::Index<flann::L2<double>> index(flann::Matrix<double>(), flann::KDTreeIndexParams(1));
+    // std::cout << "empty index size" << index.size() << "\n";
     index.buildIndex();
+
+    std::vector<double> new_point{0, 1, 2, 3.5};
+    index.addPoints(flann::Matrix<double>(new_point.data(), 1, new_point.size()));
+
+    
 
     std::vector<double> query_vec{0,1,2,3.4};
     flann::Matrix<double> query(query_vec.data(), 1, 4);
@@ -23,7 +36,7 @@ int main()
     flann::SearchParams params(flann::flann_checks_t::FLANN_CHECKS_UNLIMITED, 0);
 
     std::cout << "Doing radius search\n";
-    double radius = 0.61;
+    double radius = 0.59;
     index.radiusSearch(query, indices, dists, radius*radius, params);
     // index.knnSearch(query, indices, dists, 1, params);
 

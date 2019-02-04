@@ -5,8 +5,14 @@
 
 #define DIFF 0.0000001
 
-// Declare a test
-TEST(GraphTestSuite, construction)
+
+TEST(GraphTestSuite, rdisc_construction)
+{
+    RDiscGraph g(0.1);
+    g.addVertexAndEdges(std::vector<double>{0,1});
+}
+
+TEST(GraphTestSuite, halton_construction)
 {
     double max_dist = 0.4;
     auto g = HaltonGraph(1000, max_dist);
@@ -14,15 +20,15 @@ TEST(GraphTestSuite, construction)
     {
         for(auto &e: n.getInEdges())
         {
-            EXPECT_TRUE(e.getWeight() <= max_dist);
-            EXPECT_TRUE(e.getWeight() > 0.00001);
+            EXPECT_LE(e.getWeight(), max_dist);
+            EXPECT_GT(e.getWeight(), 0.00001);
             EXPECT_FALSE(e.getFromIndex() == e.getToIndex());
         }
     }
 
 }
 
-TEST(GraphTestSuite, graphComparison)
+TEST(GraphTestSuite, halton_graph_comparison)
 {
     HaltonGraph g1(1000, 0.4);
     HaltonGraph g2(g1);
@@ -35,7 +41,39 @@ TEST(GraphTestSuite, graphComparison)
     EXPECT_TRUE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
 }
 
-TEST(GraphTestSuite, countEdges)
+TEST(GraphTestSuite, copy_constructor)
+{
+    HaltonGraph g1(1000, 0.4);
+    HaltonGraph g2(g1);
+    HaltonGraph g3;
+    g3 = g1;
+
+    EXPECT_EQ(g1.getNode(1).getValue()[0], g2.getNode(1).getValue()[0]) <<
+        "Copy constructor changed node value";
+    EXPECT_EQ(g1.getNode(1).getValue()[0], g3.getNode(1).getValue()[0]) <<
+        "Assignment changed node value";
+
+    std::vector<double> query{0.5, 0.5};
+    double radius = 0.2;
+    auto rdisc_orig = g1.getVerticesWithinRadius(query, radius);
+
+    // for(auto n:g1.getNodes())
+    // {
+    //     n.getValue() = std::vector<double>{-1,-1};
+    // }
+    // ASSERT_NE(rdisc_orig.size(), g1.getVerticesWithinRadius(query, radius).size()) <<
+    //     "Test invalid. g1 not properly mangled for test to be valid";
+    
+    auto rdisc_copy = g2.getVerticesWithinRadius(query, radius);
+    auto rdisc_asgn = g3.getVerticesWithinRadius(query, radius);
+
+    ASSERT_GT(rdisc_orig.size(), 0) << "Test not valid, no elements in rdisc";
+    ASSERT_EQ(rdisc_orig.size(), rdisc_copy.size()) << "Copy changes rdisc";
+    ASSERT_EQ(rdisc_orig.size(), rdisc_asgn.size()) << "Copy changes rdisc";
+    
+}
+
+TEST(GraphTestSuite, halton_count_edges)
 {
     auto g = HaltonGraph(10, 2);
     EXPECT_EQ(g.countEdges(), 10*9);
@@ -77,8 +115,8 @@ TEST(GraphTestSuite, saveAndLoad)
 
         for(int j=0; j<E1.size(); j++)
         {
-            EXPECT_TRUE(E1[j].getWeight() <= 0.4);
-            EXPECT_TRUE(E1[j].getWeight() > 0.00001);
+            EXPECT_LE(E1[j].getWeight(), 0.4);
+            EXPECT_GT(E1[j].getWeight(), 0.00001);
 
             EXPECT_EQ(E1[j].getValidity(), E2[j].getValidity());
             EXPECT_EQ(E1[j].getWeight(), E2[j].getWeight());

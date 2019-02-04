@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     Obstacles obs;
     checkAllEdges(g_all_valid, obs);
 
-    setScene4(obs);
+    setScene1(obs);
 
     checkAllEdges(g_evaluated, obs);    
     // 
@@ -130,6 +130,9 @@ int main(int argc, char **argv)
         std::cout << "Plan complete\n";
         viz.vizGraph(g);
         viz.vizPath(result.first, g);
+        viz.vizGraph(g_evaluated, "evaluated");
+        viz.vizGraph(g_all_valid, "all_edges");
+
         viz.vizObstacles(obs, -1.0);
         std::cout << "Path: " << PrettyPrint::PrettyPrint(result.first) << "\n";
         std::cout << "Path cost: " << result.second << "\n";

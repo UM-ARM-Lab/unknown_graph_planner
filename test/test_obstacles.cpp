@@ -17,7 +17,7 @@ TEST(TestObstacles, rect)
 TEST(TestObstacles, obstacles)
 {
     Obstacles o;
-    Obstacles2D::Rect* r = new Obstacles2D::Rect(0.2,0.5,0.3,0.6);
+    auto r = std::make_shared<Obstacles2D::Rect>(0.2,0.5,0.3,0.6);
     o.obs.push_back(r);
 
     EXPECT_TRUE(o.isValid(std::vector<double>{1.5, 1.5}));
