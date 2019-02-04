@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     Obstacles obs;
     checkAllEdges(g_all_valid, obs);
 
-    setScene1(obs);
+    setScene4(obs);
 
     checkAllEdges(g_evaluated, obs);    
     // 
@@ -134,6 +134,8 @@ int main(int argc, char **argv)
         viz.vizGraph(g_all_valid, "all_edges");
 
         viz.vizObstacles(obs, -1.0);
+        viz.vizText("Start", 0, 0, 0);
+        viz.vizText("Goal", 1, 1, 1);
         std::cout << "Path: " << PrettyPrint::PrettyPrint(result.first) << "\n";
         std::cout << "Path cost: " << result.second << "\n";
         arc_helpers::WaitForInput();
