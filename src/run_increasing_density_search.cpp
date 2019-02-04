@@ -96,10 +96,11 @@ int main(int argc, char **argv)
     ros::Rate r(0.5);
     r.sleep();
 
-    int depth = 6;
-    IncreasingDensityGrid g(depth);
-    IncreasingDensityGrid g_evaluated(g);
-    IncreasingDensityGrid g_all_valid(g);
+    int depth = 8;
+    
+    DoublingIDG g(depth);
+    DoublingIDG g_evaluated(g);
+    DoublingIDG g_all_valid(g);
 
 
     std::cout << "Graph has " << g.getNodes().size() << " nodes\n";
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
     Obstacles obs;
     checkAllEdges(g_all_valid, obs);
 
-    setScene4(obs);
+    setScene2(obs);
 
     checkAllEdges(g_evaluated, obs);    
     // 

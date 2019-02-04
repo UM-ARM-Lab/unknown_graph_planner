@@ -9,14 +9,14 @@ TEST(Grid, Create)
     int num_nodes_expected = 0;
     for(int i=0; i<4; i++)
     {
-        IncreasingDensityGrid g(i);
+        DoublingIDG g(i);
         int expected_nodes_per_side = 1 + pow(2, i);
         num_nodes_expected += std::pow(expected_nodes_per_side, 2);
         EXPECT_EQ(g.getNodes().size(), num_nodes_expected) << "Wrong number of nodes";
     }
 
 
-    IncreasingDensityGrid g(4);
+    DoublingIDG g(4);
     for(int depth =0; depth<4; depth++)
     {
         int expected_edges = 3 + (depth != 0);
