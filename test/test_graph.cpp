@@ -41,6 +41,38 @@ TEST(GraphTestSuite, halton_graph_comparison)
     EXPECT_TRUE(arc_dijkstras::haveSameEdgeValidity(g1, g2));
 }
 
+
+TEST(GraphTestSuite, rdisc_neighbors)
+{
+    RDiscGraph g(0.5);
+    g.addVertexAndEdges(std::vector<double>{0, 0, 0});
+    g.addVertexAndEdges(std::vector<double>{0, 0, 0.4});
+    g.addVertexAndEdges(std::vector<double>{0.1, 0.1, 0.1});
+    g.addVertexAndEdges(std::vector<double>{1, 1, 1});
+    EXPECT_EQ(4, g.getNodes().size()) << "Graph has wrong number of nodes";
+    EXPECT_EQ(6, g.countEdges()) << "Graph has wrong number of edges";
+
+    auto within_disc = g.getVerticesWithinRadius(std::vector<double>{0.05, 0.05, 0.05}, 0.18);
+    EXPECT_EQ(within_disc.size(), 2);
+    for(int i:within_disc)
+    {
+        EXPECT_TRUE(i==0 || i==2);
+    }
+}
+
+TEST(GraphTestSuite, nearest_neighbors)
+{
+    RDiscGraph g(0.5);
+    g.addVertexAndEdges(std::vector<double>{0, 0, 0});
+    g.addVertexAndEdges(std::vector<double>{0, 0, 0.4});
+    g.addVertexAndEdges(std::vector<double>{0.1, 0.1, 0.1});
+    g.addVertexAndEdges(std::vector<double>{1, 1, 1});
+
+    EXPECT_EQ(g.getNearest(std::vector<double>{0.1, 0.1, 0.1}), 2);
+
+    EXPECT_EQ(g.getNearest(std::vector<double>{0.9, 0.9, 0.4}), 3);
+}
+
 TEST(GraphTestSuite, copy_constructor)
 {
     HaltonGraph g1(1000, 0.4);

@@ -11,7 +11,7 @@
 
 namespace increasing_density_planning
 {
-    inline bool checkEdge(arc_dijkstras::Graph<IncrementalDensityNode> &g,
+    inline bool checkEdge(GraphD &g,
                           arc_dijkstras::GraphEdge &e, const Obstacles2D::Obstacles &obs)
     {
         using namespace arc_dijkstras;
@@ -24,8 +24,8 @@ namespace increasing_density_planning
             return false;
         }
     
-        std::vector<double> q1 = g.getNode(e.getFromIndex()).getValue().q;
-        std::vector<double> q2 = g.getNode(e.getToIndex()).getValue().q;
+        std::vector<double> q1 = DepthNode(g.getNode(e.getFromIndex()).getValue()).q;
+        std::vector<double> q2 = DepthNode(g.getNode(e.getToIndex()).getValue()).q;
 
         bool validity = obs.isValid(q1, q2);
         e.setValidity(validity ? EDGE_VALIDITY::VALID : EDGE_VALIDITY::INVALID);
@@ -33,7 +33,7 @@ namespace increasing_density_planning
     }
 
 
-    inline double evaluateEdge(arc_dijkstras::Graph<IncrementalDensityNode> &g,
+    inline double evaluateEdge(GraphD &g,
                                arc_dijkstras::GraphEdge &e, const Obstacles2D::Obstacles &obs)
     {
         if(!checkEdge(g, e, obs))
@@ -57,10 +57,12 @@ namespace increasing_density_planning
     }
 
 
-    inline double depthDoublingDistance(const IncrementalDensityNode &n1,
-                                        const IncrementalDensityNode &n2)
+    inline double depthDoublingDistance(const std::vector<double> &n1,
+                                        const std::vector<double> &n2)
     {
-        return EigenHelpers::Distance(n1.q, n2.q) * std::pow(2, n1.depth);
+        DepthNode d1(n1);
+        DepthNode d2(n2);
+        return EigenHelpers::Distance(d1.q, d2.q) * std::pow(2, d1.depth);
     }
     
     
@@ -70,7 +72,7 @@ namespace increasing_density_planning
                                          const std::vector<double> &goal)
     {
         using namespace arc_dijkstras;
-        const auto eval_fun = [&obs](Graph<IncrementalDensityNode> &g, GraphEdge &e)
+        const auto eval_fun = [&obs](GraphD &g, GraphEdge &e)
             {
                 return evaluateEdge(g, e, obs);
             };
@@ -91,7 +93,7 @@ namespace increasing_density_planning
             "> (node " << from_node << ") to <" <<
             PrettyPrint::PrettyPrint(goal) << "> (node " << goal_node << ")\n";
     
-        return LazySP<IncrementalDensityNode>::PerformLazySP(
+        return LazySP<std::vector<double>>::PerformLazySP(
             g, from_node, goal_node, &depthDoublingDistance, eval_fun, true);
     }
 
@@ -106,23 +108,23 @@ namespace increasing_density_planning
         int64_t from_node = g.getNodeAt(0, start);
         int64_t goal_node = g.getNodeAt(0, goal);
 
-        const auto edge_check_fun = [&obs](Graph<IncrementalDensityNode> &g, GraphEdge &e)
+        const auto edge_check_fun = [&obs](GraphD &g, GraphEdge &e)
             {
                 return checkEdge(g, e, obs);
             };
 
 
-        const auto distance_function = [&] (const Graph<IncrementalDensityNode>& search_graph, 
+        const auto distance_function = [&] (const GraphD& search_graph, 
                                             const GraphEdge& edge)
             {
                 UNUSED(search_graph);
                 return edge.getWeight();
             };
 
-        return AstarLogging<IncrementalDensityNode>::PerformLazyAstar(g, from_node, goal_node,
-                                                                      edge_check_fun,
-                                                                      distance_function,
-                                                                      &depthDoublingDistance, true);
+        return AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, goal_node,
+                                                                   edge_check_fun,
+                                                                   distance_function,
+                                                                   &depthDoublingDistance, true);
     }
 }
 

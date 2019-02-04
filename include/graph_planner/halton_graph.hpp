@@ -70,7 +70,7 @@ public:
         return graph_node_ind;
     }
 
-    std::vector<int> getVerticesWithinRadius(std::vector<double> query_point, double r)
+    std::vector<int> getVerticesWithinRadius(std::vector<double> query_point, double r) const
     {
         flann::Matrix<double> query(query_point.data(), 1, query_point.size());
         std::vector<std::vector<int>> indices(query.rows, std::vector<int>(1));
@@ -83,7 +83,7 @@ public:
         return indices[0];
     }
 
-    int64_t getNearest(std::vector<double> query_point)
+    int64_t getNearest(std::vector<double> query_point) const
     {
         flann::Matrix<double> query(query_point.data(), 1, query_point.size());
         std::vector<std::vector<int>> indices(query.rows, std::vector<int>(1));
@@ -168,7 +168,7 @@ public:
         deserializeSelf(buffer, (uint64_t)0, value_deserializer_fn);
     }
 
-    size_t countEdges()
+    size_t countEdges() const
     {
         size_t count = 0;
         for(auto &n:nodes_)

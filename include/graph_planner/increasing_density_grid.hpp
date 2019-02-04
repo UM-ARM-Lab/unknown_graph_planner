@@ -1,25 +1,37 @@
 #ifndef INCREASING_DENSITY_SERACH_HPP
 #define INCREASING_DENSITY_SERACH_HPP
 #include "halton_graph.hpp"
+#include <arc_utilities/timing.hpp>
 
 
-class IncrementalDensityNode
+class DepthNode
 {
 public:
     int depth;
     std::vector<double> q;
-    IncrementalDensityNode(int depth, std::vector<double> q):
+    DepthNode(int depth, std::vector<double> q):
         depth(depth), q(q) {}
 
+    DepthNode(const std::vector<double> &raw):
+        depth(raw[0]), 
+        q(raw.begin()+1, raw.end())
+    {}
+
+    std::vector<double> toRaw() const
+    {
+        std::vector<double> raw{(double)depth};
+        raw.insert(raw.end(), q.begin(), q.end());
+        return raw;
+    }
 };
 
 
 
-class IncreasingDensityGrid: public arc_dijkstras::Graph<IncrementalDensityNode>
+class IncreasingDensityGrid: public RDiscGraph
 {
 public:
     const double eps = 0.0000001;
-    IncreasingDensityGrid(int max_depth)
+    IncreasingDensityGrid(int max_depth) : RDiscGraph(1.0)
     {
         for(int i=0; i<= max_depth; i++)
         {
@@ -27,9 +39,20 @@ public:
         }
     }
 
+    virtual double edgeCost(const DepthNode &n1, const DepthNode &n2)
+    {
+        double d = EigenHelpers::Distance(n1.q, n2.q);
+        return d*pow(2, n1.depth);
+    }
+
+    DepthNode getNodeValue(int64_t ind) const
+    {
+        return DepthNode(getNode(ind).getValue());
+    }
     
     void addDenseGrid(int depth)
     {
+        // std::cout << "Adding grid at depth " << depth << "\n";
         for(double x = 0.0; x <= 1.0; x += 1.0/std::pow(2,depth))
         {
             for(double y = 0.0; y <= 1.0; y += 1.0/std::pow(2,depth))
@@ -42,15 +65,14 @@ public:
 
     int64_t getNodeAt(int depth, const std::vector<double> &q) const
     {
-        for(int64_t node_ind = 0; node_ind < nodes_.size(); node_ind++)
+        int64_t nearest = getNearest(DepthNode(depth, q).toRaw());
+
+        DepthNode n = getNodeValue(nearest);
+        if(n.depth != depth || EigenHelpers::Distance(n.q, q) > eps)
         {
-            if(nodes_[node_ind].getValue().depth == depth &&
-               EigenHelpers::Distance(nodes_[node_ind].getValue().q, q) < eps)
-            {
-                return node_ind;
-            }
+            return -1;
         }
-        return -1;
+        return nearest;
     }
 
     bool isInGraph(int depth, const std::vector<double> &q) const
@@ -60,53 +82,25 @@ public:
     
     int64_t addVertexAndEdges(int depth, std::vector<double> q)
     {
-        // std::cout << "Adding node " << depth << ", <" << q[0] << ", " << q[1] << ">\n";
-        int64_t new_node_ind = addNode(IncrementalDensityNode(depth, q));
+        DepthNode new_node = DepthNode(depth, q);
+        int64_t new_node_ind = addNode(new_node.toRaw());
         int64_t above_ind = getNodeAt(depth - 1, q);
         if(above_ind >= 0)
         {
             addEdgesBetweenNodes(new_node_ind, above_ind, 0);
         }
-        
-        for(int64_t node_ind = 0; node_ind < nodes_.size()-1; node_ind++)
+
+        auto inds_within_radius = getVerticesWithinRadius(new_node.toRaw(), 1.0/std::pow(2, depth) + eps);
+
+        for(const auto &ind:inds_within_radius)
         {
-            if(nodes_[node_ind].getValue().depth != depth)
+            if(new_node_ind == ind)
             {
                 continue;
             }
-                
-            double d = EigenHelpers::Distance(nodes_[node_ind].getValue().q, q);
-            double r_disc = 1.0/std::pow(2, depth);
-            if(d < r_disc + eps)
-            {
-                addEdgesBetweenNodes(node_ind, new_node_ind, d*pow(2, depth));
-            }
+            addEdgesBetweenNodes(new_node_ind, (int64_t)ind, edgeCost(new_node, getNodeValue(ind)));
         }
         return new_node_ind;
-    }
-
-
-
-    /* 
-     *  Copys the graph to a GraphD graph (removing information about depth)
-     */
-    GraphD toGraphD()
-    {
-        GraphD g;
-        for(int64_t node_id=0; node_id < nodes_.size(); node_id++)
-        {
-            g.addNode(nodes_[node_id].getValue().q);
-        }
-        
-        for(int64_t node_id=0; node_id < nodes_.size(); node_id++)
-        {
-            for(const auto e:nodes_[node_id].getOutEdges())
-            {
-                auto &e_other = g.addEdgeBetweenNodes(e.getFromIndex(), e.getToIndex(), e.getWeight());
-                e_other.setValidity(e.getValidity());
-            }
-        }
-        return g;
     }
 };
 

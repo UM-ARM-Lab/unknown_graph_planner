@@ -43,16 +43,18 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
 }
 
 
-geometry_msgs::Point to3DPoint(const std::vector<double> &node)
+geometry_msgs::Point to3DPoint(const GraphD &g, int64_t node_ind)
 {
+    const std::vector<double> &node = g.getNode(node_ind).getValue();
     geometry_msgs::Point p;
     p.x = node[0];
     p.y = node[1];
     return p;
 }
 
-geometry_msgs::Point to3DPoint(const IncrementalDensityNode &node)
+geometry_msgs::Point to3DPoint(const IncreasingDensityGrid &g, int64_t node_ind)
 {
+    DepthNode node = g.getNodeValue(node_ind);
     geometry_msgs::Point p;
     p.x = node.q[0];
     p.y = node.q[1];
@@ -63,7 +65,7 @@ geometry_msgs::Point to3DPoint(const IncrementalDensityNode &node)
 
 
 template <typename T>
-GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<T> &g, std::string name="graph")
+GraphMarker toVisualizationMsg(const T &g, std::string name="graph")
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
@@ -91,14 +93,8 @@ GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<T> &g, std::string nam
     {
         for(const auto e:n.getOutEdges())
         {
-            // if(e.validity == arc_dijkstras::EDGE_VALIDITY::INVALID)
-            // {
-            //     continue;
-            // }
-
-        
-            geometry_msgs::Point p1 = to3DPoint(g.getNode(e.getFromIndex()).getValue());
-            geometry_msgs::Point p2 = to3DPoint(g.getNode(e.getToIndex()).getValue());
+            geometry_msgs::Point p1 = to3DPoint(g, e.getFromIndex());
+            geometry_msgs::Point p2 = to3DPoint(g, e.getToIndex());
 
             switch(e.getValidity())
             {
@@ -129,7 +125,7 @@ GraphMarker toVisualizationMsg(const arc_dijkstras::Graph<T> &g, std::string nam
 
 
 template <typename T>
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const arc_dijkstras::Graph<T> &g,
+visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const T &g,
                                               int id=0, std::string color="blue")
 {
     visualization_msgs::Marker lines;
@@ -142,7 +138,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const a
 
     for(auto ind: path)
     {
-        lines.points.push_back(to3DPoint(g.getNode(ind).getValue()));
+        lines.points.push_back(to3DPoint(g, ind));
     }
     return lines;
 }
@@ -231,7 +227,7 @@ public:
 
 
     template <typename T>
-    void vizGraph(const arc_dijkstras::Graph<T> &g, std::string name="graph")
+    void vizGraph(const T &g, std::string name="graph")
     {
         GraphMarker gm = toVisualizationMsg(g, name);
         graph_valid_pub.publish(gm[0]);
@@ -271,7 +267,7 @@ public:
 
 
     template <typename T>
-    void vizPath(const std::vector<int64_t> &path, const arc_dijkstras::Graph<T> &g, int id = 0,
+    void vizPath(const std::vector<int64_t> &path, const T &g, int id = 0,
                  std::string color = "clear blue")
     {
         path_pub.publish(toVisualizationMsg(path, g, id, color));
