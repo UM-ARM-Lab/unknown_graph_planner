@@ -44,7 +44,7 @@ namespace increasing_density_planning
     }
 
     
-    inline void checkAllEdges(IncreasingDensityGrid &g, 
+    inline void checkAllEdges(IncreasingDensityGraph &g, 
                               const Obstacles2D::Obstacles &obs)
     {
         for(auto &n:g.getNodes())
@@ -66,39 +66,39 @@ namespace increasing_density_planning
     }
     
     
-    inline arc_helpers::AstarResult Plan(IncreasingDensityGrid &g,
-                                         const Obstacles2D::Obstacles &obs,
-                                         const std::vector<double> &start,
-                                         const std::vector<double> &goal)
-    {
-        using namespace arc_dijkstras;
-        const auto eval_fun = [&obs](GraphD &g, GraphEdge &e)
-            {
-                return evaluateEdge(g, e, obs);
-            };
+    // inline arc_helpers::AstarResult Plan(IncreasingDensityGraph &g,
+    //                                      const Obstacles2D::Obstacles &obs,
+    //                                      const std::vector<double> &start,
+    //                                      const std::vector<double> &goal)
+    // {
+    //     using namespace arc_dijkstras;
+    //     const auto eval_fun = [&obs](GraphD &g, GraphEdge &e)
+    //         {
+    //             return evaluateEdge(g, e, obs);
+    //         };
 
-        if(!g.isInGraph(0, start))
-        {
-            std::cout << "Start node <" << PrettyPrint::PrettyPrint(start) << "> is not in graph\n";
-        }
-        if(!g.isInGraph(0, goal))
-        {
-            std::cout << "Goal node <" << PrettyPrint::PrettyPrint(goal) << "> is not in graph\n";
-        }
+    //     if(!g.isInGraph(0, start))
+    //     {
+    //         std::cout << "Start node <" << PrettyPrint::PrettyPrint(start) << "> is not in graph\n";
+    //     }
+    //     if(!g.isInGraph(0, goal))
+    //     {
+    //         std::cout << "Goal node <" << PrettyPrint::PrettyPrint(goal) << "> is not in graph\n";
+    //     }
 
-        int64_t from_node = g.getNodeAt(0, start);
-        int64_t goal_node = g.getNodeAt(0, goal);
+    //     int64_t from_node = g.getNodeAt(0, start);
+    //     int64_t goal_node = g.getNodeAt(0, goal);
 
-        std::cout << "Planning from start: <" << PrettyPrint::PrettyPrint(start) <<
-            "> (node " << from_node << ") to <" <<
-            PrettyPrint::PrettyPrint(goal) << "> (node " << goal_node << ")\n";
+    //     std::cout << "Planning from start: <" << PrettyPrint::PrettyPrint(start) <<
+    //         "> (node " << from_node << ") to <" <<
+    //         PrettyPrint::PrettyPrint(goal) << "> (node " << goal_node << ")\n";
     
-        return LazySP<std::vector<double>>::PerformLazySP(
-            g, from_node, goal_node, &depthDoublingDistance, eval_fun, true);
-    }
+    //     return LazySP<std::vector<double>>::PerformLazySP(
+    //         g, from_node, goal_node, &depthDoublingDistance, eval_fun, true);
+    // }
 
 
-    inline arc_helpers::AstarResult AstarPlan(IncreasingDensityGrid &g,
+    inline arc_helpers::AstarResult AstarPlan(IncreasingDensityGraph &g,
                                               const Obstacles2D::Obstacles &obs,
                                               const std::vector<double> &start,
                                               const std::vector<double> &goal)
@@ -121,10 +121,22 @@ namespace increasing_density_planning
                 return edge.getWeight();
             };
 
+        const auto heuristic_function = [&g] (const std::vector<double> &n1,
+                                              const std::vector<double> &n2)
+            {
+                // DepthNode d1(n1);
+                // DepthNode d2(n2);
+                // return EigenHelpers::Distance(d1.q, d2.q) * std::pow(2, d1.depth);
+
+                return g.distanceHeuristic(n1, n2);
+            };
+
         return AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, goal_node,
                                                                    edge_check_fun,
                                                                    distance_function,
-                                                                   &depthDoublingDistance, true);
+                                                                   heuristic_function,
+                                                                   // &depthDoublingDistance, 
+                                                                   true);
     }
 }
 

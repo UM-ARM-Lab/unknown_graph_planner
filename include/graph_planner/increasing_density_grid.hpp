@@ -27,26 +27,39 @@ public:
 
 
 
-class IncreasingDensityGrid: public RDiscGraph
+class IncreasingDensityGraph: public RDiscGraph
 {
 protected:
-    void generateGraph(int max_depth);
+    virtual void generateGraph(int max_depth) = 0;
     
 public:
     const double eps = 0.0000001;
-    IncreasingDensityGrid();
+    IncreasingDensityGraph();
 
     virtual double edgeCost(const DepthNode &n1, const DepthNode &n2) const = 0;
 
+    virtual double verticalEdgeCost(const DepthNode &n1, const DepthNode &n2) const;
+    
+    virtual double distanceHeuristic(const std::vector<double> &raw1,
+                                     const std::vector<double> &raw2) const = 0;
+
+
     DepthNode getNodeValue(int64_t ind) const;
     
-    void addDenseGrid(int depth);
+
 
     int64_t getNodeAt(int depth, const std::vector<double> &q) const;
 
     bool isInGraph(int depth, const std::vector<double> &q) const;
     
     int64_t addVertexAndEdges(int depth, std::vector<double> q);
+};
+
+class IncreasingDensityGrid: public IncreasingDensityGraph
+{
+protected:
+    void addDenseGrid(int depth);
+    virtual void generateGraph(int max_depth);
 };
 
 
@@ -58,6 +71,28 @@ public:
     };
 
     virtual double edgeCost(const DepthNode &n1, const DepthNode &n2) const override;
+
+    virtual double distanceHeuristic(const std::vector<double> &raw1,
+                                     const std::vector<double> &raw2) const override;
+
+};
+
+
+class ConicIDG: public IncreasingDensityGrid
+{
+public:
+    ConicIDG(int max_depth){
+        generateGraph(max_depth);
+    };
+
+    virtual double edgeCost(const DepthNode &n1, const DepthNode &n2) const override;
+
+    virtual double verticalEdgeCost(const DepthNode &n1, const DepthNode &n2) const override;
+
+    virtual double distanceHeuristic(const std::vector<double> &raw1,
+                                     const std::vector<double> &raw2) const override;
+
+
 };
 
 

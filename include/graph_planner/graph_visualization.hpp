@@ -52,13 +52,14 @@ geometry_msgs::Point to3DPoint(const GraphD &g, int64_t node_ind)
     return p;
 }
 
-geometry_msgs::Point to3DPoint(const IncreasingDensityGrid &g, int64_t node_ind)
+geometry_msgs::Point to3DPoint(const IncreasingDensityGraph &g, int64_t node_ind)
 {
     DepthNode node = g.getNodeValue(node_ind);
     geometry_msgs::Point p;
     p.x = node.q[0];
     p.y = node.q[1];
     p.z = -(double)node.depth / 5.0;
+    // p.z = 1.0 / std::pow(2, (double)node.depth) - 1;
     return p;
 }
 

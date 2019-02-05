@@ -98,9 +98,12 @@ int main(int argc, char **argv)
 
     int depth = 8;
     
-    DoublingIDG g(depth);
-    DoublingIDG g_evaluated(g);
-    DoublingIDG g_all_valid(g);
+    // DoublingIDG g(depth);
+    // DoublingIDG g_evaluated(g);
+    // DoublingIDG g_all_valid(g);
+    ConicIDG g(depth);
+    ConicIDG g_evaluated(g);
+    ConicIDG g_all_valid(g);
 
 
     std::cout << "Graph has " << g.getNodes().size() << " nodes\n";
@@ -137,6 +140,9 @@ int main(int argc, char **argv)
         viz.vizObstacles(obs, -(double)depth/5);
         viz.vizText("Start", 0, 0, 0);
         viz.vizText("Goal", 1, 1, 1);
+        // viz.vizText("Horizontal Edge Cost: (C-space) distance", 2, 0.5, -0.1);
+        // viz.vizText("Vertical Edge Cost: (vertical) distance ", 3, 0.5, -0.2);
+        // viz.vizText("Heuristic: (C-space) distance + vertical distance", 4, 0.5, -0.3);
         std::cout << "Path: " << PrettyPrint::PrettyPrint(result.first) << "\n";
         std::cout << "Path cost: " << result.second << "\n";
         arc_helpers::WaitForInput();
