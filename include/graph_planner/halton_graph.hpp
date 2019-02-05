@@ -47,6 +47,23 @@ public:
         }
     }
 
+    RDiscGraph(const RDiscGraph &other) : GraphD(other),
+                                          r_disc(other.r_disc),
+                                          index(flann::Matrix<double>(), flann::KDTreeIndexParams(1))
+    {
+        rebuildKDTree();
+    }
+
+    
+    void rebuildKDTree()
+    {
+        std::cout << "Rebuilding KD tree\n";
+        for(auto &n: getNodes())
+        {
+            addToKDTree(n.getValue());
+        }
+    }
+
 
     void addToKDTree(std::vector<double> &point)
     {
@@ -70,6 +87,10 @@ public:
         return graph_node_ind;
     }
 
+    /*
+     *  NOTE: This method return nodes approximately in radius
+     *   Under the hood, this uses FLANN which does not compute the exact elements in radius
+     */
     std::vector<int> getVerticesWithinRadius(std::vector<double> query_point, double r) const
     {
         flann::Matrix<double> query(query_point.data(), 1, query_point.size());
