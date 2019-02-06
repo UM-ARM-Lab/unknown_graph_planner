@@ -55,11 +55,13 @@ public:
     int64_t addVertexAndEdges(int depth, std::vector<double> q);
 };
 
+
+
 class IncreasingDensityGrid: public IncreasingDensityGraph
 {
 protected:
     void addDenseGrid(int depth);
-    virtual void generateGraph(int max_depth);
+    virtual void generateGraph(int max_depth) override;
 };
 
 

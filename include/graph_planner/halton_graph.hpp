@@ -135,6 +135,7 @@ public:
             assert( d <= radius && "near point is further than allowed radius");
             addEdgesBetweenNodes(new_node_ind, near_ind, d);
         }
+        return new_node_ind;
     }
 
 
@@ -187,6 +188,7 @@ public:
             };
         std::vector<uint8_t> buffer = ZlibHelpers::LoadFromFileAndDecompress(filepath);
         deserializeSelf(buffer, (uint64_t)0, value_deserializer_fn);
+        rebuildKDTree();
     }
 
     size_t countEdges() const

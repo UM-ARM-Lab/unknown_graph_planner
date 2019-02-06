@@ -153,11 +153,13 @@ add_executable(wip_mcts src/wip_mcts.cpp
     src/increasing_density_grid)
 add_executable(wip_flann src/wip_flann.cpp)
 add_executable(wip_rdisc src/wip_rdisc.cpp
-  src/increasing_density_grid)
+  src/increasing_density_grid
+  src/increasing_density_halton.cpp)
 
 add_executable(run_increasing_density_search
   src/run_increasing_density_search.cpp
-  src/increasing_density_grid.cpp)
+  src/increasing_density_grid.cpp
+  src/increasing_density_halton.cpp)
 
 target_link_libraries(run_increasing_density_search
   ${catkin_LIBRARIES}
@@ -234,7 +236,9 @@ catkin_add_gtest(halton-test test/test_halton.cpp)
 catkin_add_gtest(obstacles-test test/test_obstacles.cpp)
 catkin_add_gtest(graph-test test/test_graph.cpp)
 catkin_add_gtest(grid-test test/test_grid.cpp
-  src/increasing_density_grid.cpp)
+  src/increasing_density_grid.cpp
+  src/increasing_density_halton.cpp
+  )
 target_link_libraries(graph-test ${catkin_LIBRARIES})
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})

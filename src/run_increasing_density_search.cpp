@@ -1,4 +1,5 @@
 #include "increasing_density_grid.hpp"
+#include "increasing_density_halton.hpp"
 #include "increasing_density_planning.hpp"
 #include "ros/ros.h"
 #include "visualization_msgs/Marker.h"
@@ -101,12 +102,16 @@ int main(int argc, char **argv)
     // DoublingIDG g(depth);
     // DoublingIDG g_evaluated(g);
     // DoublingIDG g_all_valid(g);
-    ConicIDG g(depth);
-    ConicIDG g_evaluated(g);
-    ConicIDG g_all_valid(g);
+    // ConicIDG g(depth);
+    // ConicIDG g_evaluated(g);
+    // ConicIDG g_all_valid(g);
+    
+    IDHaltonGraph g(depth);
+    IDHaltonGraph g_evaluated(g);
+    IDHaltonGraph g_all_valid(g);
 
 
-    std::cout << "Graph has " << g.getNodes().size() << " nodes\n";
+    std::cout << "Graph has " << g.getNodes().size() << " nodes and " << g.countEdges() << " edges\n";
     
 
     std::vector<double> start{0,0};
@@ -140,9 +145,9 @@ int main(int argc, char **argv)
         viz.vizObstacles(obs, -(double)depth/5);
         viz.vizText("Start", 0, 0, 0);
         viz.vizText("Goal", 1, 1, 1);
-        // viz.vizText("Horizontal Edge Cost: (C-space) distance", 2, 0.5, -0.1);
-        // viz.vizText("Vertical Edge Cost: (vertical) distance ", 3, 0.5, -0.2);
-        // viz.vizText("Heuristic: (C-space) distance + vertical distance", 4, 0.5, -0.3);
+        viz.vizText("Horizontal Edge Cost: (C-space) distance", 2, 0.5, -0.1);
+        viz.vizText("Vertical Edge Cost: 0 ", 3, 0.5, -0.2);
+        viz.vizText("Heuristic: (C-space) distance * (depth + 1) * 0.5", 4, 0.5, -0.3);
         std::cout << "Path: " << PrettyPrint::PrettyPrint(result.first) << "\n";
         std::cout << "Path cost: " << result.second << "\n";
         arc_helpers::WaitForInput();
