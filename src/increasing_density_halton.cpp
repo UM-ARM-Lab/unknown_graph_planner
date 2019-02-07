@@ -54,7 +54,7 @@ int64_t IDHaltonGraph::addVertexAndEdges(int depth, std::vector<double> q)
                              verticalEdgeCost(new_node, DepthNode(getNode(above_ind).getValue())));
     }
 
-    double edge_radius = 2 / std::pow(2, depth);
+    double edge_radius = 1.4 / std::pow(2, depth);
     auto inds_within_radius = getVerticesWithinRadius(new_node.toRaw(), edge_radius);
 
     for(const auto &near_ind:inds_within_radius)

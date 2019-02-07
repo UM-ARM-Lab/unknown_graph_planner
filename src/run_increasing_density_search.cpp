@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         viz.vizText("Goal", 1, 1, 1);
         viz.vizText("Horizontal Edge Cost: (C-space) distance", 2, 0.5, -0.1);
         viz.vizText("Vertical Edge Cost: 0 ", 3, 0.5, -0.2);
-        viz.vizText("Heuristic: (C-space) distance * (depth + 1) * 0.5", 4, 0.5, -0.3);
+        viz.vizText("Heuristic: (C-space) Manhattan distance ", 4, 0.5, -0.3);
         std::cout << "Path: " << PrettyPrint::PrettyPrint(result.first) << "\n";
         std::cout << "Path cost: " << result.second << "\n";
         arc_helpers::WaitForInput();
