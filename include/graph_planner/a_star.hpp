@@ -19,14 +19,32 @@ namespace arc_dijkstras
 
         AstarLogging() {}
 
-    public:
+    private:
 
-        static arc_helpers::AstarResult PerformLazyAstar(
-                Graph<NodeValueType, Allocator>& graph,
+        /*
+        *   Implementation of LazyAStar
+        *   This function is templated to allow const and non-const versions of 
+        *   Edge validity checking.
+        *   
+        *   Template Parameters
+        *   GraphType: either "const Graph<NodeValueType,...>" or "Graph<NodeValueType,...>"
+        *   GraphEdgeType: either "const GraphEdge" or "GraphEdge"
+        *   EdgeValidityFunctionType: either 
+        *                           "std::function<bool(Graph<NodeValueType, Allocator>&,
+        *                                          GraphEdge&)>"
+        *                       or
+        *                            "std::function<bool(const Graph<NodeValueType, Allocator>&,
+        *                                                const GraphEdge&)>"
+        *
+        *
+        *
+        */
+        template<typename GraphType, typename GraphEdgeType, typename EdgeValidityFunctionType>
+        static arc_helpers::AstarResult PerformLazyAstar_impl(
+                GraphType& graph,
                 const int64_t start_index,
                 const int64_t goal_index,
-                const std::function<bool(Graph<NodeValueType, Allocator>&,
-                                         GraphEdge&)>& edge_validity_check_fn,
+                const EdgeValidityFunctionType& edge_validity_check_fn,
                 const std::function<double(const Graph<NodeValueType, Allocator>&,
                                            const GraphEdge&)>& distance_fn,
                 const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
@@ -102,7 +120,7 @@ namespace arc_dijkstras
                 
                 
                 // Explore and add the children
-                for(GraphEdge& current_out_edge: graph.getNode(n.id()).getOutEdges())
+                for(GraphEdgeType& current_out_edge: graph.getNode(n.id()).getOutEdges())
                 {
                     // Get the next potential child node
                     const int64_t child_id = current_out_edge.getToIndex();
@@ -134,6 +152,57 @@ namespace arc_dijkstras
             return ExtractAstarResult(explored, start_index, goal_index);
         }
 
+
+
+        
+    public:
+
+        //Version that takes const graph and const edge_validity_check
+        static arc_helpers::AstarResult PerformLazyAstar(
+                const Graph<NodeValueType, Allocator>& graph,
+                const int64_t start_index,
+                const int64_t goal_index,
+                const std::function<bool(const Graph<NodeValueType, Allocator>&,
+                                         const GraphEdge&)>& edge_validity_check_fn,
+                const std::function<double(const Graph<NodeValueType, Allocator>&,
+                                           const GraphEdge&)>& distance_fn,
+                const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
+                const bool limit_pqueue_duplicates)
+        {
+            return PerformLazyAstar_impl<const Graph<NodeValueType, Allocator>,
+                                         const GraphEdge,
+                                         std::function<bool(const Graph<NodeValueType, Allocator>&,
+                                                            const GraphEdge&)>>
+                (graph, start_index, goal_index, edge_validity_check_fn, distance_fn, heuristic_fn,
+                 limit_pqueue_duplicates);
+                                         
+        }
+
+        //Version that takes non-const graph and non-const edge_validity_check
+        // i.e. this can change the graph when doing edge_validity checks,
+        //  the intent is that edge validity check can change the edge validitys from
+        //  "Unknown" to "Invalid" or "Valid"
+        static arc_helpers::AstarResult PerformLazyAstar(
+                Graph<NodeValueType, Allocator>& graph,
+                const int64_t start_index,
+                const int64_t goal_index,
+                const std::function<bool(Graph<NodeValueType, Allocator>&,
+                                         GraphEdge&)>& edge_validity_check_fn,
+                const std::function<double(const Graph<NodeValueType, Allocator>&,
+                                           const GraphEdge&)>& distance_fn,
+                const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
+                const bool limit_pqueue_duplicates)
+        {
+            return PerformLazyAstar_impl<Graph<NodeValueType, Allocator>,
+                                         GraphEdge,
+                                         std::function<bool(Graph<NodeValueType, Allocator>&,
+                                                            GraphEdge&)>>
+                (graph, start_index, goal_index, edge_validity_check_fn, distance_fn, heuristic_fn,
+                 limit_pqueue_duplicates);
+                                         
+        }
+
+        
 
         static arc_helpers::AstarResult PerformAstar(
                 const Graph<NodeValueType, Allocator>& graph,

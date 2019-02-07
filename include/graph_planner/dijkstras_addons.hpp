@@ -2,6 +2,8 @@
 #define DIJKSTRAS_ADDONS_HPP
 
 #include <arc_utilities/dijkstras.hpp>
+#include <arc_utilities/timing.hpp>
+#include "a_star.hpp"
 
 typedef arc_dijkstras::Graph<std::vector<double>> GraphD;
 
@@ -97,7 +99,8 @@ namespace arc_dijkstras
                     return edge.getWeight();
                 };
 
-            return SimpleGraphAstar<NodeValueType>::PerformLazyAstar(
+            return AstarLogging<NodeValueType>::PerformLazyAstar(
+            // return SimpleGraphAstar<NodeValueType>::PerformLazyAstar(
                 graph, start_index, goal_index, edge_validity_check_function, distance_function,
                 heuristic_fn, limit_pqueue_duplicates);
         }
@@ -120,7 +123,46 @@ namespace arc_dijkstras
             }
             return std::vector<int>();
         }
-        
+
+
+        /*
+         *  Checks unknown edges according to the forward selector
+         *  Returns true if the fully evaluated path has the same cost as the partially evaluated path
+         *  Returns early if an invalid edge is found or if an evaluated edge has higher cost 
+         *  that the edge weight (heuristic)
+         */
+        static bool checkPath(const std::vector<int64_t> &path,
+                              Graph<NodeValueType, Allocator>& g,
+                              EvaluatedEdges &evaluated_edges,
+                              const std::function<double(Graph<NodeValueType, Allocator>&,
+                                                         GraphEdge&)>& eval_edge_fn)
+        {
+            bool path_could_be_optimal = true;
+
+            while(path_could_be_optimal)
+            {
+                auto path_indicies_to_check = ForwardSelector(path, g, evaluated_edges);
+                if(path_indicies_to_check.size() == 0)
+                {
+                    return true;
+                }
+            
+                for(auto i:path_indicies_to_check)
+                {
+                    GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
+                    double evaluated_cost = eval_edge_fn(g, e);
+                    evaluated_edges[getHashable(e)] = evaluated_cost;
+
+                    if(e.getValidity() == EDGE_VALIDITY::INVALID || e.getWeight() < evaluated_cost)
+                    {
+                        path_could_be_optimal = false;
+                    }
+                }
+            }
+            return false;
+        }
+                              
+                              
 
 
         static arc_helpers::AstarResult
@@ -133,34 +175,25 @@ namespace arc_dijkstras
                                                  GraphEdge&)>& eval_edge_fn,
                       const bool limit_pqueue_duplicates)
         {
-            EvaluatedEdges evaluatedEdges;
+            EvaluatedEdges evaluated_edges;
 
             int num_astar_iters = 0;
 
             while(true)
             {
-                // PROFILE_START("a_star");
+                PROFILE_START("lazy_sp a_star");
                 auto prelim_result = PerformAstarForLazySP(g, start_index, goal_index,
                                                            heuristic_fn, limit_pqueue_duplicates,
-                                                           evaluatedEdges);
-                // std::cout << "a_star took " << PROFILE_RECORD("a_star") << "s\n";
+                                                           evaluated_edges);
+                PROFILE_RECORD("lazy_sp a_star");
                 num_astar_iters++;
                 
                 auto path = prelim_result.first;
 
-                auto path_indicies_to_check = ForwardSelector(path, g, evaluatedEdges);
-                if(path_indicies_to_check.size() == 0)
+                if(checkPath(path, g, evaluated_edges, eval_edge_fn))
                 {
-                    // std::cout << "Num A* iterations: " << num_astar_iters << "\n";
+                    PROFILE_RECORD_DOUBLE("lazysp astar iters", num_astar_iters);
                     return prelim_result;
-                }
-
-                for(auto i:path_indicies_to_check)
-                {
-                    GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
-                    // NodeValueType v1 = g.getNode(e.getFromIndex()).getValue();
-                    // NodeValueType v2 = g.getNode(e.getToIndex()).getValue();
-                    evaluatedEdges[getHashable(e)] = eval_edge_fn(g, e);
                 }
             }
         }
