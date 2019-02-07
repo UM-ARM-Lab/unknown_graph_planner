@@ -2,6 +2,7 @@
 #define LOGGING_A_STAR_HPP
 
 #include <arc_utilities/dijkstras.hpp>
+#include <arc_utilities/timing.hpp>
 
 /********
  *   This is a copy from arc_utilities/dijkstras.hpp, with added logging
@@ -69,6 +70,14 @@ namespace arc_dijkstras
             {
                 return heuristic_fn(graph.getNode(node_index).getValue(), graph.getNode(goal_index).getValue());
             };
+
+
+            // Profiling information
+            int num_node_expansions = 0;
+            int num_edge_expansions = 0;
+            int num_useful_expansions = 0;
+
+            
             // Setup
             std::priority_queue<AstarPQueueElement,
                                 std::vector<AstarPQueueElement>,
@@ -98,6 +107,8 @@ namespace arc_dijkstras
                 const arc_helpers::AstarPQueueElement n = queue.top();
                 queue.pop();
 
+                num_node_expansions++;
+
                 if (n.id() == goal_index)
                 {
                     // Solution found
@@ -107,7 +118,9 @@ namespace arc_dijkstras
 
                 if (limit_pqueue_duplicates)
                 {
+                    PROFILE_START("astar_queue_reduction");
                     queue_members_map.erase(n.id());
+                    PROFILE_RECORD("astar_queue_reduction");
                 }
                 
                 if (explored.count(n.id()) && n.costToCome() >= explored[n.id()].second)
@@ -118,21 +131,28 @@ namespace arc_dijkstras
                 // Add to the explored list
                 explored[n.id()] = std::make_pair(n.backpointer(), n.costToCome());
                 
-                
+                PROFILE_START("astar_add_neighbors");
                 // Explore and add the children
                 for(GraphEdgeType& current_out_edge: graph.getNode(n.id()).getOutEdges())
                 {
+                    num_edge_expansions++;
+                    
                     // Get the next potential child node
                     const int64_t child_id = current_out_edge.getToIndex();
 
+                    // PROFILE_START("astar_edge_validity_check");
                     if (!edge_validity_check_fn(graph, current_out_edge))
                     {
+                        // PROFILE_RECORD("astar_edge_validity_check");
                         continue;
                     }
-                    
+                    // PROFILE_RECORD("astar_edge_validity_check");
+
+                    // PROFILE_START("astar_cost_to_come");
                     // Compute the cost-to-come for the new child
                     const double child_cost_to_come = n.costToCome() + distance_fn(graph, current_out_edge);
-
+                    // PROFILE_RECORD("astar_cost_to_come");
+                    
                     if(explored.count(child_id) &&
                        child_cost_to_come >= explored[child_id].second)
                     {
@@ -144,11 +164,20 @@ namespace arc_dijkstras
                     {
                         continue;
                     }
+
+                    num_useful_expansions++;
                     
+                    // PROFILE_START("astar_push_to_queue");
                     const double child_value = child_cost_to_come + heuristic_function(child_id);
                     queue.push(AstarPQueueElement(child_id, n.id(), child_cost_to_come, child_value));
+                    // PROFILE_RECORD("astar_push_to_queue");
                 }
+                PROFILE_RECORD("astar_add_neighbors");
             }
+            PROFILE_RECORD_DOUBLE("astar_num_node_expansions", num_node_expansions);
+            PROFILE_RECORD_DOUBLE("astar_num_edge_expansions", num_edge_expansions);
+            PROFILE_RECORD_DOUBLE("astar_num_lower_cost_edge_expansions", num_useful_expansions);
+            
             return ExtractAstarResult(explored, start_index, goal_index);
         }
 
