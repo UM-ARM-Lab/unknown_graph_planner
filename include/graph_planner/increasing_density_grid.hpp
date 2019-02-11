@@ -27,14 +27,14 @@ public:
 
 
 
-class IncreasingDensityGraph: public RDiscGraph
+class SelectiveDensificationGraph: public RDiscGraph
 {
 protected:
     virtual void generateGraph(int max_depth) = 0;
     
 public:
     const double eps = 0.0000001;
-    IncreasingDensityGraph();
+    SelectiveDensificationGraph();
 
     virtual double edgeCost(const DepthNode &n1, const DepthNode &n2) const = 0;
 
@@ -57,7 +57,7 @@ public:
 
 
 
-class IncreasingDensityGrid: public IncreasingDensityGraph
+class SelectiveDensificationGrid: public SelectiveDensificationGraph
 {
 protected:
     void addDenseGrid(int depth);
@@ -65,10 +65,10 @@ protected:
 };
 
 
-class DoublingIDG: public IncreasingDensityGrid
+class DoublingSDG: public SelectiveDensificationGrid
 {
 public:
-    DoublingIDG(int max_depth){
+    DoublingSDG(int max_depth){
         generateGraph(max_depth);
     };
 
@@ -80,10 +80,10 @@ public:
 };
 
 
-class ConicIDG: public IncreasingDensityGrid
+class ConicSDG: public SelectiveDensificationGrid
 {
 public:
-    ConicIDG(int max_depth){
+    ConicSDG(int max_depth){
         generateGraph(max_depth);
     };
 

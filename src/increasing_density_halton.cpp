@@ -9,7 +9,7 @@ int numNodesAtDepth(int depth, int dim)
 }
 
 
-void IDHaltonGraph::generateGraph(int max_depth)
+void SDHaltonGraph::generateGraph(int max_depth)
 {
     int dim=2;
     
@@ -30,7 +30,7 @@ void IDHaltonGraph::generateGraph(int max_depth)
 }
 
 
-double IDHaltonGraph::distanceHeuristic(const std::vector<double> &raw1,
+double SDHaltonGraph::distanceHeuristic(const std::vector<double> &raw1,
                                    const std::vector<double> &raw2) const
 {
 
@@ -43,7 +43,7 @@ double IDHaltonGraph::distanceHeuristic(const std::vector<double> &raw1,
 
 
 
-int64_t IDHaltonGraph::addVertexAndEdges(int depth, std::vector<double> q)
+int64_t SDHaltonGraph::addVertexAndEdges(int depth, std::vector<double> q)
 {
     DepthNode new_node = DepthNode(depth, q);
     int64_t new_node_ind = addNode(new_node.toRaw());

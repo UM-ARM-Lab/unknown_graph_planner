@@ -99,16 +99,16 @@ int main(int argc, char **argv)
 
     int depth = 8;
     
-    // DoublingIDG g(depth);
-    // DoublingIDG g_evaluated(g);
-    // DoublingIDG g_all_valid(g);
-    // ConicIDG g(depth);
-    // ConicIDG g_evaluated(g);
-    // ConicIDG g_all_valid(g);
+    // DoublingSDG g(depth);
+    // DoublingSDG g_evaluated(g);
+    // DoublingSDG g_all_valid(g);
+    // ConicSDG g(depth);
+    // ConicSDG g_evaluated(g);
+    // ConicSDG g_all_valid(g);
     
-    IDHaltonGraph g(depth);
-    IDHaltonGraph g_evaluated(g);
-    IDHaltonGraph g_all_valid(g);
+    SDHaltonGraph g(depth);
+    SDHaltonGraph g_evaluated(g);
+    SDHaltonGraph g_all_valid(g);
     // IterativeDeepeningHaltonGraph g(depth);
     // IterativeDeepeningHaltonGraph g_evaluated(g);
     // IterativeDeepeningHaltonGraph g_all_valid(g);

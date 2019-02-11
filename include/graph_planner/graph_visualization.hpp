@@ -52,7 +52,7 @@ geometry_msgs::Point to3DPoint(const GraphD &g, int64_t node_ind)
     return p;
 }
 
-geometry_msgs::Point to3DPoint(const IncreasingDensityGraph &g, int64_t node_ind)
+geometry_msgs::Point to3DPoint(const SelectiveDensificationGraph &g, int64_t node_ind)
 {
     DepthNode node = g.getNodeValue(node_ind);
     geometry_msgs::Point p;

@@ -44,7 +44,7 @@ namespace increasing_density_planning
     }
 
     
-    inline void checkAllEdges(IncreasingDensityGraph &g, 
+    inline void checkAllEdges(SelectiveDensificationGraph &g, 
                               const Obstacles2D::Obstacles &obs)
     {
         for(auto &n:g.getNodes())
@@ -66,7 +66,7 @@ namespace increasing_density_planning
     }
     
     
-    inline arc_helpers::AstarResult Plan(IncreasingDensityGraph &g,
+    inline arc_helpers::AstarResult Plan(SelectiveDensificationGraph &g,
                                          const Obstacles2D::Obstacles &obs,
                                          const std::vector<double> &start,
                                          const std::vector<double> &goal)
@@ -110,7 +110,7 @@ namespace increasing_density_planning
     }
 
 
-    inline arc_helpers::AstarResult AstarPlan(IncreasingDensityGraph &g,
+    inline arc_helpers::AstarResult AstarPlan(SelectiveDensificationGraph &g,
                                               const Obstacles2D::Obstacles &obs,
                                               const std::vector<double> &start,
                                               const std::vector<double> &goal)

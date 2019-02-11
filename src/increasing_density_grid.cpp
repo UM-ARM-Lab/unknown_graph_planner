@@ -1,19 +1,19 @@
 #include "increasing_density_grid.hpp"
 
 
-IncreasingDensityGraph::IncreasingDensityGraph() : RDiscGraph(1.0)
+SelectiveDensificationGraph::SelectiveDensificationGraph() : RDiscGraph(1.0)
 {
 }
 
 
 
-DepthNode IncreasingDensityGraph::getNodeValue(int64_t ind) const
+DepthNode SelectiveDensificationGraph::getNodeValue(int64_t ind) const
 {
     return DepthNode(getNode(ind).getValue());
 }
 
 
-int64_t IncreasingDensityGraph::getNodeAt(int depth, const std::vector<double> &q) const
+int64_t SelectiveDensificationGraph::getNodeAt(int depth, const std::vector<double> &q) const
 {
     int64_t nearest = getNearest(DepthNode(depth, q).toRaw());
 
@@ -25,17 +25,17 @@ int64_t IncreasingDensityGraph::getNodeAt(int depth, const std::vector<double> &
     return nearest;
 }
 
-double IncreasingDensityGraph::verticalEdgeCost(const DepthNode &n1, const DepthNode &n2) const
+double SelectiveDensificationGraph::verticalEdgeCost(const DepthNode &n1, const DepthNode &n2) const
 {
     return 0;
 }
 
-bool IncreasingDensityGraph::isInGraph(int depth, const std::vector<double> &q) const
+bool SelectiveDensificationGraph::isInGraph(int depth, const std::vector<double> &q) const
 {
     return getNodeAt(depth, q) >= 0;
 }
 
-int64_t IncreasingDensityGraph::addVertexAndEdges(int depth, std::vector<double> q)
+int64_t SelectiveDensificationGraph::addVertexAndEdges(int depth, std::vector<double> q)
 {
     DepthNode new_node = DepthNode(depth, q);
     int64_t new_node_ind = addNode(new_node.toRaw());
@@ -65,7 +65,7 @@ int64_t IncreasingDensityGraph::addVertexAndEdges(int depth, std::vector<double>
 /**************************
  * Increasing Density Grid
  *************************/
-void IncreasingDensityGrid::generateGraph(int max_depth)
+void SelectiveDensificationGrid::generateGraph(int max_depth)
 {
     for(int i=0; i<= max_depth; i++)
     {
@@ -74,7 +74,7 @@ void IncreasingDensityGrid::generateGraph(int max_depth)
 }
 
 
-void IncreasingDensityGrid::addDenseGrid(int depth)
+void SelectiveDensificationGrid::addDenseGrid(int depth)
 {
     // std::cout << "Adding grid at depth " << depth << "\n";
     for(double x = 0.0; x <= 1.0; x += 1.0/std::pow(2,depth))
@@ -90,15 +90,15 @@ void IncreasingDensityGrid::addDenseGrid(int depth)
 
 
 /***************************
- *    DoublingIDG
+ *    DoublingSDG
  **************************/
-double DoublingIDG::edgeCost(const DepthNode &n1, const DepthNode &n2) const
+double DoublingSDG::edgeCost(const DepthNode &n1, const DepthNode &n2) const
 {
     double d = EigenHelpers::Distance(n1.q, n2.q);
     return d*pow(2, n1.depth);
 }
 
-double DoublingIDG::distanceHeuristic(const std::vector<double> &raw1,
+double DoublingSDG::distanceHeuristic(const std::vector<double> &raw1,
                                       const std::vector<double> &raw2) const
 {
 
@@ -113,13 +113,13 @@ double DoublingIDG::distanceHeuristic(const std::vector<double> &raw1,
 /***************************
  *      Conic
  **************************/
-double ConicIDG::edgeCost(const DepthNode &n1, const DepthNode &n2) const
+double ConicSDG::edgeCost(const DepthNode &n1, const DepthNode &n2) const
 {
     double d = EigenHelpers::Distance(n1.q, n2.q);
     return d;
 }
 
-double ConicIDG::distanceHeuristic(const std::vector<double> &raw1,
+double ConicSDG::distanceHeuristic(const std::vector<double> &raw1,
                                    const std::vector<double> &raw2) const
 {
 
@@ -138,7 +138,7 @@ double ConicIDG::distanceHeuristic(const std::vector<double> &raw1,
 
                                                          
 
-double ConicIDG::verticalEdgeCost(const DepthNode &n1, const DepthNode &n2) const
+double ConicSDG::verticalEdgeCost(const DepthNode &n1, const DepthNode &n2) const
 {
     return 0;
     // return std::abs(1.0 / std::pow(2, n1.depth) - 1.0 / std::pow(2, n1.depth));

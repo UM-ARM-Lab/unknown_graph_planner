@@ -4,12 +4,12 @@
 #include "increasing_density_grid.hpp"
 
 
-class IDHaltonGraph: public IncreasingDensityGraph
+class SDHaltonGraph: public SelectiveDensificationGraph
 {
 protected:
     virtual void generateGraph(int max_depth) override;
 public:
-    IDHaltonGraph(int max_depth)
+    SDHaltonGraph(int max_depth)
     {
         generateGraph(max_depth);
     }
@@ -27,7 +27,7 @@ public:
 };
 
 
-class IterativeDeepeningHaltonGraph : public IncreasingDensityGraph
+class IterativeDeepeningHaltonGraph : public SelectiveDensificationGraph
 {
 protected:
     virtual void generateGraph(int max_depth) override;
