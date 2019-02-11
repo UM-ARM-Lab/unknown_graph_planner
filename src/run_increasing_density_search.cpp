@@ -109,6 +109,9 @@ int main(int argc, char **argv)
     IDHaltonGraph g(depth);
     IDHaltonGraph g_evaluated(g);
     IDHaltonGraph g_all_valid(g);
+    // IterativeDeepeningHaltonGraph g(depth);
+    // IterativeDeepeningHaltonGraph g_evaluated(g);
+    // IterativeDeepeningHaltonGraph g_all_valid(g);
 
 
     std::cout << "Graph has " << g.getNodes().size() << " nodes and " << g.countEdges() << " edges\n";
