@@ -134,11 +134,13 @@ int main(int argc, char **argv)
     viz.vizObstacles(obs, -(double)depth/5);
     arc_helpers::WaitForInput();
 
+    bool record = true;
+
     while(ros::ok())
     {
         std::cout << "Planning from start to goal\n";
-        // auto result = Plan(g, obs, start, goal);
-        auto result = AstarPlan(g, obs, start, goal);
+        auto result = Plan(g, obs, start, goal);
+        // auto result = AstarPlan(g, obs, start, goal);
         std::cout << "Plan complete\n";
         viz.vizGraph(g);
         viz.vizPath(result.first, g);
@@ -150,9 +152,19 @@ int main(int argc, char **argv)
         viz.vizText("Goal", 1, 1, 1);
         viz.vizText("Horizontal Edge Cost: (C-space) distance", 2, 0.5, -0.1);
         viz.vizText("Vertical Edge Cost: 0 ", 3, 0.5, -0.2);
-        viz.vizText("Heuristic: (C-space) Manhattan distance ", 4, 0.5, -0.3);
+        viz.vizText("Heuristic: (C-space) distance * 2^depth", 4, 0.5, -0.3);
         std::cout << "Path: " << PrettyPrint::PrettyPrint(result.first) << "\n";
         std::cout << "Path cost: " << result.second << "\n";
+
+        if(record)
+        {
+            record = false;
+            std::string filename = "sim_timing_" + arc_helpers::GetCurrentTimeAsString();
+            PROFILE_WRITE_SUMMARY_FOR_ALL(filename);
+            PROFILE_WRITE_ALL_FEWER_THAN(filename, 10000);
+
+        }
+        
         arc_helpers::WaitForInput();
     }
     

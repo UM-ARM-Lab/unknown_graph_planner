@@ -66,36 +66,48 @@ namespace increasing_density_planning
     }
     
     
-    // inline arc_helpers::AstarResult Plan(IncreasingDensityGraph &g,
-    //                                      const Obstacles2D::Obstacles &obs,
-    //                                      const std::vector<double> &start,
-    //                                      const std::vector<double> &goal)
-    // {
-    //     using namespace arc_dijkstras;
-    //     const auto eval_fun = [&obs](GraphD &g, GraphEdge &e)
-    //         {
-    //             return evaluateEdge(g, e, obs);
-    //         };
+    inline arc_helpers::AstarResult Plan(IncreasingDensityGraph &g,
+                                         const Obstacles2D::Obstacles &obs,
+                                         const std::vector<double> &start,
+                                         const std::vector<double> &goal)
+    {
+        PROFILE_START("LazySP plan");
+        using namespace arc_dijkstras;
+        const auto eval_fun = [&obs](GraphD &g, GraphEdge &e)
+            {
+                PROFILE_START("Edge Evaluation");
+                auto result =  evaluateEdge(g, e, obs);
+                PROFILE_RECORD("Edge Evaluation");
+                return result;
+            };
 
-    //     if(!g.isInGraph(0, start))
-    //     {
-    //         std::cout << "Start node <" << PrettyPrint::PrettyPrint(start) << "> is not in graph\n";
-    //     }
-    //     if(!g.isInGraph(0, goal))
-    //     {
-    //         std::cout << "Goal node <" << PrettyPrint::PrettyPrint(goal) << "> is not in graph\n";
-    //     }
+        if(!g.isInGraph(0, start))
+        {
+            std::cout << "Start node <" << PrettyPrint::PrettyPrint(start) << "> is not in graph\n";
+        }
+        if(!g.isInGraph(0, goal))
+        {
+            std::cout << "Goal node <" << PrettyPrint::PrettyPrint(goal) << "> is not in graph\n";
+        }
 
-    //     int64_t from_node = g.getNodeAt(0, start);
-    //     int64_t goal_node = g.getNodeAt(0, goal);
+        int64_t from_node = g.getNodeAt(0, start);
+        int64_t goal_node = g.getNodeAt(0, goal);
 
-    //     std::cout << "Planning from start: <" << PrettyPrint::PrettyPrint(start) <<
-    //         "> (node " << from_node << ") to <" <<
-    //         PrettyPrint::PrettyPrint(goal) << "> (node " << goal_node << ")\n";
+        std::cout << "Planning from start: <" << PrettyPrint::PrettyPrint(start) <<
+            "> (node " << from_node << ") to <" <<
+            PrettyPrint::PrettyPrint(goal) << "> (node " << goal_node << ")\n";
+
+        const auto heuristic_function = [&g] (const std::vector<double> &n1,
+                                              const std::vector<double> &n2)
+            {
+                return g.distanceHeuristic(n1, n2);
+            };
     
-    //     return LazySP<std::vector<double>>::PerformLazySP(
-    //         g, from_node, goal_node, &depthDoublingDistance, eval_fun, true);
-    // }
+        auto result =  LazySP<std::vector<double>>::PerformLazySP(
+            g, from_node, goal_node, heuristic_function, eval_fun, true);
+        PROFILE_RECORD("LazySP plan");
+        return result;
+    }
 
 
     inline arc_helpers::AstarResult AstarPlan(IncreasingDensityGraph &g,
@@ -103,6 +115,7 @@ namespace increasing_density_planning
                                               const std::vector<double> &start,
                                               const std::vector<double> &goal)
     {
+        PROFILE_START("AStar plan");
         using namespace arc_dijkstras;
 
         int64_t from_node = g.getNodeAt(0, start);
@@ -131,12 +144,14 @@ namespace increasing_density_planning
                 return g.distanceHeuristic(n1, n2);
             };
 
-        return AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, goal_node,
-                                                                   edge_check_fun,
-                                                                   distance_function,
-                                                                   heuristic_function,
-                                                                   // &depthDoublingDistance, 
-                                                                   true);
+        auto result = AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, goal_node,
+                                                                          edge_check_fun,
+                                                                          distance_function,
+                                                                          heuristic_function,
+                                                                          // &depthDoublingDistance, 
+                                                                          true);
+        PROFILE_RECORD("AStar plan");
+        return result;
     }
 }
 
