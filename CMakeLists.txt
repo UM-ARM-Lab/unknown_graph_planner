@@ -109,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  # LIBRARIES graph
+  LIBRARIES increasing_density
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -148,6 +148,16 @@ add_executable(run_bctp
 target_link_libraries(run_bctp
   ${catkin_LIBRARIES}
   )
+
+
+add_library(increasing_density
+  src/increasing_density_grid.cpp
+  src/increasing_density_halton.cpp
+  )
+target_link_libraries(increasing_density
+  ${catkin_LIBRARIES}
+  )
+
 
 add_executable(wip_mcts src/wip_mcts.cpp
     src/increasing_density_grid)
