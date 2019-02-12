@@ -26,6 +26,64 @@ typedef arc_dijkstras::Graph<std::vector<double>> GraphD;
 
 
 
+namespace flann
+{
+    template<class T>
+    struct L2_weighted
+    {
+        typedef bool is_kdtree_distance;
+
+        typedef T ElementType;
+        typedef T ResultType;
+        typedef Eigen::Matrix<ElementType, Eigen::Dynamic, 1> VectorX;
+
+        L2_weighted(const Eigen::VectorXd& dof_weights)
+        {
+            dof_weights_.resizeLike(dof_weights);
+            dof_weights2_.resizeLike(dof_weights);
+            for (int i = 0; i < dof_weights.rows(); ++i)
+            {
+                dof_weights_(i) = (ElementType)dof_weights(i);
+                dof_weights2_(i) = (ElementType)(dof_weights(i) * dof_weights(i));
+            }
+        }
+
+        /**
+         *  Compute the squared Euclidean distance between two vectors.
+         *
+         *	The computation of squared root at the end is omitted for
+         *	efficiency.
+         */
+        template <typename Iterator1, typename Iterator2>
+        ResultType operator()(Iterator1 a, Iterator2 b, size_t size, ResultType worst_dist = -1) const
+        {
+            (void)worst_dist;
+            const Eigen::Map<const VectorX> a_vec(a, size);
+            const Eigen::Map<const VectorX> b_vec(b, size);
+            auto delta = (a_vec - b_vec).cwiseProduct(dof_weights_);
+            return delta.squaredNorm();
+        }
+
+        /**
+         *	Partial euclidean distance, using just one dimension. This is used by the
+         *	kd-tree when computing partial distances while traversing the tree.
+         *
+         *	Squared root is omitted for efficiency.
+         */
+        template <typename U, typename V>
+        inline ResultType accum_dist(const U& a, const V& b, int ind) const
+        {
+            return (a-b) * (a-b) * dof_weights2_(ind);
+        }
+
+    private:
+        VectorX dof_weights_;
+        VectorX dof_weights2_;
+    };
+}
+
+
+
 class RDiscGraph : public GraphD
 {
 public:
