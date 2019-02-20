@@ -250,6 +250,7 @@ catkin_add_gtest(grid-test test/test_grid.cpp
   src/increasing_density_halton.cpp
   )
 target_link_libraries(graph-test ${catkin_LIBRARIES})
+catkin_add_gtest(dijkstra_addons-test test/test_dijkstras_addons.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
