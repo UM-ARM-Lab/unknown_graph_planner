@@ -52,7 +52,9 @@ public:
 
     bool isInGraph(int depth, const std::vector<double> &q) const;
     
-    int64_t addVertexAndEdges(int depth, std::vector<double> q);
+    virtual int64_t addVertexAndEdges(int depth, std::vector<double> q);
+
+    virtual int64_t addVertexAndEdges(DepthNode dn);
 };
 
 

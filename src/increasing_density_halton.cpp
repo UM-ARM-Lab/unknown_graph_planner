@@ -1,7 +1,7 @@
 #include "increasing_density_halton.hpp"
 
 
-int numNodesAtDepth(int depth, int dim)
+static int numNodesAtDepth(int depth, int dim)
 {
     int vert_per_edge = std::pow(2, depth) + 1;
     int num_vert = std::pow(vert_per_edge, dim);

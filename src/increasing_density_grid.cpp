@@ -42,8 +42,13 @@ int64_t SelectiveDensificationGraph::addVertexAndEdges(int depth, std::vector<do
     int64_t above_ind = getNodeAt(depth - 1, q);
     if(above_ind >= 0)
     {
-        addEdgesBetweenNodes(new_node_ind, above_ind,
-                             verticalEdgeCost(new_node, DepthNode(getNode(above_ind).getValue())));
+        auto &new_to_edge = addEdgeBetweenNodes(new_node_ind, above_ind,
+                                                verticalEdgeCost(new_node, DepthNode(getNode(above_ind).getValue())));
+        auto &new_from_edge = addEdgeBetweenNodes(above_ind, new_node_ind,
+                                                verticalEdgeCost(DepthNode(getNode(above_ind).getValue()),
+                                                                 new_node));
+        new_to_edge.setValidity(arc_dijkstras::EDGE_VALIDITY::VALID);
+        new_from_edge.setValidity(arc_dijkstras::EDGE_VALIDITY::VALID);
     }
 
     auto inds_within_radius = getVerticesWithinRadius(new_node.toRaw(), 1.0/std::pow(2, depth) + eps);
@@ -59,8 +64,10 @@ int64_t SelectiveDensificationGraph::addVertexAndEdges(int depth, std::vector<do
     return new_node_ind;
 }
 
-
-
+int64_t SelectiveDensificationGraph::addVertexAndEdges(DepthNode dn)
+{
+    return addVertexAndEdges(dn.depth, dn.q);
+}
 
 /**************************
  * Increasing Density Grid
