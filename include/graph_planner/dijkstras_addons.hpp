@@ -197,6 +197,50 @@ namespace arc_dijkstras
                 }
             }
         }
+
+
+        
+        static arc_helpers::AstarResult
+        PerformBiLazySP(Graph<NodeValueType, Allocator>& g,
+                      int64_t start_index,
+                      int64_t goal_index,
+                      const std::function<double(const NodeValueType&,
+                                                 const NodeValueType&)>& heuristic_fn,
+                      const std::function<double(Graph<NodeValueType, Allocator>&,
+                                                 GraphEdge&)>& eval_edge_fn,
+                      const bool limit_pqueue_duplicates)
+        {
+            EvaluatedEdges evaluated_edges;
+
+            int num_astar_iters = 0;
+            bool reversed = false;
+
+            while(true)
+            {
+                PROFILE_START("lazy_sp a_star");
+                auto prelim_result = PerformAstarForLazySP(g,
+                                                           (!reversed ? start_index : goal_index),
+                                                           (!reversed ? goal_index : start_index),
+                                                           heuristic_fn, limit_pqueue_duplicates,
+                                                           evaluated_edges);
+                PROFILE_RECORD("lazy_sp a_star");
+                num_astar_iters++;
+                
+                auto path = prelim_result.first;
+
+                if(checkPath(path, g, evaluated_edges, eval_edge_fn))
+                {
+                    PROFILE_RECORD_DOUBLE("lazysp astar iters", num_astar_iters);
+                    if(reversed)
+                    {
+                        std::reverse(prelim_result.first.begin(), prelim_result.first.end());
+                    }
+                    return prelim_result;
+                }
+                reversed = !reversed;
+            }
+        }
+
     };
 }
 #endif
