@@ -63,13 +63,14 @@ namespace arc_dijkstras
      ****************************/
     typedef std::pair<double, double> LPAstarKey;
 
-    struct LPAstarPQueueElement
-    {
-        int64_t node_id;
+    // struct LPAstarPQueueElement
+    // {
+    //     int64_t node_id;
 
-        LPAstarPQueueElement(int64_t node_id) :
-            node_id(node_id){}
-    };
+    //     LPAstarPQueueElement(int64_t node_id) :
+    //         node_id(node_id){}
+    // };
+    typedef int64_t LPAstarPQueueElement;
 
     class CompareLPAstarKey
     {
@@ -103,6 +104,7 @@ namespace arc_dijkstras
         //                     std::vector<LPAstarPQueueElement>,
         //                     CompareLPAstarPQueueElementFn> queue;
         pqueue<LPAstarKey, LPAstarPQueueElement, CompareLPAstarKey> queue;
+        
 
         std::unordered_map<int64_t, double> g_map;
         std::unordered_map<int64_t, double> rhs_map;
@@ -128,8 +130,8 @@ namespace arc_dijkstras
 
         LPAstarKey calculateKey(int64_t node_id)
         {
-            double k1 = std::min(g(node_id),rhs(node_id)) + heurisitic_fn(graph.getNode(node_id).getValue(),
-                                                                          graph.getNode(goal_index).getValue());
+            double k1 = std::min(g(node_id),rhs(node_id)) + heuristic_fn(graph.getNode(node_id).getValue(),
+                                                                         graph.getNode(goal_index).getValue());
             double k2 = std::min(g(node_id), rhs(node_id));
             return std::make_pair(k1, k2);
         }
@@ -164,12 +166,13 @@ namespace arc_dijkstras
             queue.remove(u);
             if(g(u) != rhs(u))
             {
-                queue.insert(u, calculateKey(u));
+                queue.insert({calculateKey(u), LPAstarPQueueElement(u)});
             }
         }
 
         arc_helpers::AstarResult findPath()
         {
+            std::cout << "Returning path\n";
             arc_helpers::AstarResult result;
             result.second = g(goal_index);
             if(result.second >= std::numeric_limits<double>::max())
@@ -181,10 +184,18 @@ namespace arc_dijkstras
             int64_t cur_index = goal_index;
             while(cur_index != start_index)
             {
-                const auto& node = graph.getNode(current_index);
+                const auto& node = graph.getNode(cur_index);
+                double min_val = std::numeric_limits<double>::infinity();
                 for(const auto& e: node.getInEdges())
                 {
+                    double cc = g(e.getFromIndex()) + distance_fn(graph, e);
+                    if(cc < min_val)
+                    {
+                        min_val = cc;
+                        cur_index = e.getFromIndex();
+                    }
                 }
+                path.push_back(cur_index);
             }
             std::reverse(path.begin(), path.end());
             result.first = path;
@@ -221,25 +232,24 @@ namespace arc_dijkstras
             }
 
             rhs_map[start_index] = 0;
-            g_map[start_index] = 0;
+            // g_map[start_index] = 0;
 
-            // queue.push(LPAstarKey(start_index,
-            //                       std::make_pair(heuristic_fn(graph.getNode(start_index).getValue(),
-            //                                                   graph.getNode(goal_index).getValue()),
-            //                                      0)));
+            queue.insert({calculateKey(start_index), LPAstarPQueueElement(start_index)});
         }
 
         arc_helpers::AstarResult computeShortestPath()
         {
+            std::cout << "Starting compute shortest path\n";
             while(!queue.isEmpty() &&
                   (CompareLPAstarKey()(queue.top().first, calculateKey(goal_index)) ||
                    rhs(goal_index) != g(goal_index)))
             {
-                int64_t u = queue.top().second.node_id;
+                std::cout << "Computing shortest path\n";
+                int64_t u = queue.top().second;
                 queue.pop();
                 if(g(u) > rhs(u))
                 {
-                    g(u) = rhs(u);
+                    g_map[u] = rhs(u);
                     for(const GraphEdge &e: graph.getNode(u).getOutEdges())
                     {
                         updateVertex(e.getToIndex());
@@ -255,7 +265,7 @@ namespace arc_dijkstras
                     updateVertex(u);
                 }
             }
-            //todo: return path
+            return findPath();
         }
 
         void updateEdgeCost(const GraphEdge &e)
@@ -266,6 +276,10 @@ namespace arc_dijkstras
     
     
 
+
+
+
+    
 
     /******************************
      **   Lazy SP
