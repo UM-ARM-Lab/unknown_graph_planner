@@ -194,7 +194,7 @@ TEST(DIJKSTRAS_ADDONS, LPA_grid_inadmissible)
         };
     const auto& heuristic_fn = [] (const std::vector<double>& q1, const std::vector<double>& q2)
         {
-            return 1.0*EigenHelpers::Distance(q1, q2);
+            return 1.2*EigenHelpers::Distance(q1, q2);
         };
     LPAstar<std::vector<double>> lpa(graph, 0, 9, edge_validity_fn, distance_fn, heuristic_fn);
 

@@ -53,6 +53,19 @@ namespace arc_dijkstras
             }
             return reverse_lookup.erase(elem);
         }
+
+        void update(std::pair<Priority, Element> kv)
+        {
+            remove(kv.second);
+            insert(kv);
+        }
+
+        bool contains(Element elem)
+        {
+            return reverse_lookup.count(elem) > 0;
+        }
+
+
     };
 }
 

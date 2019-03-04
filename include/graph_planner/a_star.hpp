@@ -261,5 +261,82 @@ namespace arc_dijkstras
                                     distance_function, heuristic_fn, limit_pqueue_duplicates);
         }
     };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    /***************************
+     **     RA*
+     **************************/
+
+    /*Repeated version of standard A* 
+     */
+
+    // template<typename NodeValueType, typename Allocator = std::allocator<NodeValueType>>
+    // class RAstar
+    // {
+    // protected:
+    //     const Graph<NodeValueType, Allocator>& graph;
+    //     const int64_t start_index;
+    //     const int64_t goal_index;
+    //     const std::function<bool(const Graph<NodeValueType, Allocator>&,
+    //                              const GraphEdge&)>& edge_validity_check_fn;
+    //     const std::function<double(const Graph<NodeValueType, Allocator>&,
+    //                                const GraphEdge&)>& distance_fn;
+    //     const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn;
+
+    //     std::priority_queue<arc_helpers::AstarPQueueElement,
+    //                         std::vector<arc_helpers::AstarPQueueElement>,
+    //                         arc_helpers::CompareAstarPQueueElementFn> open;
+    // public:
+    //     RAstar(const Graph<NodeValueType, Allocator>& graph,
+    //            const int64_t start_index,
+    //            const int64_t goal_index,
+    //            const std::function<bool(const Graph<NodeValueType, Allocator>&,
+    //                                     const GraphEdge&)>& edge_validity_check_fn,
+    //            const std::function<double(const Graph<NodeValueType, Allocator>&,
+    //                                       const GraphEdge&)>& distance_fn,
+    //            const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn) :
+    //         graph(graph), start_index(start_index), goal_index(goal_index),
+    //         edge_validity_check_fn(edge_validity_check_fn),
+    //         distance_fn(distance_fn),
+    //         heuristic_fn(heuristic_fn)
+    //     {
+    //         // Enforced sanity checks
+    //         if ((start_index < 0) || (start_index >= (int64_t)graph.getNodes().size()))
+    //         {
+    //             throw std::invalid_argument("Start index out of range");
+    //         }
+    //         if ((goal_index < 0) || (goal_index >= (int64_t)graph.getNodes().size()))
+    //         {
+    //             throw std::invalid_argument("Goal index out of range");
+    //         }
+    //         if (start_index == goal_index)
+    //         {
+    //             throw std::invalid_argument("Start and goal indices must be different");
+    //         }
+
+    //         rhs_map[start_index] = 0;
+    //         // g_map[start_index] = 0;
+
+    //         queue.insert({calculateKey(start_index), LPAstarPQueueElement(start_index)});
+
+    // };
+
+
 }
 #endif
