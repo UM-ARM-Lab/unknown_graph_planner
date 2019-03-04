@@ -175,6 +175,9 @@ target_link_libraries(run_increasing_density_search
   ${catkin_LIBRARIES}
   )
 
+add_executable(wip_LPA src/wip_LPA.cpp)
+
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

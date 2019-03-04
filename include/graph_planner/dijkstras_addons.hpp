@@ -58,10 +58,20 @@ namespace arc_dijkstras
 
 
 
+
+
     /*****************************
      **    LPA*
      ****************************/
+
+    /*
+     *  See paper: http://idm-lab.org/bib/abstracts/papers/icaps05.pdf
+     *  A generalized framework for lifelong planning A* search
+     */
+
+    
     typedef std::pair<double, double> LPAstarKey;
+    // typedef std::array<double, 3> LPAstarKey;
 
     // struct LPAstarPQueueElement
     // {
@@ -130,10 +140,23 @@ namespace arc_dijkstras
 
         LPAstarKey calculateKey(int64_t node_id)
         {
-            double k1 = std::min(g(node_id),rhs(node_id)) + heuristic_fn(graph.getNode(node_id).getValue(),
-                                                                         graph.getNode(goal_index).getValue());
-            double k2 = std::min(g(node_id), rhs(node_id));
-            return std::make_pair(k1, k2);
+            int64_t s = node_id;
+            double h = heuristic_fn(graph.getNode(node_id).getValue(), graph.getNode(goal_index).getValue());
+            double h_cons = heuristic_consistent_fn(graph.getNode(node_id).getValue(),
+                                                    graph.getNode(goal_index).getValue());
+                                                          
+            if(g(node_id) < rhs(node_id))
+            {
+                return std::make_pair(g(s) + h_cons, g(s));
+                                      
+            }
+            return std::make_pair(rhs(s) + h, rhs(s));
+            
+            
+            // double k1 = std::min(g(node_id),rhs(node_id)) + heuristic_fn(graph.getNode(node_id).getValue(),
+            //                                                              graph.getNode(goal_index).getValue());
+            // double k2 = std::min(g(node_id), rhs(node_id));
+            // return std::make_pair(k1, k2);
         }
 
 
@@ -163,8 +186,15 @@ namespace arc_dijkstras
                 rhs_map[u] = min_pred_cost;
             }
 
-            queue.remove(u);
-            if(g(u) != rhs(u))
+            if(queue.contains(LPAstarPQueueElement(u)) && g(u) != rhs(u))
+            {
+                queue.update({calculateKey(u), LPAstarPQueueElement(u)});
+            }
+            else if(queue.contains(LPAstarPQueueElement(u)) && g(u) == rhs(u))
+            {
+                queue.remove(u);
+            }
+            else if(!queue.contains(LPAstarPQueueElement(u)) && g(u) != rhs(u))
             {
                 queue.insert({calculateKey(u), LPAstarPQueueElement(u)});
             }
@@ -195,6 +225,10 @@ namespace arc_dijkstras
                         cur_index = e.getFromIndex();
                     }
                 }
+                if(min_val >= std::numeric_limits<double>::max())
+                {
+                    throw std::logic_error("Best path has infinite cost");
+                }
                 path.push_back(cur_index);
             }
             std::reverse(path.begin(), path.end());
@@ -211,11 +245,15 @@ namespace arc_dijkstras
                                          const GraphEdge&)>& edge_validity_check_fn,
                 const std::function<double(const Graph<NodeValueType, Allocator>&,
                                            const GraphEdge&)>& distance_fn,
-                const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn) :
+                const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
+                const std::function<double(const NodeValueType&,
+                                           const NodeValueType&)>& heuristic_consistent_fn) :
+
             graph(graph), start_index(start_index), goal_index(goal_index),
             edge_validity_check_fn(edge_validity_check_fn),
             distance_fn(distance_fn),
-            heuristic_fn(heuristic_fn)
+            heuristic_fn(heuristic_fn),
+            heuristic_consistent_fn(heuristic_consistent_fn)
         {
             // Enforced sanity checks
             if ((start_index < 0) || (start_index >= (int64_t)graph.getNodes().size()))
@@ -239,12 +277,12 @@ namespace arc_dijkstras
 
         arc_helpers::AstarResult computeShortestPath()
         {
-            std::cout << "Starting compute shortest path\n";
+            // std::cout << "Starting compute shortest path\n";
             while(!queue.isEmpty() &&
                   (CompareLPAstarKey()(queue.top().first, calculateKey(goal_index)) ||
                    rhs(goal_index) != g(goal_index)))
             {
-                std::cout << "Computing shortest path\n";
+                // std::cout << "Computing shortest path\n";
                 int64_t u = queue.top().second;
                 queue.pop();
                 if(g(u) > rhs(u))
@@ -321,13 +359,28 @@ namespace arc_dijkstras
                      const GraphEdge& edge)
                 {
                     UNUSED(search_graph);
-                    if(evaluatedEdges.count(getHashable(edge)))
+                    // if(evaluatedEdges.count(getHashable(edge)))
+                    // {
+                    //     // std::cout << "Found already evaluted edge!\n";
+                    //     return evaluatedEdges.at(getHashable(edge));
+                    // }
+                    double planning_cost = 0;
+                    if(edge.getValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
                     {
-                        // std::cout << "Found already evaluted edge!\n";
-                        return evaluatedEdges.at(getHashable(edge));
+                        PROFILE_START("astar_adding planning cost");
+                        // planning_cost += 0.06;
+                        // planning_cost += 1;
+                        PROFILE_RECORD("astar_adding planning cost");
                     }
+                    else
+                    {
+                        PROFILE_START("astar_not_adding_planning_cost");
+                        PROFILE_RECORD("astar_not_adding_planning_cost");
+                    }
+
+                    
                     // std::cout << "Using heuristic weight\n";
-                    return edge.getWeight();
+                    return edge.getWeight() + planning_cost;
                 };
 
             return AstarLogging<NodeValueType>::PerformLazyAstar(
