@@ -3,6 +3,7 @@
 
 #include <arc_utilities/dijkstras.hpp>
 #include <arc_utilities/timing.hpp>
+#include <boost/heap/fibonacci_heap.hpp>
 
 /********
  *   This is a copy from arc_utilities/dijkstras.hpp, with added logging
@@ -82,11 +83,16 @@ namespace arc_dijkstras
             std::priority_queue<AstarPQueueElement,
                                 std::vector<AstarPQueueElement>,
                                 CompareAstarPQueueElementFn> queue;
+            // boost::heap::fibonacci_heap<AstarPQueueElement,
+            //                             boost::heap::compare<CompareAstarPQueueElementFn>> queue;
+
+            
             
             // Optional map to reduce the number of duplicate items added to the pqueue
             // Key is the node index in the provided graph
             // Value is cost-to-come
             std::unordered_map<int64_t, double> queue_members_map;
+
             
             // Key is the node index in the provided graph
             // Value is a pair<backpointer, cost-to-come>
@@ -140,22 +146,29 @@ namespace arc_dijkstras
                     // Get the next potential child node
                     const int64_t child_id = current_out_edge.getToIndex();
 
-                    // PROFILE_START("astar_edge_validity_check");
+                    PROFILE_START("astar_edge_validity_check");
                     if (!edge_validity_check_fn(graph, current_out_edge))
                     {
-                        // PROFILE_RECORD("astar_edge_validity_check");
+                        PROFILE_RECORD("astar_edge_validity_check");
                         continue;
                     }
-                    // PROFILE_RECORD("astar_edge_validity_check");
+                    PROFILE_RECORD("astar_edge_validity_check");
 
                     // PROFILE_START("astar_cost_to_come");
                     // Compute the cost-to-come for the new child
                     const double child_cost_to_come = n.costToCome() + distance_fn(graph, current_out_edge);
                     // PROFILE_RECORD("astar_cost_to_come");
                     
-                    if(explored.count(child_id) &&
-                       child_cost_to_come >= explored[child_id].second)
+                    // if(explored.count(child_id) &&
+                    //    child_cost_to_come >= explored[child_id].second)
+                    if(explored.count(child_id) )
                     {
+                        PROFILE_START("astar_expansion_in_closed_list");
+                        PROFILE_RECORD("astar_expansion_in_closed_list");
+                        if(child_cost_to_come < explored[child_id].second)
+                        {
+                            explored[child_id] = std::make_pair(n.id(), child_cost_to_come);
+                        }
                         continue;
                     }
 
@@ -165,12 +178,13 @@ namespace arc_dijkstras
                         continue;
                     }
 
+
                     num_useful_expansions++;
                     
-                    // PROFILE_START("astar_push_to_queue");
+                    PROFILE_START("astar_push_to_queue");
                     const double child_value = child_cost_to_come + heuristic_function(child_id);
                     queue.push(AstarPQueueElement(child_id, n.id(), child_cost_to_come, child_value));
-                    // PROFILE_RECORD("astar_push_to_queue");
+                    PROFILE_RECORD("astar_push_to_queue");
                 }
                 PROFILE_RECORD("astar_add_neighbors");
             }
