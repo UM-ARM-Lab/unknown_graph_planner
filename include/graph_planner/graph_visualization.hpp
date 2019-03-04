@@ -58,7 +58,7 @@ geometry_msgs::Point to3DPoint(const SelectiveDensificationGraph &g, int64_t nod
     geometry_msgs::Point p;
     p.x = node.q[0];
     p.y = node.q[1];
-    p.z = -(double)node.depth / 5.0;
+    p.z = -(double)node.depth / 3.0;
     // p.z = 1.0 / std::pow(2, (double)node.depth) - 1;
     return p;
 }
@@ -279,10 +279,11 @@ public:
         vizText(text, 1000, -0.1, 0.5);
     }
 
-    void vizText(std::string text, int id, double x, double y)
+    void vizText(std::string text, int id, double x, double y, std::string ns = "text")
     {
         visualization_msgs::Marker m;
         m.id = id;
+        m.ns = ns;
         m.header.frame_id = "/graph_frame";
         m.type=visualization_msgs::Marker::TEXT_VIEW_FACING;
         m.text = text;
