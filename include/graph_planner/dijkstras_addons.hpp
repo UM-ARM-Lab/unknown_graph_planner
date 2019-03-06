@@ -172,6 +172,7 @@ namespace arc_dijkstras
 
         void updateVertex(int64_t u)
         {
+            std::cout << "Updating vertex " << u << "\n";
             if(u != start_index)
             {
                 double min_pred_cost = std::numeric_limits<double>::infinity();
@@ -199,17 +200,21 @@ namespace arc_dijkstras
             {
                 queue.insert({calculateKey(u), LPAstarPQueueElement(u)});
             }
+            std::cout << "Vertex updated\n";
         }
 
         arc_helpers::AstarResult findPath()
         {
             std::cout << "Returning path\n";
             arc_helpers::AstarResult result;
+
             result.second = g(goal_index);
             if(result.second >= std::numeric_limits<double>::max())
             {
                 return result;
             }
+            
+            std::cout << "Path cost " << result.second << "\n";
             
             std::vector<int64_t> path{goal_index};
             int64_t cur_index = goal_index;
@@ -220,6 +225,7 @@ namespace arc_dijkstras
                 for(const auto& e: node.getInEdges())
                 {
                     double cc = g(e.getFromIndex()) + distance_fn(graph, e);
+                    std::cout << "  cost to " << e.getFromIndex() << " is " << cc << "\n";
                     if(cc < min_val)
                     {
                         min_val = cc;
@@ -230,15 +236,28 @@ namespace arc_dijkstras
                 {
                     throw std::logic_error("Best path has infinite cost");
                 }
+                std::cout << "Node " << cur_index << " on path with cost " << min_val << "\n";
                 path.push_back(cur_index);
             }
             std::reverse(path.begin(), path.end());
             result.first = path;
+            std::cout << "Found\n";
             return result;
         }
     
 
     public:
+        LPAstar(const Graph<NodeValueType, Allocator>& graph,
+                const int64_t start_index,
+                const int64_t goal_index,
+                const std::function<bool(const Graph<NodeValueType, Allocator>&,
+                                         const GraphEdge&)>& edge_validity_check_fn,
+                const std::function<double(const Graph<NodeValueType, Allocator>&,
+                                           const GraphEdge&)>& distance_fn,
+                const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn) :
+            LPAstar(graph, start_index, goal_index, edge_validity_check_fn, distance_fn,
+                    heuristic_fn, heuristic_fn){}
+
         LPAstar(const Graph<NodeValueType, Allocator>& graph,
                 const int64_t start_index,
                 const int64_t goal_index,
@@ -278,12 +297,12 @@ namespace arc_dijkstras
 
         arc_helpers::AstarResult computeShortestPath()
         {
-            // std::cout << "Starting compute shortest path\n";
+            std::cout << "Starting compute shortest path\n";
             while(!queue.isEmpty() &&
                   (CompareLPAstarKey()(queue.top().first, calculateKey(goal_index)) ||
                    rhs(goal_index) != g(goal_index)))
             {
-                // std::cout << "Computing shortest path\n";
+                std::cout << "Computing shortest path\n";
                 int64_t u = queue.top().second;
                 queue.pop();
                 if(g(u) > rhs(u))
@@ -303,7 +322,9 @@ namespace arc_dijkstras
                     }
                     updateVertex(u);
                 }
+                std::cout << "Iteration complete\n";
             }
+            std::cout << "Path found...\n";
             return findPath();
         }
 
@@ -369,7 +390,7 @@ namespace arc_dijkstras
                     if(edge.getValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
                     {
                         PROFILE_START("astar_adding planning cost");
-                        // planning_cost += 0.06;
+                        planning_cost += 0.06;
                         // planning_cost += 1;
                         PROFILE_RECORD("astar_adding planning cost");
                     }
@@ -416,6 +437,45 @@ namespace arc_dijkstras
          *  Returns early if an invalid edge is found or if an evaluated edge has higher cost 
          *  that the edge weight (heuristic)
          */
+        static bool checkPath(const std::vector<int64_t> &path,
+                              Graph<NodeValueType, Allocator>& g,
+                              EvaluatedEdges &evaluated_edges,
+                              const std::function<double(Graph<NodeValueType, Allocator>&,
+                                                         GraphEdge&)>& eval_edge_fn,
+                              LPAstar<NodeValueType, Allocator>& lpa)
+        {
+            bool path_could_be_optimal = true;
+
+            while(path_could_be_optimal)
+            {
+                auto path_indicies_to_check = ForwardSelector(path, g, evaluated_edges);
+                if(path_indicies_to_check.size() == 0)
+                {
+                    return true;
+                }
+            
+                for(auto i:path_indicies_to_check)
+                {
+                    GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
+                    double evaluated_cost = eval_edge_fn(g, e);
+                    evaluated_edges[getHashable(e)] = evaluated_cost;
+                    if(e.getValidity() == EDGE_VALIDITY::INVALID)
+                    {
+                        evaluated_edges[getHashable(e)] = std::numeric_limits<double>::infinity();
+                    }
+
+                    if(e.getValidity() == EDGE_VALIDITY::INVALID || e.getWeight() < evaluated_cost)
+                    {
+                        lpa.updateEdgeCost(e);
+                        path_could_be_optimal = false;
+                    }
+                }
+            }
+            return false;
+        }
+
+
+
         static bool checkPath(const std::vector<int64_t> &path,
                               Graph<NodeValueType, Allocator>& g,
                               EvaluatedEdges &evaluated_edges,
@@ -495,9 +555,10 @@ namespace arc_dijkstras
                       int64_t goal_index,
                       const std::function<double(const NodeValueType&,
                                                  const NodeValueType&)>& heuristic_fn,
+                      // const std::function<double(const NodeValueType&,
+                      //                            const NodeValueType&)>& heuristic_cons_fn,
                       const std::function<double(Graph<NodeValueType, Allocator>&,
-                                                 GraphEdge&)>& eval_edge_fn,
-                      const bool limit_pqueue_duplicates)
+                                                 GraphEdge&)>& eval_edge_fn)
         {
             EvaluatedEdges evaluated_edges;
 
@@ -546,8 +607,10 @@ namespace arc_dijkstras
             //     reverseAstar(g, goal_index, start_index, edge_validity_check_fn,
             //                  distance_fn, heuristic_fn, limit_pqueue_duplicates);
 
-            // LRAstar<NodeValueType, Allocator> forwardLRA(g, start_index, goal_index, edge_validity_check_fn,
-            //                                              distance_fn, heuristic_fn
+            // LPAstar<NodeValueType, Allocator> forwardLPA(g, start_index, goal_index, edge_validity_check_fn,
+            //                                              distance_fn, heuristic_fn, heuristic_cons_fn);
+            // LPAstar<NodeValueType, Allocator> backwardLPA(g, goal_index, start_index, edge_validity_check_fn,
+            //                                               distance_fn, heuristic_fn, heuristic_cons_fn);
 
             while(true)
             {
@@ -555,15 +618,21 @@ namespace arc_dijkstras
                 auto prelim_result = PerformAstarForLazySP(g,
                                                            (!reversed ? start_index : goal_index),
                                                            (!reversed ? goal_index : start_index),
-                                                           heuristic_fn, limit_pqueue_duplicates,
+                                                           heuristic_fn, true,
                                                            evaluated_edges);
+                // LPAstar<NodeValueType, Allocator> &lpa = !reversed? forwardLPA : backwardLPA;
+                // auto prelim_result = lpa.computeShortestPath();
                 // auto prelim_result = !reversed ?
-                //     forwardAstar.runAstarSearch() : reverseAstar.runAstarSearch();
+                //     forwardLPA.computeShortestPath() : backwardLPA.computeShortestPath();
+                
+                
+                
                 PROFILE_RECORD("lazy_sp a_star");
                 num_astar_iters++;
                 
                 auto path = prelim_result.first;
 
+                // if(checkPath(path, g, evaluated_edges, eval_edge_fn, lpa))
                 if(checkPath(path, g, evaluated_edges, eval_edge_fn))
                 {
                     PROFILE_RECORD_DOUBLE("lazysp astar iters", num_astar_iters);

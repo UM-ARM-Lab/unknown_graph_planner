@@ -181,8 +181,10 @@ namespace arc_dijkstras
 
                     num_useful_expansions++;
                     
-                    PROFILE_START("astar_push_to_queue");
+                    PROFILE_START("astar_heuristic");
                     const double child_value = child_cost_to_come + heuristic_function(child_id);
+                    PROFILE_RECORD("astar_heuristic");
+                    PROFILE_START("astar_push_to_queue");
                     queue.push(AstarPQueueElement(child_id, n.id(), child_cost_to_come, child_value));
                     PROFILE_RECORD("astar_push_to_queue");
                 }
