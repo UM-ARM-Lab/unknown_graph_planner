@@ -448,6 +448,9 @@ namespace arc_dijkstras
 
         /*
          *  Checks unknown edges according to the forward selector
+         *
+         *  This version works with LPA* by calling lpa.updateEdgeCost to let LPA* know when edge costs have changed
+         *
          *  Returns true if the fully evaluated path has the same cost as the partially evaluated path
          *  Returns early if an invalid edge is found or if an evaluated edge has higher cost 
          *  that the edge weight (heuristic)
@@ -512,6 +515,11 @@ namespace arc_dijkstras
                     GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
                     double evaluated_cost = eval_edge_fn(g, e);
                     evaluated_edges[getHashable(e)] = evaluated_cost;
+                    // if(e.getValidity() == EDGE_VALIDITY::UNKNOWN)
+                    // {
+                    //     assert(false && "Edge was evaluated, should not be unknown");
+                    // }
+                    
                     if(e.getValidity() == EDGE_VALIDITY::INVALID)
                     {
                         evaluated_edges[getHashable(e)] = std::numeric_limits<double>::infinity();
