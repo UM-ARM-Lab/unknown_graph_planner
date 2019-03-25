@@ -67,6 +67,8 @@ namespace arc_dijkstras
     /*
      *  See paper: http://idm-lab.org/bib/abstracts/papers/icaps05.pdf
      *  A generalized framework for lifelong planning A* search
+     *
+     *    Note - this is unfinished. Do not use without review
      */
 
     
@@ -421,6 +423,19 @@ namespace arc_dijkstras
             while(i < path.size() - 1 )
             {
                 GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
+                if(e.getValidity() == EDGE_VALIDITY::INVALID)
+                {
+                    std::cout << "Forward selector encountered edge alredy known to be invalid: ( " << e.getFromIndex() << ", " << e.getToIndex() << ")\n";
+                    assert(false);
+                }
+                
+                // if(evaluatedEdges.count(getSortedHashable(e)) > 0 &&
+                //    evaluatedEdges.at(getSortedHashable(e)) == std::numeric_limits<double>::infinity())
+                // {
+                //     std::cout << "Forward selector encountered edge with inf cost: ( " << e.getFromIndex() << ", " << e.getToIndex() << ")\n";
+                //     assert(false);
+                // }
+                
                 if(evaluatedEdges.count(getHashable(e)) == 0)
                 {
                     return std::vector<int>{i};
@@ -437,42 +452,42 @@ namespace arc_dijkstras
          *  Returns early if an invalid edge is found or if an evaluated edge has higher cost 
          *  that the edge weight (heuristic)
          */
-        static bool checkPath(const std::vector<int64_t> &path,
-                              Graph<NodeValueType, Allocator>& g,
-                              EvaluatedEdges &evaluated_edges,
-                              const std::function<double(Graph<NodeValueType, Allocator>&,
-                                                         GraphEdge&)>& eval_edge_fn,
-                              LPAstar<NodeValueType, Allocator>& lpa)
-        {
-            bool path_could_be_optimal = true;
+        // static bool checkPath(const std::vector<int64_t> &path,
+        //                       Graph<NodeValueType, Allocator>& g,
+        //                       EvaluatedEdges &evaluated_edges,
+        //                       const std::function<double(Graph<NodeValueType, Allocator>&,
+        //                                                  GraphEdge&)>& eval_edge_fn,
+        //                       LPAstar<NodeValueType, Allocator>& lpa)
+        // {
+        //     bool path_could_be_optimal = true;
 
-            while(path_could_be_optimal)
-            {
-                auto path_indicies_to_check = ForwardSelector(path, g, evaluated_edges);
-                if(path_indicies_to_check.size() == 0)
-                {
-                    return true;
-                }
+        //     while(path_could_be_optimal)
+        //     {
+        //         auto path_indicies_to_check = ForwardSelector(path, g, evaluated_edges);
+        //         if(path_indicies_to_check.size() == 0)
+        //         {
+        //             return true;
+        //         }
             
-                for(auto i:path_indicies_to_check)
-                {
-                    GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
-                    double evaluated_cost = eval_edge_fn(g, e);
-                    evaluated_edges[getHashable(e)] = evaluated_cost;
-                    if(e.getValidity() == EDGE_VALIDITY::INVALID)
-                    {
-                        evaluated_edges[getHashable(e)] = std::numeric_limits<double>::infinity();
-                    }
+        //         for(auto i:path_indicies_to_check)
+        //         {
+        //             GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
+        //             double evaluated_cost = eval_edge_fn(g, e);
+        //             evaluated_edges[getSortedHashable(e)] = evaluated_cost;
+        //             if(e.getValidity() == EDGE_VALIDITY::INVALID)
+        //             {
+        //                 evaluated_edges[getSortedHashable(e)] = std::numeric_limits<double>::infinity();
+        //             }
 
-                    if(e.getValidity() == EDGE_VALIDITY::INVALID || e.getWeight() < evaluated_cost)
-                    {
-                        lpa.updateEdgeCost(e);
-                        path_could_be_optimal = false;
-                    }
-                }
-            }
-            return false;
-        }
+        //             if(e.getValidity() == EDGE_VALIDITY::INVALID || e.getWeight() < evaluated_cost)
+        //             {
+        //                 lpa.updateEdgeCost(e);
+        //                 path_could_be_optimal = false;
+        //             }
+        //         }
+        //     }
+        //     return false;
+        // }
 
 
 
