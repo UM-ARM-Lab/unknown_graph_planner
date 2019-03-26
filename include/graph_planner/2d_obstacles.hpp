@@ -198,6 +198,25 @@ namespace Obstacles2D
             return true;
         }
 
+        double fractionUntilCollision(std::vector<double> q1, std::vector<double> q2) const
+        {
+            std::vector<double> q = q1;
+            double d = EigenHelpers::Distance(q1, q2);
+            int num_point_checks = (int)(d/EDGE_DISCRETIZATION) + 1;
+            double dx = (q2[0] - q1[0])/num_point_checks;
+            double dy = (q2[1] - q1[1])/num_point_checks;
+            for(int i=0; i<= num_point_checks; i++)
+            {
+                if(!isValid(q))
+                {
+                    return (double)i / (double)num_point_checks;
+                }
+                q[0] += dx;
+                q[1] += dy;
+            }
+            return 1.0;
+        }
+
         // bool isValid(Edge e, const Graph &g) const
         // {
         //     std::vector<double> q1 = g.V[e.v1_ind].q;
