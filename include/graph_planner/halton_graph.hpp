@@ -262,6 +262,29 @@ public:
 };
 
 
+/**
+ *   Creates an 8-connected grid graph
+ */
+class Grid : public RDiscGraph
+{
+public:
+    Grid(int rows):
+        RDiscGraph(1.0/((double)rows - 1.0000001) * 1.4143)
+    {
+        for(int i=0; i<rows; i++)
+        {
+            for(int j=0; j<rows; j++)
+            {
+                std::vector<double> q{(double)i / ((double)rows - 1.0),
+                        (double)j / ((double)rows - 1.0)};
+                addVertexAndEdges(q);
+            }
+        }
+    }
+};
+
+
+
 
 class HaltonGraph : public RDiscGraph
 {
