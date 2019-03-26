@@ -261,7 +261,7 @@ public:
         obs_pub.publish(ctp.belief_graph.getObstacle().toMarkerArray());
     }
 
-    void vizObstacles(Obstacles2D::Obstacles &obs, double z_scale = 0.01)
+    void vizObstacles(const Obstacles2D::Obstacles &obs, double z_scale = 0.01)
     {
         obs_pub.publish(obs.toMarkerArray(z_scale));
     }
