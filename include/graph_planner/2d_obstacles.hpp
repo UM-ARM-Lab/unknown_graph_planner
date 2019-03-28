@@ -209,7 +209,11 @@ namespace Obstacles2D
             {
                 if(!isValid(q))
                 {
-                    return (double)i / (double)num_point_checks;
+                    if(i==0)
+                    {
+                        return 0;
+                    }
+                    return (double)(i-1) / (double)num_point_checks;
                 }
                 q[0] += dx;
                 q[1] += dy;
