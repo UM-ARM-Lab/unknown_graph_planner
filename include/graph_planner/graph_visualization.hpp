@@ -43,7 +43,7 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
 }
 
 
-geometry_msgs::Point to3DPoint(const GraphD &g, int64_t node_ind)
+static inline geometry_msgs::Point to3DPoint(const GraphD &g, int64_t node_ind)
 {
     const std::vector<double> &node = g.getNode(node_ind).getValue();
     geometry_msgs::Point p;
@@ -52,7 +52,7 @@ geometry_msgs::Point to3DPoint(const GraphD &g, int64_t node_ind)
     return p;
 }
 
-geometry_msgs::Point to3DPoint(const SelectiveDensificationGraph &g, int64_t node_ind)
+static inline geometry_msgs::Point to3DPoint(const SelectiveDensificationGraph &g, int64_t node_ind)
 {
     DepthNode node = g.getNodeValue(node_ind);
     geometry_msgs::Point p;
@@ -66,7 +66,7 @@ geometry_msgs::Point to3DPoint(const SelectiveDensificationGraph &g, int64_t nod
 
 
 template <typename T>
-GraphMarker toVisualizationMsg(const T &g, std::string name="graph")
+static inline GraphMarker toVisualizationMsg(const T &g, std::string name="graph")
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
@@ -126,8 +126,8 @@ GraphMarker toVisualizationMsg(const T &g, std::string name="graph")
 
 
 template <typename T>
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const T &g,
-                                              int id=0, std::string color="blue")
+static inline visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const T &g,
+                                                           int id=0, std::string color="blue")
 {
     visualization_msgs::Marker lines;
     lines.header.frame_id = "/graph_frame";
@@ -145,7 +145,7 @@ visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const T
 }
 
 
-visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> ps, const GraphD &g)
+static inline visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> ps, const GraphD &g)
 {
     visualization_msgs::Marker points;
     points.header.frame_id = "/graph_frame";
@@ -169,14 +169,14 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> p
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
+static inline visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
 {
     std::vector<CTP::Location> p{a.current_node, a.goal_node};
     return pointsToVisualizationMsg(p, g);
 }
 
-visualization_msgs::MarkerArray toVisualizationMsg(std::vector<std::string> texts,
-                                                   std::vector<std::vector<double>> loc)
+static inline visualization_msgs::MarkerArray toVisualizationMsg(std::vector<std::string> texts,
+                                                                 std::vector<std::vector<double>> loc)
 {
     visualization_msgs::MarkerArray tms;
     for(size_t i=0; i<40; i++)
