@@ -8,18 +8,69 @@
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
 #include <arc_utilities/eigen_helpers.hpp>
+#define DEFAULT_COLOR rosColor(1.0, 0, 0, 0.9)
 
 
 #define EDGE_DISCRETIZATION 0.001
 
+
+inline std_msgs::ColorRGBA rosColor(double r, double g, double b, double a)
+{
+    std_msgs::ColorRGBA c;
+    c.r = r;
+    c.b = b;
+    c.g = g;
+    c.a = a;
+    return c;
+}
+
+
 namespace Obstacles2D
 {
-    
     class Obstacle
     {
     public:
+        Obstacle()
+        {}
+        
         virtual bool isValid(const std::vector<double> &q) const = 0;
-        virtual visualization_msgs::MarkerArray toMarkerArray(double z_scale) const = 0;
+        virtual visualization_msgs::MarkerArray toMarkerArray(double z_scale, std::string ns="",
+                                                              std_msgs::ColorRGBA color=DEFAULT_COLOR) const = 0;
+
+
+    };
+
+
+    /**
+     * Hack class to make rviz markers disappear
+     */
+    class Empty : public Obstacle
+    {
+        bool isValid(const std::vector<double> &q) const override
+        {
+            return true;
+        };
+        
+        visualization_msgs::MarkerArray
+        toMarkerArray(double z_scale = 0.01,  std::string ns="",
+                      std_msgs::ColorRGBA color=DEFAULT_COLOR) const override
+        {
+            visualization_msgs::Marker cube;
+            cube.header.frame_id = "/graph_frame";
+            cube.type = visualization_msgs::Marker::CUBE;
+            cube.pose.orientation.w = 1;
+            cube.ns = ns;
+            cube.scale.x = 0.001;
+            cube.scale.y = 0.001;
+            cube.scale.z = 0.001;
+            cube.pose.position.x = 10000;
+            cube.pose.position.y = 10000;
+
+
+            visualization_msgs::MarkerArray arr;
+            arr.markers.push_back(cube);
+            return arr;
+        }
     };
     
     class Rect : public Obstacle
@@ -40,7 +91,9 @@ namespace Obstacles2D
             return !(q[0] > x1 && q[0] < x2 && q[1] > y1 && q[1] < y2);
         };
 
-        visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const override
+        visualization_msgs::MarkerArray
+        toMarkerArray(double z_scale = 0.01,  std::string ns="",
+                      std_msgs::ColorRGBA color=DEFAULT_COLOR) const override
         {
             visualization_msgs::Marker cube;
             cube.header.frame_id = "/graph_frame";
@@ -54,8 +107,8 @@ namespace Obstacles2D
             cube.pose.position.x = x1+w/2;
             cube.pose.position.y = y1+h/2;
             cube.pose.position.z = z_scale / 2;
-            cube.color.a = 0.9;
-            cube.color.r = 1.0;
+            cube.color = color;
+            cube.ns = ns;
 
             visualization_msgs::MarkerArray arr;
             arr.markers.push_back(cube);
@@ -100,7 +153,7 @@ namespace Obstacles2D
 
         
         visualization_msgs::Marker edgeToMarker(const Eigen::Vector2d &p1, const Eigen::Vector2d &p2,
-                                                double z_scale) const
+                                                double z_scale, std_msgs::ColorRGBA color) const
         {
             visualization_msgs::Marker cube;
             cube.header.frame_id = "/graph_frame";
@@ -122,19 +175,20 @@ namespace Obstacles2D
             }
             cube.pose.orientation.w = w;
             cube.pose.orientation.z = std::sqrt(1 - w*w);
-
-            cube.color.a = 0.9;
-            cube.color.r = 1.0;
+            cube.color = color;
             return cube;
         }
         
-        visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const override
+        visualization_msgs::MarkerArray
+        toMarkerArray(double z_scale = 0.01, std::string ns="",
+                      std_msgs::ColorRGBA color=DEFAULT_COLOR) const override
         {
 
             visualization_msgs::MarkerArray arr;
             for(size_t i=0; i<points.size()-1; i++)
             {
-                arr.markers.push_back(edgeToMarker(points[i], points[i+1], z_scale));
+                arr.markers.push_back(edgeToMarker(points[i], points[i+1], z_scale, color));
+                arr.markers.back().ns=ns;
             }
 
             return arr;
@@ -150,13 +204,14 @@ namespace Obstacles2D
 
         std::vector<std::shared_ptr<Obstacle>> obs;
 
-        visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01) const
+        visualization_msgs::MarkerArray
+        toMarkerArray(double z_scale = 0.01, std::string ns="", std_msgs::ColorRGBA color=DEFAULT_COLOR) const
         {
             visualization_msgs::MarkerArray all_obs;
             int id = 0;
             for(auto ob: obs)
             {
-                for(const visualization_msgs::Marker &m:ob->toMarkerArray(z_scale).markers)
+                for(const visualization_msgs::Marker &m:ob->toMarkerArray(z_scale, ns, color).markers)
                 {
                     all_obs.markers.push_back(m);
                     all_obs.markers.back().id=id++;

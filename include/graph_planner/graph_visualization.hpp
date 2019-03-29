@@ -39,6 +39,11 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
         cm.b=1.0;
         cm.a=0.3;
     }
+    else if(color=="clear red")
+    {
+        cm.r = 1.0;
+        cm.a = 0.05;
+    }
     return cm;
 }
 
@@ -261,9 +266,10 @@ public:
         obs_pub.publish(ctp.belief_graph.getObstacle().toMarkerArray());
     }
 
-    void vizObstacles(const Obstacles2D::Obstacles &obs, double z_scale = 0.01)
+    void vizObstacles(const Obstacles2D::Obstacles &obs, double z_scale = 0.01, std::string ns="",
+                      std::string color="red")
     {
-        obs_pub.publish(obs.toMarkerArray(z_scale));
+        obs_pub.publish(obs.toMarkerArray(z_scale, ns, colorLookup(color)));
     }
 
 
