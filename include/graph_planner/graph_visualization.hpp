@@ -266,10 +266,11 @@ public:
         obs_pub.publish(ctp.belief_graph.getObstacle().toMarkerArray());
     }
 
+
     void vizObstacles(const Obstacles2D::Obstacles &obs, double z_scale = 0.01, std::string ns="",
-                      std::string color="red")
+                      std_msgs::ColorRGBA color = colorLookup("red"))
     {
-        obs_pub.publish(obs.toMarkerArray(z_scale, ns, colorLookup(color)));
+        obs_pub.publish(obs.toMarkerArray(z_scale, ns, color));
     }
 
 
