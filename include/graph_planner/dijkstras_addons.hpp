@@ -174,7 +174,7 @@ namespace arc_dijkstras
 
         void updateVertex(int64_t u)
         {
-            std::cout << "Updating vertex " << u << "\n";
+            // std::cout << "Updating vertex " << u << "\n";
             if(u != start_index)
             {
                 double min_pred_cost = std::numeric_limits<double>::infinity();
@@ -202,12 +202,12 @@ namespace arc_dijkstras
             {
                 queue.insert({calculateKey(u), LPAstarPQueueElement(u)});
             }
-            std::cout << "Vertex updated\n";
+            // std::cout << "Vertex updated\n";
         }
 
         arc_helpers::AstarResult findPath()
         {
-            std::cout << "Returning path\n";
+            // std::cout << "Returning path\n";
             arc_helpers::AstarResult result;
 
             result.second = g(goal_index);
@@ -216,7 +216,7 @@ namespace arc_dijkstras
                 return result;
             }
             
-            std::cout << "Path cost " << result.second << "\n";
+            // std::cout << "Path cost " << result.second << "\n";
             
             std::vector<int64_t> path{goal_index};
             int64_t cur_index = goal_index;
@@ -227,7 +227,7 @@ namespace arc_dijkstras
                 for(const auto& e: node.getInEdges())
                 {
                     double cc = g(e.getFromIndex()) + distance_fn(graph, e);
-                    std::cout << "  cost to " << e.getFromIndex() << " is " << cc << "\n";
+                    // std::cout << "  cost to " << e.getFromIndex() << " is " << cc << "\n";
                     if(cc < min_val)
                     {
                         min_val = cc;
@@ -238,12 +238,12 @@ namespace arc_dijkstras
                 {
                     throw std::logic_error("Best path has infinite cost");
                 }
-                std::cout << "Node " << cur_index << " on path with cost " << min_val << "\n";
+                // std::cout << "Node " << cur_index << " on path with cost " << min_val << "\n";
                 path.push_back(cur_index);
             }
             std::reverse(path.begin(), path.end());
             result.first = path;
-            std::cout << "Found\n";
+            // std::cout << "Found\n";
             return result;
         }
     
@@ -299,12 +299,12 @@ namespace arc_dijkstras
 
         arc_helpers::AstarResult computeShortestPath()
         {
-            std::cout << "Starting compute shortest path\n";
+            // std::cout << "Starting compute shortest path\n";
             while(!queue.isEmpty() &&
                   (CompareLPAstarKey()(queue.top().first, calculateKey(goal_index)) ||
                    rhs(goal_index) != g(goal_index)))
             {
-                std::cout << "Computing shortest path\n";
+                // std::cout << "Computing shortest path\n";
                 int64_t u = queue.top().second;
                 queue.pop();
                 if(g(u) > rhs(u))
@@ -324,9 +324,9 @@ namespace arc_dijkstras
                     }
                     updateVertex(u);
                 }
-                std::cout << "Iteration complete\n";
+                // std::cout << "Iteration complete\n";
             }
-            std::cout << "Path found...\n";
+            // std::cout << "Path found...\n";
             return findPath();
         }
 
