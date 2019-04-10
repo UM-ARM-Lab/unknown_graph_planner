@@ -11,7 +11,7 @@
 #define DEFAULT_COLOR rosColor(1.0, 0, 0, 0.9)
 
 
-#define EDGE_DISCRETIZATION 0.001
+#define EDGE_DISCRETIZATION 0.01
 
 
 inline std_msgs::ColorRGBA rosColor(double r, double g, double b, double a)
