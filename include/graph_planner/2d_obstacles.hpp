@@ -36,8 +36,7 @@ namespace Obstacles2D
         virtual bool isValid(const std::vector<double> &q) const = 0;
         virtual visualization_msgs::MarkerArray toMarkerArray(double z_scale, std::string ns="",
                                                               std_msgs::ColorRGBA color=DEFAULT_COLOR) const = 0;
-
-
+        virtual double distance(const std::vector<double> &q) const = 0;
     };
 
 
@@ -46,10 +45,16 @@ namespace Obstacles2D
      */
     class Empty : public Obstacle
     {
+    public:
         bool isValid(const std::vector<double> &q) const override
         {
             return true;
         };
+
+        double distance(const std::vector<double> &q) const override
+        {
+            return std::numeric_limits<double>::infinity();
+        }
         
         visualization_msgs::MarkerArray
         toMarkerArray(double z_scale = 0.01,  std::string ns="",
@@ -114,6 +119,41 @@ namespace Obstacles2D
             arr.markers.push_back(cube);
             return arr;
         }
+
+        /*
+         *  Returns the distance from q to the nearest point on the rectangle
+         */
+        double distance(const std::vector<double> &q) const override
+        {
+            if(!isValid(q))
+            {
+                return 0;
+            }
+
+            //reset rect origin to q. Now looking for distance to the origin
+            double rx1 = x1 - q[0];
+            double rx2 = x2 - q[0];
+            double ry1 = y1 - q[1];
+            double ry2 = y2 - q[1];
+
+            if(rx1 < 0 && rx2 > 0)
+            {
+                return std::min(std::abs(ry1), std::abs(ry2));
+            }
+
+            if(ry1 < 0 && ry2 > 0)
+            {
+                return std::min(std::abs(rx1), std::abs(rx2));
+            }
+
+            using namespace EigenHelpers;
+            std::vector<double> corner_dists{
+                Norm({rx1, ry1}),
+                    Norm({rx1, ry2}),
+                    Norm({rx2, ry1}),
+                    Norm({rx2, ry2})};
+            return *std::min_element(corner_dists.begin(), corner_dists.end());
+        }
     };
 
     class ConvexPolygon : public Obstacle
@@ -149,6 +189,11 @@ namespace Obstacles2D
                 }
             }
             return false;
+        }
+
+        double distance(const std::vector<double> &q) const override
+        {
+            throw std::logic_error("Distance not implemented for convex polygon");
         }
 
         
@@ -253,6 +298,12 @@ namespace Obstacles2D
             return true;
         }
 
+        /*
+         *  Checks the discretized edge and returns the fractional distance (0.0 to 1.0)
+         *   of the last valid configuration before the first invalid configuration
+         *  
+         *  if the first configuration is invalid, return 0
+         */
         double fractionUntilCollision(std::vector<double> q1, std::vector<double> q2) const
         {
             std::vector<double> q = q1;
