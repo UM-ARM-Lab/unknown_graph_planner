@@ -334,7 +334,7 @@ namespace Obstacles2D
         //     return isValid(q1, q2);
         // }
 
-        bool isValid(arc_dijkstras::GraphEdge e, const HaltonGraph &g) const
+        bool isValid(const arc_dijkstras::GraphEdge &e, const GraphD &g) const
         {
             std::vector<double> q1 = g.getNode(e.getFromIndex()).getValue();
             std::vector<double> q2 = g.getNode(e.getToIndex()).getValue();
