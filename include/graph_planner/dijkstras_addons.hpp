@@ -420,7 +420,7 @@ namespace arc_dijkstras
                                                 const EvaluatedEdges &evaluatedEdges)
         {
             int i=0;
-            while(i < path.size() - 1 )
+            while(i < (int)path.size() - 1 )
             {
                 GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
                 if(e.getValidity() == EDGE_VALIDITY::INVALID)
