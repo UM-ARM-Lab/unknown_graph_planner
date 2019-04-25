@@ -383,11 +383,11 @@ namespace arc_dijkstras
                      const GraphEdge& edge)
                 {
                     UNUSED(search_graph);
-                    // if(evaluatedEdges.count(getHashable(edge)))
-                    // {
-                    //     // std::cout << "Found already evaluted edge!\n";
-                    //     return evaluatedEdges.at(getHashable(edge));
-                    // }
+                    if(evaluatedEdges.count(getHashable(edge)))
+                    {
+                        // std::cout << "Found already evaluted edge!\n";
+                        return evaluatedEdges.at(getHashable(edge));
+                    }
                     double planning_cost = 0;
                     if(edge.getValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
                     {
@@ -588,38 +588,45 @@ namespace arc_dijkstras
             int num_astar_iters = 0;
             bool reversed = false;
 
-            const auto edge_validity_check_fn =
-                [&] (const Graph<NodeValueType, Allocator>& search_graph,
-                     const GraphEdge& edge)
-                {
-                    UNUSED(search_graph);
-                    if(edge.getValidity() == EDGE_VALIDITY::INVALID)
-                    {
-                        return false;
-                    }
-                    if(evaluated_edges.count(getHashable(edge)))
-                    {
-                        // std::cout << "Found already evaluted edge!\n";
-                        return evaluated_edges.at(getHashable(edge)) < std::numeric_limits<double>::infinity();
-                    }
+            // const auto edge_validity_check_fn =
+            //     [&] (const Graph<NodeValueType, Allocator>& search_graph,
+            //          const GraphEdge& edge)
+            //     {
+            //         UNUSED(search_graph);
+            //         if(edge.getValidity() == EDGE_VALIDITY::INVALID)
+            //         {
+            //             return false;
+            //         }
+            //         if(evaluated_edges.count(getHashable(edge)))
+            //         {
+            //             // std::cout << "Found already evaluted edge!\n";
+            //             bool valid = evaluated_edges.at(getHashable(edge)) < std::numeric_limits<double>::infinity();
+            //             std::cout << "Evaluate edge with cost " << evaluated_edges.at(getHashable(edge)) <<
+            //             " is valid? " << valid << "\n";
+            //             return valid;
+            //         }
 
 
-                    return edge.getWeight() < std::numeric_limits<double>::infinity();
-                };
+            //         return edge.getWeight() < std::numeric_limits<double>::infinity();
+            //     };
     
-            const auto distance_fn =
-                [&] (const Graph<NodeValueType, Allocator>& search_graph,
-                     const GraphEdge& edge)
-                {
-                    UNUSED(search_graph);
-                    if(evaluated_edges.count(getHashable(edge)))
-                    {
-                        // std::cout << "Found already evaluted edge!\n";
-                        return evaluated_edges.at(getHashable(edge));
-                    }
-                    // std::cout << "Using heuristic weight\n";
-                    return edge.getWeight();
-                };
+            // const auto distance_fn =
+            //     [&] (const Graph<NodeValueType, Allocator>& search_graph,
+            //          const GraphEdge& edge)
+            //     {
+            //         std::cout << "Distance for edge (" << edge.getFromIndex() <<
+            //         ", " << edge.getToIndex() << ")\n";
+            //         UNUSED(search_graph);
+            //         if(evaluated_edges.count(getHashable(edge)))
+            //         {
+            //             std::cout << "Edge already evaluated to have cost " <<
+            //                 evaluated_edges.at(getHashable(edge)) << "\n";
+            //             // std::cout << "Found already evaluted edge!\n";
+            //             return evaluated_edges.at(getHashable(edge));
+            //         }
+            //         // std::cout << "Using heuristic weight\n";
+            //         return edge.getWeight();
+            //     };
 
 
 

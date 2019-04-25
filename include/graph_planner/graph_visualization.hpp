@@ -2,6 +2,7 @@
 #define GRAPH_VISUALIZATION
 
 #include "visualization_msgs/Marker.h"
+#include "visualization_msgs/MarkerArray.h"
 #include <arc_utilities/dijkstras.hpp>
 #include <iomanip>
 #include "ctp.hpp"
