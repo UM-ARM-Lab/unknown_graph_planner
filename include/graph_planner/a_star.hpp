@@ -154,10 +154,15 @@ namespace arc_dijkstras
                     }
                     PROFILE_RECORD("astar_edge_validity_check");
 
-                    // PROFILE_START("astar_cost_to_come");
+                    PROFILE_START("astar_cost_to_come");
                     // Compute the cost-to-come for the new child
                     const double child_cost_to_come = n.costToCome() + distance_fn(graph, current_out_edge);
-                    // PROFILE_RECORD("astar_cost_to_come");
+                    PROFILE_RECORD("astar_cost_to_come");
+
+                    if(child_cost_to_come >= std::numeric_limits<double>::max())
+                    {
+                        continue;
+                    }
                     
                     // if(explored.count(child_id) &&
                     //    child_cost_to_come >= explored[child_id].second)
