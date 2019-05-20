@@ -370,7 +370,7 @@ namespace arc_dijkstras
                      const GraphEdge& edge)
                 {
                     UNUSED(search_graph);
-                    if(edge.getValidity() == EDGE_VALIDITY::INVALID)
+                    if(edge.isInvalid())
                     {
                         return false;
                     }
@@ -388,23 +388,24 @@ namespace arc_dijkstras
                         // std::cout << "Found already evaluted edge!\n";
                         return evaluatedEdges.at(getHashable(edge));
                     }
-                    double planning_cost = 0;
-                    if(edge.getValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
-                    {
-                        PROFILE_START("astar_adding planning cost");
-                        planning_cost += 0.06;
+                    // double planning_cost = 0;
+                    // if(edge.getValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
+                    // {
+                        // PROFILE_START("astar_adding planning cost");
+                        // planning_cost += 0.06;
                         // planning_cost += 1;
-                        PROFILE_RECORD("astar_adding planning cost");
-                    }
-                    else
-                    {
-                        PROFILE_START("astar_not_adding_planning_cost");
-                        PROFILE_RECORD("astar_not_adding_planning_cost");
-                    }
+                        // PROFILE_RECORD("astar_adding planning cost");
+                    // }
+                    // else
+                    // {
+                    //     PROFILE_START("astar_not_adding_planning_cost");
+                    //     PROFILE_RECORD("astar_not_adding_planning_cost");
+                    // }
 
                     
                     // std::cout << "Using heuristic weight\n";
-                    return edge.getWeight() + planning_cost;
+                    // return edge.getWeight() + planning_cost;
+                    return edge.getWeight();
                 };
 
             return AstarLogging<NodeValueType>::PerformLazyAstar(
