@@ -3,7 +3,7 @@
 
 #include "halton.hpp"
 #include <arc_utilities/dijkstras.hpp>
-#include <arc_utilities/eigen_helpers.hpp>
+#include <arc_utilities/math_helpers.hpp>
 #include <arc_utilities/zlib_helpers.hpp>
 #include <arc_utilities/serialization.hpp>
 #include <arc_utilities/pretty_print.hpp>
@@ -115,11 +115,12 @@ public:
     
     void rebuildKDTree()
     {
-        std::cout << "Rebuilding KD tree\n";
+        std::cout << "Rebuilding KD tree...";
         for(auto &n: getNodes())
         {
             addToKDTree(n.getValue());
         }
+        std::cout << "finished\n";
     }
 
 
