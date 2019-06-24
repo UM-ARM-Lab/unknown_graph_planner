@@ -31,7 +31,7 @@ namespace CTP
         const auto eval_fun = [&bg, &alpha](GraphD &g, GraphEdge &e)
         {
             double p_cost = -std::log(bg.edge_probabilities[getHashable(e)]);
-            double l_cost = e.GetWeight();
+            double l_cost = e.getWeight();
             return l_cost + alpha * p_cost;
         };
         auto result = LazySP<std::vector<double>>::PerformLazySP(
@@ -121,9 +121,9 @@ namespace CTP
         BeliefGraph &g = e.g;
         double p_sample = 1.0;
 
-        for(auto &e:g.GetNodeMutable(loc).GetOutEdgesMutable())
+        for(auto &e:g.getNode(loc).getOutEdges())
         {
-            if(e.GetValidity() != EDGE_VALIDITY::UNKNOWN)
+            if(e.getValidity() != EDGE_VALIDITY::UNKNOWN)
             {
                 continue;
             }
@@ -133,12 +133,12 @@ namespace CTP
             if(p_edge >= 0.5)
             {
                 p_sample *= p_edge;
-                e.SetValidity(EDGE_VALIDITY::VALID);
+                e.setValidity(EDGE_VALIDITY::VALID);
             }
             else
             {
                 p_sample *= 1 - p_edge;
-                e.SetValidity(EDGE_VALIDITY::INVALID);
+                e.setValidity(EDGE_VALIDITY::INVALID);
             }
         }
         e.prob *= p_sample;
@@ -159,11 +159,11 @@ namespace CTP
         const auto eval_fun = [&g](GraphD &g, GraphEdge &e)
         {
             double p = g.edge_probabilities[getHashable(e)];
-            if(p <= 0.5 && e.GetValidity() == EDGE_VALIDITY::UNKNOWN)
+            if(p <= 0.5 && e.getValidity() == EDGE_VALIDITY::UNKNOWN)
             {
                 return std::numeric_limits<double>::max();
             }
-            return e.GetWeight();
+            return e.getWeight();
         };
         return LazySP<std::vector<double>>::PerformLazySP(
             g, start, goal, &distanceHeuristic, eval_fun, true);
@@ -199,15 +199,15 @@ namespace CTP
             }
 
             Location loc = exp.path.back();
-            for(const auto &e:exp.g.GetNodeImmutable(loc).GetOutEdgesImmutable())
+            for(const auto &e:exp.g.getNode(loc).getOutEdges())
             {
-                if(e.GetValidity() == arc_dijkstras::EDGE_VALIDITY::INVALID)
+                if(e.getValidity() == arc_dijkstras::EDGE_VALIDITY::INVALID)
                 {
                     continue;
                 }
                 Path p(exp.path);
-                p.push_back(e.GetToIndex());
-                ExplorationState<BeliefGraph> new_exp(exp.g, p, exp.cost + e.GetWeight(), exp.prob);
+                p.push_back(e.getToIndex());
+                ExplorationState<BeliefGraph> new_exp(exp.g, p, exp.cost + e.getWeight(), exp.prob);
                 open_set.push_back(new_exp);
             }
         }

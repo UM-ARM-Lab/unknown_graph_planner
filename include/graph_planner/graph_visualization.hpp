@@ -2,10 +2,13 @@
 #define GRAPH_VISUALIZATION
 
 #include "visualization_msgs/Marker.h"
+#include "visualization_msgs/MarkerArray.h"
 #include <arc_utilities/dijkstras.hpp>
 #include <iomanip>
 #include "ctp.hpp"
 #include "ctp_worlds.hpp"
+#include "increasing_density_grid.hpp"
+#include "2d_obstacles.hpp"
 
 
 typedef std::vector<visualization_msgs::Marker> GraphMarker;
@@ -37,78 +40,74 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
         cm.b=1.0;
         cm.a=0.3;
     }
+    else if(color=="clear red")
+    {
+        cm.r = 1.0;
+        cm.a = 0.05;
+    }
+    else if (color=="black")
+    {
+        cm.r = 0.0; cm.g = 0.0; cm.b = 0.0;
+    }
     return cm;
 }
 
-// visualization_msgs::Marker toVisualizationMsg(Graph g)
-// {
-//     visualization_msgs::Marker points;
-//     points.header.frame_id = "/graph_frame";
-//     points.type = visualization_msgs::Marker::POINTS;
-//     points.pose.orientation.w = 1.0;
-//     points.scale.x = 0.01;
-//     points.scale.x = 0.01;
-//     points.color.a = 1.0;
-//     points.color.g = 1.0;
 
-//     for(auto v:g.V)
-//     {
-//         geometry_msgs::Point p;
-//         p.x = v.q[0];
-//         p.y = v.q[1];
-//         points.points.push_back(p);
-//     }
+static inline geometry_msgs::Point to3DPoint(const GraphD &g, int64_t node_ind)
+{
+    const std::vector<double> &node = g.getNode(node_ind).getValue();
+    geometry_msgs::Point p;
+    p.x = node[0];
+    p.y = node[1];
+    return p;
+}
 
-//     return points;
-// }
+static inline geometry_msgs::Point to3DPoint(const SelectiveDensificationGraph &g, int64_t node_ind)
+{
+    DepthNode node = g.getNodeValue(node_ind);
+    geometry_msgs::Point p;
+    p.x = node.q[0];
+    p.y = node.q[1];
+    p.z = -(double)node.depth / 3.0;
+    // p.z = 1.0 / std::pow(2, (double)node.depth) - 1;
+    return p;
+}
 
-GraphMarker toVisualizationMsg(const GraphD &g, std::string name="graph")
+
+
+template <typename T>
+static inline GraphMarker toVisualizationMsg(const T &g, std::string name="graph")
 {
     visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
     valid_lines.header.frame_id = "/graph_frame";
     valid_lines.type = visualization_msgs::Marker::LINE_LIST;
     valid_lines.ns = name;
     valid_lines.pose.orientation.w = 1.0;
-    valid_lines.scale.x = 0.0015;
+    valid_lines.scale.x = 0.0105;
     valid_lines.color.a = 0.9;
     invalid_lines.header.frame_id = "/graph_frame";
     invalid_lines.type = visualization_msgs::Marker::LINE_LIST;
     invalid_lines.ns = name;
     invalid_lines.pose.orientation.w = 1.0;
-    invalid_lines.scale.x = 0.0015;
+    invalid_lines.scale.x = 0.0055;
     invalid_lines.color.a = 0.3;
     invalid_lines.color.r = 0.9;
     unknown_lines.header.frame_id = "/graph_frame";
     unknown_lines.type = visualization_msgs::Marker::LINE_LIST;
     unknown_lines.ns = name;
     unknown_lines.pose.orientation.w = 1.0;
-    unknown_lines.scale.x = 0.0005;
+    unknown_lines.scale.x = 0.005;
     unknown_lines.color.a = 0.1;
     // lines.color.g = 1.0;
 
-    for(const auto n:g.GetNodesImmutable())
+    for(const auto n:g.getNodes())
     {
-        for(const auto e:n.GetOutEdgesImmutable())
+        for(const auto e:n.getOutEdges())
         {
-            // if(e.validity == arc_dijkstras::EDGE_VALIDITY::INVALID)
-            // {
-            //     continue;
-            // }
+            geometry_msgs::Point p1 = to3DPoint(g, e.getFromIndex());
+            geometry_msgs::Point p2 = to3DPoint(g, e.getToIndex());
 
-        
-            geometry_msgs::Point p1;
-            
-            const auto q1 = g.GetNodeImmutable(e.GetFromIndex()).GetValueImmutable();
-            p1.x = q1[0];
-            p1.y = q1[1];
-        
-            geometry_msgs::Point p2;
-            const auto q2 = g.GetNodeImmutable(e.GetToIndex()).GetValueImmutable();
-            // auto v2 = g.V[e.v2_ind];
-            p2.x = q2[0];
-            p2.y = q2[1];
-
-            switch(e.GetValidity())
+            switch(e.getValidity())
             {
             case arc_dijkstras::EDGE_VALIDITY::UNKNOWN:
                 unknown_lines.points.push_back(p1);
@@ -136,30 +135,27 @@ GraphMarker toVisualizationMsg(const GraphD &g, std::string name="graph")
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const GraphD &g,
-                                              int id=0, std::string color="blue")
+template <typename T>
+static inline visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const T &g,
+                                                           int id=0, std::string color="blue")
 {
     visualization_msgs::Marker lines;
     lines.header.frame_id = "/graph_frame";
     lines.type = visualization_msgs::Marker::LINE_STRIP;
     lines.pose.orientation.w = 1.0;
-    lines.scale.x = 0.007;
+    lines.scale.x = 0.027;
     lines.color = colorLookup(color);
     lines.id = id;
 
     for(auto ind: path)
     {
-        geometry_msgs::Point p1;
-        const auto v = g.GetNodeImmutable(ind).GetValueImmutable();
-        p1.x = v[0];
-        p1.y = v[1];
-        lines.points.push_back(p1);
+        lines.points.push_back(to3DPoint(g, ind));
     }
     return lines;
 }
 
 
-visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> ps, const GraphD &g)
+static inline visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> ps, const GraphD &g)
 {
     visualization_msgs::Marker points;
     points.header.frame_id = "/graph_frame";
@@ -172,7 +168,7 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> p
 
     for(auto ind:ps)
     {
-        const auto v = g.GetNodeImmutable(ind).GetValueImmutable();
+        const auto v = g.getNode(ind).getValue();
         geometry_msgs::Point p;
         p.x = v[0];
         p.y = v[1];
@@ -183,14 +179,14 @@ visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> p
 }
 
 
-visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
+static inline visualization_msgs::Marker toVisualizationMsg(CTP::Agent &a, const GraphD &g)
 {
     std::vector<CTP::Location> p{a.current_node, a.goal_node};
     return pointsToVisualizationMsg(p, g);
 }
 
-visualization_msgs::MarkerArray toVisualizationMsg(std::vector<std::string> texts,
-                                                   std::vector<std::vector<double>> loc)
+static inline visualization_msgs::MarkerArray toVisualizationMsg(std::vector<std::string> texts,
+                                                                 std::vector<std::vector<double>> loc)
 {
     visualization_msgs::MarkerArray tms;
     for(size_t i=0; i<40; i++)
@@ -226,7 +222,7 @@ public:
     ros::Publisher graph_invalid_pub;
     ros::Publisher path_pub;
     ros::Publisher points_pub;
-    ros::Publisher ob_pub;
+    ros::Publisher obs_pub;
     ros::Publisher text_pub;
     
     GraphVisualizer(ros::NodeHandle &n)
@@ -236,11 +232,13 @@ public:
         graph_invalid_pub = n.advertise<visualization_msgs::Marker>("invalid_graph", 10);
         path_pub= n.advertise<visualization_msgs::Marker>("path", 10);
         points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
-        ob_pub = n.advertise<visualization_msgs::Marker>("ob", 10);
+        obs_pub = n.advertise<visualization_msgs::MarkerArray>("obstacles", 10);
         text_pub = n.advertise<visualization_msgs::MarkerArray>("text", 10);
     }
 
-    void vizGraph(const GraphD &g, std::string name="graph")
+
+    template <typename T>
+    void vizGraph(const T &g, std::string name="graph")
     {
         GraphMarker gm = toVisualizationMsg(g, name);
         graph_valid_pub.publish(gm[0]);
@@ -270,10 +268,20 @@ public:
     void vizCtp(CTP::CtpProblem<CTP::BctpGrid> &ctp)
     {
         vizCtp<CTP::BctpGrid>(ctp);
-        ob_pub.publish(ctp.belief_graph.getObstacle().toMarker());
+        obs_pub.publish(ctp.belief_graph.getObstacle().toMarkerArray());
     }
 
-    void vizPath(const std::vector<int64_t> &path, const GraphD &g, int id = 0, std::string color = "clear blue")
+
+    void vizObstacles(const Obstacles2D::Obstacles &obs, double z_scale = 0.01, std::string ns="",
+                      std_msgs::ColorRGBA color = colorLookup("red"))
+    {
+        obs_pub.publish(obs.toMarkerArray(z_scale, ns, color));
+    }
+
+
+    template <typename T>
+    void vizPath(const std::vector<int64_t> &path, const T &g, int id = 0,
+                 std::string color = "clear blue")
     {
         path_pub.publish(toVisualizationMsg(path, g, id, color));
     }
@@ -283,10 +291,11 @@ public:
         vizText(text, 1000, -0.1, 0.5);
     }
 
-    void vizText(std::string text, int id, double x, double y)
+    void vizText(std::string text, int id, double x, double y, std::string ns = "text")
     {
         visualization_msgs::Marker m;
         m.id = id;
+        m.ns = ns;
         m.header.frame_id = "/graph_frame";
         m.type=visualization_msgs::Marker::TEXT_VIEW_FACING;
         m.text = text;

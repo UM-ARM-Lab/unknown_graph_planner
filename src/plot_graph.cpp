@@ -13,8 +13,7 @@
 Obstacles2D::Obstacles makeObstacles()
 {
     Obstacles2D::Obstacles o;
-    Obstacles2D::Rect* r = new Obstacles2D::Rect(0.1,0.5,0.9,0.8);
-    o.obs.push_back(r);
+    o.obs.push_back(std::make_shared<Obstacles2D::Rect>(0.1,0.5,0.9,0.8));
     return o;
 }
 

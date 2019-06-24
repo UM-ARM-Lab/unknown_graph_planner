@@ -7,17 +7,48 @@
 
 using namespace Obstacles2D;
 
-TEST(TestObstacles, rect)
+TEST(TestObstacles, rect_validity)
 {
     Rect r = Rect(0,0,1,1);
     EXPECT_TRUE(r.isValid(std::vector<double>{1.5, 1.5}));
     EXPECT_TRUE(!r.isValid(std::vector<double>{0.5, 0.5}));
 }
 
+TEST(TestObstacles, rect_distance)
+{
+    {
+        //x ranges from 1 to 2
+        //y ranges from 1 to 2
+        Rect r = Rect(1, 1, 2, 2);
+
+        EXPECT_EQ(r.distance(std::vector<double>{1.5, 1.5}), 0.0) << "Point inside rect not 0 distance";
+        EXPECT_EQ(r.distance(std::vector<double>{1, 0}), 1.0);
+        EXPECT_EQ(r.distance(std::vector<double>{1.5, 0}), 1.0);
+        EXPECT_EQ(r.distance(std::vector<double>{1.5, 3}), 1.0);
+        EXPECT_EQ(r.distance(std::vector<double>{0, 1.5}), 1.0);
+        EXPECT_EQ(r.distance(std::vector<double>{3, 1.5}), 1.0);
+        EXPECT_EQ(r.distance(std::vector<double>{0, 1}), 1.0);
+        EXPECT_EQ(r.distance(std::vector<double>{0, 0}), std::sqrt(2.0));
+        EXPECT_EQ(r.distance(std::vector<double>{3, 0}), std::sqrt(2.0));
+        EXPECT_EQ(r.distance(std::vector<double>{0, 3}), std::sqrt(2.0));
+        EXPECT_EQ(r.distance(std::vector<double>{3, 3}), std::sqrt(2.0));
+    }
+    {
+        //x ranges from -1 to 0
+        // y ranges from 2, 4
+        Rect r = Rect(-1, 2, 0, 4);
+        EXPECT_EQ(r.distance(std::vector<double>{-0.8, 2.1}), 0.0) << "Point inside rect not 0 distance";
+        EXPECT_EQ(r.distance(std::vector<double>{0, 0}), 2.0);
+        EXPECT_EQ(r.distance(std::vector<double>{0, 0}), 2.0);
+        EXPECT_EQ(r.distance(std::vector<double>{3, 2.1}), 3.0);
+        EXPECT_EQ(r.distance(std::vector<double>{-1.5, 0.5}), std::sqrt(0.5*0.5 + 1.5*1.5));
+    }
+}
+
 TEST(TestObstacles, obstacles)
 {
     Obstacles o;
-    Obstacles2D::Rect* r = new Obstacles2D::Rect(0.2,0.5,0.3,0.6);
+    auto r = std::make_shared<Obstacles2D::Rect>(0.2,0.5,0.3,0.6);
     o.obs.push_back(r);
 
     EXPECT_TRUE(o.isValid(std::vector<double>{1.5, 1.5}));
