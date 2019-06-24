@@ -45,6 +45,10 @@ static inline std_msgs::ColorRGBA colorLookup(std::string color)
         cm.r = 1.0;
         cm.a = 0.05;
     }
+    else if (color=="black")
+    {
+        cm.r = 0.0; cm.g = 0.0; cm.b = 0.0;
+    }
     return cm;
 }
 
@@ -79,20 +83,20 @@ static inline GraphMarker toVisualizationMsg(const T &g, std::string name="graph
     valid_lines.type = visualization_msgs::Marker::LINE_LIST;
     valid_lines.ns = name;
     valid_lines.pose.orientation.w = 1.0;
-    valid_lines.scale.x = 0.0015;
+    valid_lines.scale.x = 0.0105;
     valid_lines.color.a = 0.9;
     invalid_lines.header.frame_id = "/graph_frame";
     invalid_lines.type = visualization_msgs::Marker::LINE_LIST;
     invalid_lines.ns = name;
     invalid_lines.pose.orientation.w = 1.0;
-    invalid_lines.scale.x = 0.0015;
+    invalid_lines.scale.x = 0.0055;
     invalid_lines.color.a = 0.3;
     invalid_lines.color.r = 0.9;
     unknown_lines.header.frame_id = "/graph_frame";
     unknown_lines.type = visualization_msgs::Marker::LINE_LIST;
     unknown_lines.ns = name;
     unknown_lines.pose.orientation.w = 1.0;
-    unknown_lines.scale.x = 0.0005;
+    unknown_lines.scale.x = 0.005;
     unknown_lines.color.a = 0.1;
     // lines.color.g = 1.0;
 
@@ -139,7 +143,7 @@ static inline visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t>
     lines.header.frame_id = "/graph_frame";
     lines.type = visualization_msgs::Marker::LINE_STRIP;
     lines.pose.orientation.w = 1.0;
-    lines.scale.x = 0.007;
+    lines.scale.x = 0.027;
     lines.color = colorLookup(color);
     lines.id = id;
 
