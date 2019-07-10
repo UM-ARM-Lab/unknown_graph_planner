@@ -447,53 +447,6 @@ namespace arc_dijkstras
         }
 
 
-        /*
-         *  Checks unknown edges according to the forward selector
-         *
-         *  This version works with LPA* by calling lpa.updateEdgeCost to let LPA* know when edge costs have changed
-         *
-         *  Returns true if the fully evaluated path has the same cost as the partially evaluated path
-         *  Returns early if an invalid edge is found or if an evaluated edge has higher cost 
-         *  that the edge weight (heuristic)
-         */
-        // static bool checkPath(const std::vector<int64_t> &path,
-        //                       Graph<NodeValueType, Allocator>& g,
-        //                       EvaluatedEdges &evaluated_edges,
-        //                       const std::function<double(Graph<NodeValueType, Allocator>&,
-        //                                                  GraphEdge&)>& eval_edge_fn,
-        //                       LPAstar<NodeValueType, Allocator>& lpa)
-        // {
-        //     bool path_could_be_optimal = true;
-
-        //     while(path_could_be_optimal)
-        //     {
-        //         auto path_indicies_to_check = ForwardSelector(path, g, evaluated_edges);
-        //         if(path_indicies_to_check.size() == 0)
-        //         {
-        //             return true;
-        //         }
-            
-        //         for(auto i:path_indicies_to_check)
-        //         {
-        //             GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
-        //             double evaluated_cost = eval_edge_fn(g, e);
-        //             evaluated_edges[getSortedHashable(e)] = evaluated_cost;
-        //             if(e.getValidity() == EDGE_VALIDITY::INVALID)
-        //             {
-        //                 evaluated_edges[getSortedHashable(e)] = std::numeric_limits<double>::infinity();
-        //             }
-
-        //             if(e.getValidity() == EDGE_VALIDITY::INVALID || e.getWeight() < evaluated_cost)
-        //             {
-        //                 lpa.updateEdgeCost(e);
-        //                 path_could_be_optimal = false;
-        //             }
-        //         }
-        //     }
-        //     return false;
-        // }
-
-
 
         static bool checkPath(const std::vector<int64_t> &path,
                               Graph<NodeValueType, Allocator>& g,
@@ -579,8 +532,6 @@ namespace arc_dijkstras
                       int64_t goal_index,
                       const std::function<double(const NodeValueType&,
                                                  const NodeValueType&)>& heuristic_fn,
-                      // const std::function<double(const NodeValueType&,
-                      //                            const NodeValueType&)>& heuristic_cons_fn,
                       const std::function<double(Graph<NodeValueType, Allocator>&,
                                                  GraphEdge&)>& eval_edge_fn)
         {
@@ -588,60 +539,6 @@ namespace arc_dijkstras
 
             int num_astar_iters = 0;
             bool reversed = false;
-
-            // const auto edge_validity_check_fn =
-            //     [&] (const Graph<NodeValueType, Allocator>& search_graph,
-            //          const GraphEdge& edge)
-            //     {
-            //         UNUSED(search_graph);
-            //         if(edge.getValidity() == EDGE_VALIDITY::INVALID)
-            //         {
-            //             return false;
-            //         }
-            //         if(evaluated_edges.count(getHashable(edge)))
-            //         {
-            //             // std::cout << "Found already evaluted edge!\n";
-            //             bool valid = evaluated_edges.at(getHashable(edge)) < std::numeric_limits<double>::infinity();
-            //             std::cout << "Evaluate edge with cost " << evaluated_edges.at(getHashable(edge)) <<
-            //             " is valid? " << valid << "\n";
-            //             return valid;
-            //         }
-
-
-            //         return edge.getWeight() < std::numeric_limits<double>::infinity();
-            //     };
-    
-            // const auto distance_fn =
-            //     [&] (const Graph<NodeValueType, Allocator>& search_graph,
-            //          const GraphEdge& edge)
-            //     {
-            //         std::cout << "Distance for edge (" << edge.getFromIndex() <<
-            //         ", " << edge.getToIndex() << ")\n";
-            //         UNUSED(search_graph);
-            //         if(evaluated_edges.count(getHashable(edge)))
-            //         {
-            //             std::cout << "Edge already evaluated to have cost " <<
-            //                 evaluated_edges.at(getHashable(edge)) << "\n";
-            //             // std::cout << "Found already evaluted edge!\n";
-            //             return evaluated_edges.at(getHashable(edge));
-            //         }
-            //         // std::cout << "Using heuristic weight\n";
-            //         return edge.getWeight();
-            //     };
-
-
-
-            // RepeatedAstar<NodeValueType, Allocator>
-            //     forwardAstar(g, start_index, goal_index, edge_validity_check_fn,
-            //                  distance_fn, heuristic_fn, limit_pqueue_duplicates);
-            // RepeatedAstar<NodeValueType, Allocator>
-            //     reverseAstar(g, goal_index, start_index, edge_validity_check_fn,
-            //                  distance_fn, heuristic_fn, limit_pqueue_duplicates);
-
-            // LPAstar<NodeValueType, Allocator> forwardLPA(g, start_index, goal_index, edge_validity_check_fn,
-            //                                              distance_fn, heuristic_fn, heuristic_cons_fn);
-            // LPAstar<NodeValueType, Allocator> backwardLPA(g, goal_index, start_index, edge_validity_check_fn,
-            //                                               distance_fn, heuristic_fn, heuristic_cons_fn);
 
             while(true)
             {
@@ -651,19 +548,12 @@ namespace arc_dijkstras
                                                            (!reversed ? goal_index : start_index),
                                                            heuristic_fn, true,
                                                            evaluated_edges);
-                // LPAstar<NodeValueType, Allocator> &lpa = !reversed? forwardLPA : backwardLPA;
-                // auto prelim_result = lpa.computeShortestPath();
-                // auto prelim_result = !reversed ?
-                //     forwardLPA.computeShortestPath() : backwardLPA.computeShortestPath();
-                
-                
                 
                 PROFILE_RECORD("lazy_sp a_star");
                 num_astar_iters++;
                 
                 auto path = prelim_result.first;
 
-                // if(checkPath(path, g, evaluated_edges, eval_edge_fn, lpa))
                 if(checkPath(path, g, evaluated_edges, eval_edge_fn))
                 {
                     PROFILE_RECORD_DOUBLE("lazysp astar iters", num_astar_iters);
