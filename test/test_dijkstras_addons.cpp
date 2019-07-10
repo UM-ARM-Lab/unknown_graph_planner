@@ -230,7 +230,55 @@ TEST(DIJKSTRAS_ADDONS, LPA_grid_inadmissible)
     {
         EXPECT_NE(graph.getEdge(result.first[i], result.first[i+1]).getValidity(), EDGE_VALIDITY::INVALID);
     }
+}
+
+void addEdge(GraphD &g, int64_t n1, int64_t n2)
+{
+    double d = EigenHelpers::Distance(g.getNode(n1).getValue(), g.getNode(n2).getValue());
+    g.addEdgesBetweenNodes(n1, n2, d);
+}
+
+
+double DistanceHeuristic(std::vector<double> q1, std::vector<double> q2)
+{
+    return EigenHelpers::Distance(q1, q2);
+}
+
+
+TEST(DIJKSTRAS_ADDONS, test_astar_logging)
+{
+    using namespace arc_dijkstras;
+    GraphD g;
+
+    int64_t start = g.addNode(std::vector<double>{0,0});
+    int64_t goal = g.addNode(std::vector<double>{0,1});
+    addEdge(g, start, goal);
+    ASSERT_EQ(g.getEdge(start, goal).getWeight(), 1.0) << "No edge added from start to goal";
+
+    int64_t n1 = g.addNode(std::vector<double>{0.5,0.5});
+    addEdge(g, start, n1);
+    addEdge(g, goal, n1);
     
+    int64_t n2 = g.addNode(std::vector<double>{-0.5,0.5});
+    addEdge(g, start, n2);
+    addEdge(g, goal, n2);
+    addEdge(g, n1, n2);
+
+    int64_t n3 = g.addNode(std::vector<double>{10,10});
+    addEdge(g, start, n3);
+    addEdge(g, goal, n3);
+    addEdge(g, n1, n3);
+    addEdge(g, n2, n3);
+
+    auto result = AstarLogging<std::vector<double>>::PerformAstar(g, start, goal,
+                                                                      &DistanceHeuristic,
+                                                                      true);
+    EXPECT_EQ(result.second, 1.0) << "AStar did not find optimal path cost of 1.0";
+    auto path = result.first;
+    ASSERT_EQ(result.first.size(), (size_t)2) << "AStar did not find optimal path of length 2";
+    EXPECT_EQ(result.first.front(), start) << "AStar's path does not begin at start node";
+    EXPECT_EQ(result.first.back(), goal) << "AStar's path does not end at goal node";
+
 }
 
 
