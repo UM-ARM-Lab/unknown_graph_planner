@@ -28,6 +28,7 @@ typedef arc_dijkstras::Graph<std::vector<double>> GraphD;
 
 namespace flann
 {
+    //Currently unused
     template<class T>
     struct L2_weighted
     {
