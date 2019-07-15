@@ -40,6 +40,8 @@ namespace arc_dijkstras
         *
         *
         *
+        *    Based on:
+        *    https://papers.nips.cc/paper/2382-ara-anytime-a-with-provable-bounds-on-sub-optimality.pdf
         */
         template<typename GraphType, typename GraphEdgeType, typename EdgeValidityFunctionType>
         static arc_helpers::AstarResult PerformLazyAstar_impl(
@@ -82,69 +84,37 @@ namespace arc_dijkstras
             // Setup
             std::priority_queue<AstarPQueueElement,
                                 std::vector<AstarPQueueElement>,
-                                CompareAstarPQueueElementFn> queue;
-            // boost::heap::fibonacci_heap<AstarPQueueElement,
-            //                             boost::heap::compare<CompareAstarPQueueElementFn>> queue;
-
-            
-            
-            // Optional map to reduce the number of duplicate items added to the pqueue
-            // Key is the node index in the provided graph
-            // Value is cost-to-come
-            std::unordered_map<int64_t, double> queue_members_map;
-
+                                CompareAstarPQueueElementFn> open;
             
             // Key is the node index in the provided graph
             // Value is a pair<backpointer, cost-to-come>
             // backpointer is the parent index in the provided graph
-            std::unordered_map<int64_t, std::pair<int64_t, double>> explored;
+            std::unordered_map<int64_t, std::pair<int64_t, double>> g_value;
             
             // Initialize
-            queue.push(AstarPQueueElement(start_index, -1, 0.0, heuristic_function(start_index)));
-            if (limit_pqueue_duplicates)
-            {
-                queue_members_map[start_index] = 0.0;
-            }
+            open.push(AstarPQueueElement(start_index, -1, 0.0, heuristic_function(start_index)));
             
             // Search
-            while (queue.size() > 0)
+            while (open.size() > 0)
             {
                 // Get the top of the priority queue
-                const arc_helpers::AstarPQueueElement n = queue.top();
-                queue.pop();
+                const arc_helpers::AstarPQueueElement n = open.top();
+                open.pop();
 
                 num_node_expansions++;
 
                 if (n.id() == goal_index)
                 {
                     // Solution found
-                    explored[n.id()] = std::make_pair(n.backpointer(), n.costToCome());
+                    g_value[n.id()] = std::make_pair(n.backpointer(), n.costToCome());
                     break;
                 }
-
-                if (limit_pqueue_duplicates)
-                {
-                    PROFILE_START("astar_queue_reduction");
-                    queue_members_map.erase(n.id());
-                    PROFILE_RECORD("astar_queue_reduction");
-                }
-                
-                if (explored.count(n.id()) && n.costToCome() >= explored[n.id()].second)
-                {
-                    continue;
-                }
-                
-                // Add to the explored list
-                explored[n.id()] = std::make_pair(n.backpointer(), n.costToCome());
                 
                 PROFILE_START("astar_add_neighbors");
                 // Explore and add the children
                 for(GraphEdgeType& current_out_edge: graph.getNode(n.id()).getOutEdges())
                 {
                     num_edge_expansions++;
-                    
-                    // Get the next potential child node
-                    const int64_t child_id = current_out_edge.getToIndex();
 
                     PROFILE_START("astar_edge_validity_check");
                     if (!edge_validity_check_fn(graph, current_out_edge))
@@ -154,43 +124,37 @@ namespace arc_dijkstras
                     }
                     PROFILE_RECORD("astar_edge_validity_check");
 
+                    
+                    // Get the next potential child node
+                    const int64_t child_id = current_out_edge.getToIndex();
+
+                    if(g_value.count(child_id) == 0)
+                    {
+                        g_value[child_id] = std::make_pair(n.id(), std::numeric_limits<double>::infinity());
+                    }
+
+
                     PROFILE_START("astar_cost_to_come");
                     // Compute the cost-to-come for the new child
                     const double child_cost_to_come = n.costToCome() + distance_fn(graph, current_out_edge);
                     PROFILE_RECORD("astar_cost_to_come");
 
-                    if(child_cost_to_come >= std::numeric_limits<double>::max())
-                    {
-                        continue;
-                    }
                     
-                    // if(explored.count(child_id) &&
-                    //    child_cost_to_come >= explored[child_id].second)
-                    if(explored.count(child_id) )
+                    if(g_value[child_id].second <= child_cost_to_come)
                     {
                         PROFILE_START("astar_expansion_in_closed_list");
                         PROFILE_RECORD("astar_expansion_in_closed_list");
-                        if(child_cost_to_come < explored[child_id].second)
-                        {
-                            explored[child_id] = std::make_pair(n.id(), child_cost_to_come);
-                        }
                         continue;
                     }
-
-                    if (limit_pqueue_duplicates && queue_members_map.count(child_id) &&
-                        child_cost_to_come >= queue_members_map[child_id])
-                    {
-                        continue;
-                    }
-
 
                     num_useful_expansions++;
                     
                     PROFILE_START("astar_heuristic");
+                    g_value[child_id] = std::make_pair(n.id(), child_cost_to_come);
                     const double child_value = child_cost_to_come + heuristic_function(child_id);
                     PROFILE_RECORD("astar_heuristic");
                     PROFILE_START("astar_push_to_queue");
-                    queue.push(AstarPQueueElement(child_id, n.id(), child_cost_to_come, child_value));
+                    open.push(AstarPQueueElement(child_id, n.id(), child_cost_to_come, child_value));
                     PROFILE_RECORD("astar_push_to_queue");
                 }
                 PROFILE_RECORD("astar_add_neighbors");
@@ -199,7 +163,7 @@ namespace arc_dijkstras
             PROFILE_RECORD_DOUBLE("astar_num_edge_expansions", num_edge_expansions);
             PROFILE_RECORD_DOUBLE("astar_num_lower_cost_edge_expansions", num_useful_expansions);
             
-            return ExtractAstarResult(explored, start_index, goal_index);
+            return ExtractAstarResult(g_value, start_index, goal_index);
         }
 
 
