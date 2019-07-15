@@ -446,6 +446,43 @@ namespace arc_dijkstras
             return std::vector<int>();
         }
 
+        static std::vector<int> BisectionSelector(std::vector<int64_t> path,
+                                                  Graph<NodeValueType, Allocator>& g,
+                                                  const EvaluatedEdges &evaluatedEdges)
+        {
+            auto sgn = [](int val) {
+                if(val > 0)
+                    return 1.0;
+                return -1.0;
+            };
+
+            // std::vector<int> indices(path.size()-1);
+            // for(int i=0; i<path.size()-1; i++)
+            // {
+            //     indices[i] = i;
+            // }
+
+            
+            
+            
+            int i=((int)path.size())/2 - 1;
+            int next = 1.0;
+            std::cout << "Path size: " << path.size() << "\n";
+            while(i >= 0 && i < (int)path.size()-1)
+            {
+                std::cout << "Checking edge " << i << "\n";
+                GraphEdge &e = g.getNode(path[i]).getEdgeTo(path[i+1]);
+                if(evaluatedEdges.count(getHashable(e)) == 0)
+                {
+                    return std::vector<int>{i};
+                }
+
+                i += next;
+                next = -(next + sgn(next));
+            }
+            return std::vector<int>();
+        }
+
 
         // static bool checkPath(const std::vector<int64_t> &path,
         //                       Graph<NodeValueType, Allocator>& g,
