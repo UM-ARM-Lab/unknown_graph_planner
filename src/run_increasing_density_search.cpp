@@ -123,10 +123,10 @@ int main(int argc, char **argv)
     Obstacles obs;
     checkAllEdges(g_all_valid, obs);
 
-    setScene1(obs);
+    setScene2(obs);
 
     checkAllEdges(g_evaluated, obs);    
-    // 
+    
     
     viz.vizGraph(g);
     viz.vizGraph(g_evaluated, "evaluated");

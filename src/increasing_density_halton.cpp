@@ -38,7 +38,7 @@ double SDHaltonGraph::distanceHeuristic(const std::vector<double> &raw1,
     DepthNode d2(raw2);
     // std::cout << "Calling dist heuristic with depth " << d1.depth << "\n";
      // std::pow(2, d1.depth);
-    return EigenHelpers::Distance(d1.q, d2.q)*std::pow(1.5, d1.depth);
+    return EigenHelpers::Distance(d1.q, d2.q)*(1 + 1.0 * std::pow(10, d1.depth));
 }
 
 
