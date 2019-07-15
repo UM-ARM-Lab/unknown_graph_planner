@@ -35,7 +35,7 @@ namespace CTP
             return l_cost + alpha * p_cost;
         };
         auto result = LazySP<std::vector<double>>::PerformLazySP(
-            ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, eval_fun, true);
+            ctp.belief_graph, ctp.agent.current_node, ctp.agent.goal_node, &distanceHeuristic, eval_fun);
         viz.vizPath(result.first, ctp.true_graph);
         return result.first[1];
     }
@@ -166,7 +166,7 @@ namespace CTP
             return e.getWeight();
         };
         return LazySP<std::vector<double>>::PerformLazySP(
-            g, start, goal, &distanceHeuristic, eval_fun, true);
+            g, start, goal, &distanceHeuristic, eval_fun);
     }
 
     

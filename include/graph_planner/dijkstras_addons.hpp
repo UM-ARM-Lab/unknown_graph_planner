@@ -447,18 +447,30 @@ namespace arc_dijkstras
         }
 
 
+        // static bool checkPath(const std::vector<int64_t> &path,
+        //                       Graph<NodeValueType, Allocator>& g,
+        //                       EvaluatedEdges &evaluated_edges,
+        //                       const std::function<double(Graph<NodeValueType, Allocator>&,
+        //                                                  GraphEdge&)>& eval_edge_fn)
+        // {
+        //     return checkPath(path, g, evaluated_edges, eval_edge_fn, &ForwardSelector);
+        // }
+        
 
         static bool checkPath(const std::vector<int64_t> &path,
                               Graph<NodeValueType, Allocator>& g,
                               EvaluatedEdges &evaluated_edges,
                               const std::function<double(Graph<NodeValueType, Allocator>&,
-                                                         GraphEdge&)>& eval_edge_fn)
+                                                         GraphEdge&)>& eval_edge_fn,
+                              const std::function<std::vector<int>(const std::vector<int64_t>&,
+                                                    Graph<NodeValueType, Allocator>&,
+                                                    EvaluatedEdges&)>& selector)
         {
             bool path_could_be_optimal = true;
 
             while(path_could_be_optimal)
             {
-                auto path_indicies_to_check = ForwardSelector(path, g, evaluated_edges);
+                auto path_indicies_to_check = selector(path, g, evaluated_edges);
                 if(path_indicies_to_check.size() == 0)
                 {
                     return true;
@@ -490,6 +502,19 @@ namespace arc_dijkstras
                               
                               
 
+        // static arc_helpers::AstarResult
+        // PerformLazySP(Graph<NodeValueType, Allocator>& g,
+        //               int64_t start_index,
+        //               int64_t goal_index,
+        //               const std::function<double(const NodeValueType&,
+        //                                          const NodeValueType&)>& heuristic_fn,
+        //               const std::function<double(Graph<NodeValueType, Allocator>&,
+        //                                          GraphEdge&)>& eval_edge_fn,
+        //               bool limit_pqueue_duplicates)
+        // {
+        //     return PerformLazySP(g, start_index, goal_index, heuristic_fn, eval_edge_fn,
+        //                          &ForwardSelector);
+        // }
 
         static arc_helpers::AstarResult
         PerformLazySP(Graph<NodeValueType, Allocator>& g,
@@ -499,7 +524,9 @@ namespace arc_dijkstras
                                                  const NodeValueType&)>& heuristic_fn,
                       const std::function<double(Graph<NodeValueType, Allocator>&,
                                                  GraphEdge&)>& eval_edge_fn,
-                      const bool limit_pqueue_duplicates)
+                      const std::function<std::vector<int>(const std::vector<int64_t>&,
+                                                           Graph<NodeValueType, Allocator>&,
+                                                           EvaluatedEdges&)>& selector=&ForwardSelector)
         {
             EvaluatedEdges evaluated_edges;
 
@@ -509,14 +536,14 @@ namespace arc_dijkstras
             {
                 PROFILE_START("lazy_sp a_star");
                 auto prelim_result = PerformAstarForLazySP(g, start_index, goal_index,
-                                                           heuristic_fn, limit_pqueue_duplicates,
+                                                           heuristic_fn, false,
                                                            evaluated_edges);
                 PROFILE_RECORD("lazy_sp a_star");
                 num_astar_iters++;
                 
                 auto path = prelim_result.first;
 
-                if(checkPath(path, g, evaluated_edges, eval_edge_fn))
+                if(checkPath(path, g, evaluated_edges, eval_edge_fn, selector))
                 {
                     PROFILE_RECORD_DOUBLE("lazysp astar iters", num_astar_iters);
                     return prelim_result;
@@ -528,12 +555,15 @@ namespace arc_dijkstras
         
         static arc_helpers::AstarResult
         PerformBiLazySP(Graph<NodeValueType, Allocator>& g,
-                      int64_t start_index,
-                      int64_t goal_index,
-                      const std::function<double(const NodeValueType&,
+                        int64_t start_index,
+                        int64_t goal_index,
+                        const std::function<double(const NodeValueType&,
                                                  const NodeValueType&)>& heuristic_fn,
-                      const std::function<double(Graph<NodeValueType, Allocator>&,
-                                                 GraphEdge&)>& eval_edge_fn)
+                        const std::function<double(Graph<NodeValueType, Allocator>&,
+                                                 GraphEdge&)>& eval_edge_fn,
+                        const std::function<std::vector<int>(const std::vector<int64_t>&,
+                                                             Graph<NodeValueType, Allocator>&,
+                                                             EvaluatedEdges&)>& selector=&ForwardSelector)
         {
             EvaluatedEdges evaluated_edges;
 
@@ -554,7 +584,7 @@ namespace arc_dijkstras
                 
                 auto path = prelim_result.first;
 
-                if(checkPath(path, g, evaluated_edges, eval_edge_fn))
+                if(checkPath(path, g, evaluated_edges, eval_edge_fn, selector))
                 {
                     PROFILE_RECORD_DOUBLE("lazysp astar iters", num_astar_iters);
                     if(reversed)

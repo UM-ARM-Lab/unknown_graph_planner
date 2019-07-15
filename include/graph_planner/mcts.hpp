@@ -409,7 +409,7 @@ namespace MCTS{
                 return l_cost + alpha * p_cost;
             };
             return arc_dijkstras::LazySP<std::vector<double>>::PerformLazySP(
-                s_copy.belief_graph, from_node, s.agent.goal_node, &distanceHeuristic, eval_fun, true);
+                s_copy.belief_graph, from_node, s.agent.goal_node, &distanceHeuristic, eval_fun);
         }
 
     };
@@ -456,7 +456,7 @@ namespace MCTS{
                 return l_cost + alpha * p_cost;
             };
             return arc_dijkstras::LazySP<std::vector<double>>::PerformLazySP(
-                s_copy.belief_graph, from_node, s.agent.goal_node, &distanceHeuristic, eval_fun, true);
+                s_copy.belief_graph, from_node, s.agent.goal_node, &distanceHeuristic, eval_fun);
         }
 
         PathCost getPathCost(arc_helpers::AstarResult path_and_cost, GraphD &g)
