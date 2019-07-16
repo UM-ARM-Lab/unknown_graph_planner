@@ -134,7 +134,7 @@ double ConicSDG::distanceHeuristic(const std::vector<double> &raw1,
     DepthNode d2(raw2);
     // std::cout << "Calling dist heuristic with depth " << d1.depth << "\n";
      // std::pow(2, d1.depth);
-    return EigenHelpers::Distance(d1.q, d2.q)*std::pow(1.5, d1.depth);
+    return EigenHelpers::Distance(d1.q, d2.q)*(1.0 + std::pow(1.5, d1.depth));
     // return std::abs(d1.q[0] - d2.q[0]) + std::abs(d1.q[1] - d2.q[1]) + eps*(double)d1.depth;
     // return EigenHelpers::Distance(d1.q, d2.q);
     // return EigenHelpers::Distance(d1.q, d2.q) * (d1.depth+1) * 0.5;

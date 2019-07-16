@@ -102,13 +102,13 @@ int main(int argc, char **argv)
     // DoublingSDG g(depth);
     // DoublingSDG g_evaluated(g);
     // DoublingSDG g_all_valid(g);
-    // ConicSDG g(depth);
-    // ConicSDG g_evaluated(g);
-    // ConicSDG g_all_valid(g);
+    ConicSDG g(depth);
+    ConicSDG g_evaluated(g);
+    ConicSDG g_all_valid(g);
     
-    SDHaltonGraph g(depth);
-    SDHaltonGraph g_evaluated(g);
-    SDHaltonGraph g_all_valid(g);
+    // SDHaltonGraph g(depth);
+    // SDHaltonGraph g_evaluated(g);
+    // SDHaltonGraph g_all_valid(g);
     // IterativeDeepeningHaltonGraph g(depth);
     // IterativeDeepeningHaltonGraph g_evaluated(g);
     // IterativeDeepeningHaltonGraph g_all_valid(g);
@@ -139,8 +139,8 @@ int main(int argc, char **argv)
     while(ros::ok())
     {
         std::cout << "Planning from start to goal\n";
-        auto result = Plan(g, obs, start, goal);
-        // auto result = AstarPlan(g, obs, start, goal);
+        // auto result = Plan(g, obs, start, goal);
+        auto result = AstarPlan(g, obs, start, goal);
         std::cout << "Plan complete\n";
         viz.vizGraph(g);
         viz.vizPath(result.first, g);

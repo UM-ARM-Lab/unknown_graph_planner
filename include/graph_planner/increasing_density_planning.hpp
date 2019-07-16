@@ -105,6 +105,8 @@ namespace increasing_density_planning
     
         auto result =  LazySP<std::vector<double>>::PerformLazySP(
             g, from_node, goal_node, heuristic_function, eval_fun);
+        // auto result =  LazySP<std::vector<double>>::PerformBiLazySP(
+        //     g, from_node, goal_node, heuristic_function, eval_fun);
         PROFILE_RECORD("LazySP plan");
         return result;
     }
