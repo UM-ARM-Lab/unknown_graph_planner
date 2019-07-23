@@ -1,6 +1,7 @@
 #include "halton_graph.hpp"
 #include "increasing_density_grid.hpp"
 #include "dijkstras_addons.hpp"
+#include "lpastar.hpp"
 
 
 

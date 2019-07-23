@@ -1,6 +1,7 @@
 // Bring in my package's API, which is what I'm testing
 #include "lpa_pqueue.hpp"
 #include "dijkstras_addons.hpp"
+#include "lpastar.hpp"
 #include "halton_graph.hpp"
 // Bring in gtest
 #include <gtest/gtest.h>
