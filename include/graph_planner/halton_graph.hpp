@@ -237,7 +237,7 @@ public:
         ZlibHelpers::CompressAndWriteToFile(buffer, filepath);
     }
 
-    void loadFromFile(const std::string& filepath)
+    bool loadFromFile(const std::string& filepath)
     {
         const auto value_deserializer_fn = [] (const std::vector<uint8_t>& buffer,
                                                const uint64_t current)
@@ -246,9 +246,19 @@ public:
                 return DeserializeVector<double>(buffer, current,
                                                  DeserializeFixedSizePOD<double>);
             };
-        std::vector<uint8_t> buffer = ZlibHelpers::LoadFromFileAndDecompress(filepath);
+        std::vector<uint8_t> buffer;
+        try
+        {
+            buffer = ZlibHelpers::LoadFromFileAndDecompress(filepath);
+        }
+        catch(std::runtime_error e)
+        {
+            std::cout << e.what() << "\n";
+            return false;
+        }
         deserializeSelf(buffer, (uint64_t)0, value_deserializer_fn);
         rebuildKDTree();
+        return true;
     }
 
     size_t countEdges() const
