@@ -327,9 +327,17 @@ namespace arc_dijkstras
             int num_astar_iters = 0;
             bool reversed = false;
 
+            double tot_time_forward = 0;
+            double tot_time_reverse = 0;
+
             while(true)
             {
                 PROFILE_START("lazy_sp a_star");
+                PROFILE_START("lazy_sp a_star forward");
+                PROFILE_START("lazy_sp a_star reverse");
+
+                reversed = tot_time_forward > tot_time_reverse;
+                
                 auto prelim_result = PerformAstarForLazySP(g,
                                                            (!reversed ? start_index : goal_index),
                                                            (!reversed ? goal_index : start_index),
@@ -337,6 +345,16 @@ namespace arc_dijkstras
                                                            evaluated_edges);
                 
                 PROFILE_RECORD("lazy_sp a_star");
+
+                if(reversed)
+                {
+                    tot_time_reverse += PROFILE_RECORD("lazy_sp a_star reverse");
+                }
+                else
+                {
+                    tot_time_forward += PROFILE_RECORD("lazy_sp a_star forward");
+                }
+                
                 num_astar_iters++;
                 
                 auto path = prelim_result.first;
