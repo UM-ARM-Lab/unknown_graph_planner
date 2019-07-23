@@ -102,13 +102,13 @@ int main(int argc, char **argv)
     // DoublingSDG g(depth);
     // DoublingSDG g_evaluated(g);
     // DoublingSDG g_all_valid(g);
-    ConicSDG g(depth);
-    ConicSDG g_evaluated(g);
-    ConicSDG g_all_valid(g);
+    // ConicSDG g(depth);
+    // ConicSDG g_evaluated(g);
+    // ConicSDG g_all_valid(g);
     
-    // SDHaltonGraph g(depth);
-    // SDHaltonGraph g_evaluated(g);
-    // SDHaltonGraph g_all_valid(g);
+    SDHaltonGraph g(depth);
+    SDHaltonGraph g_evaluated(g);
+    SDHaltonGraph g_all_valid(g);
     // IterativeDeepeningHaltonGraph g(depth);
     // IterativeDeepeningHaltonGraph g_evaluated(g);
     // IterativeDeepeningHaltonGraph g_all_valid(g);
@@ -129,8 +129,8 @@ int main(int argc, char **argv)
     
     
     viz.vizGraph(g);
-    viz.vizGraph(g_evaluated, "evaluated");
-    viz.vizGraph(g_all_valid, "all_edges");
+    viz.vizGraph(g_evaluated, "full_graph_with_obstacles");
+    viz.vizGraph(g_all_valid, "full_graph_no_obstacles");
     viz.vizObstacles(obs, -(double)depth/5);
     arc_helpers::WaitForInput();
 
@@ -144,8 +144,8 @@ int main(int argc, char **argv)
         std::cout << "Plan complete\n";
         viz.vizGraph(g);
         viz.vizPath(result.first, g);
-        viz.vizGraph(g_evaluated, "evaluated");
-        viz.vizGraph(g_all_valid, "all_edges");
+        viz.vizGraph(g_evaluated, "full_graph_with_obstacles");
+        viz.vizGraph(g_all_valid, "full_graph_no_obstacles");
 
         viz.vizObstacles(obs, -(double)depth/5);
         viz.vizText("Start", 0, 0, 0, "start");
@@ -165,8 +165,18 @@ int main(int argc, char **argv)
 
         }
         
-        arc_helpers::WaitForInput();
+        std::string input = arc_helpers::WaitForInput("Press enter to continue, q to quit");
+        if(input.compare("q") == 0)
+        {
+            break;
+        }
     }
+
+    PROFILE_PRINT_SUMMARY_FOR_ALL();
+    std::string filename = "sim_timing_" + arc_helpers::GetCurrentTimeAsString();
+    PROFILE_WRITE_SUMMARY_FOR_ALL(filename);
+    PROFILE_WRITE_ALL_FEWER_THAN(filename, 10000);
+
     
     return 0;
 }

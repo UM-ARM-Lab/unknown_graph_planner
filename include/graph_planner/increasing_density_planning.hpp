@@ -125,7 +125,11 @@ namespace increasing_density_planning
 
         const auto edge_check_fun = [&obs](GraphD &g, GraphEdge &e)
             {
-                return checkEdge(g, e, obs);
+                PROFILE_START("Edge Evaluation");
+                auto result = checkEdge(g, e, obs);
+                PROFILE_RECORD("Edge Evaluation");
+
+                return result;
             };
 
 
