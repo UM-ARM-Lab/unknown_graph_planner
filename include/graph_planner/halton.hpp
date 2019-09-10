@@ -69,7 +69,21 @@ namespace halton
         }
         return haltonPoints(bases, length, offsets);
     };
-    
+
+    inline std::vector<std::vector<double> > haltonPoints(int length, int dim, int seed)
+    {
+        std::mt19937 eng(seed);
+        std::uniform_int_distribution<> dist(0, 10000);
+        
+        std::vector<int> bases(dim), offsets(dim);
+        for(int i=0; i<dim; i++)
+        {
+            bases[i] = primes[i];
+            offsets[i] = dist(eng);
+        }
+        return haltonPoints(bases, length, offsets);
+    };
+
 }
 
 
