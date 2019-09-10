@@ -271,6 +271,16 @@ public:
         return count;
     }
 
+
+    std::vector<double> getFromValue(const arc_dijkstras::GraphEdge &e) const
+    {
+        return getNode(e.getFromIndex()).getValue();
+    }
+
+    std::vector<double> getToValue(const arc_dijkstras::GraphEdge &e) const
+    {
+        return getNode(e.getToIndex()).getValue();
+    }
 };
 
 
