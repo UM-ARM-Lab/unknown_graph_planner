@@ -170,8 +170,15 @@ add_executable(run_increasing_density_search
   src/run_increasing_density_search.cpp
   src/increasing_density_grid.cpp
   src/increasing_density_halton.cpp)
-
 target_link_libraries(run_increasing_density_search
+  ${catkin_LIBRARIES}
+  )
+
+add_executable(sd_video
+  src/sd_video.cpp
+  src/increasing_density_grid.cpp
+  src/increasing_density_halton.cpp)
+target_link_libraries(sd_video
   ${catkin_LIBRARIES}
   )
 
