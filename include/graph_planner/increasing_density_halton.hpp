@@ -8,8 +8,14 @@ class SDHaltonGraph: public SelectiveDensificationGraph
 {
 protected:
     virtual void generateGraph(int max_depth) override;
+    int deepest_layer;
+    bool ignore_last_vertical;
+
+    
 public:
-    SDHaltonGraph(int max_depth)
+    SDHaltonGraph(int max_depth, bool ignore_last_vertical=false):
+        deepest_layer(max_depth),
+        ignore_last_vertical(ignore_last_vertical)
     {
         generateGraph(max_depth);
     }

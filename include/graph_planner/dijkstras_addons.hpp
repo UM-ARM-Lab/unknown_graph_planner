@@ -309,7 +309,14 @@ namespace arc_dijkstras
         }
 
 
-        
+        /***
+         *   Bidirectional LazySP
+         *   This uses unidirectional A*, searching from start to goal, or goal to start
+         *   Edge are reused across searches
+         *   
+         *   param use_time_selection: If True, do not alternate direction, instead choose 
+                                       the search direction that has been tried for the least time
+         */
         static arc_helpers::AstarResult
         PerformBiLazySP(Graph<NodeValueType, Allocator>& g,
                         int64_t start_index,
@@ -320,7 +327,9 @@ namespace arc_dijkstras
                                                  GraphEdge&)>& eval_edge_fn,
                         const std::function<std::vector<int>(const std::vector<int64_t>&,
                                                              Graph<NodeValueType, Allocator>&,
-                                                             EvaluatedEdges&)>& selector=&ForwardSelector)
+                                                             EvaluatedEdges&)>& selector=&ForwardSelector,
+                        double time_limit_seconds=std::numeric_limits<double>::max(),
+                        bool use_time_selection=true)
         {
             EvaluatedEdges evaluated_edges;
 
@@ -329,14 +338,21 @@ namespace arc_dijkstras
 
             double tot_time_forward = 0;
             double tot_time_reverse = 0;
-
-            while(true)
+            double tot_time = 0;
+            PROFILE_START("total_lazy_sp");
+            
+            while(PROFILE_RECORD("total_lazy_sp") < time_limit_seconds)
             {
+                
+                
                 PROFILE_START("lazy_sp a_star");
                 PROFILE_START("lazy_sp a_star forward");
                 PROFILE_START("lazy_sp a_star reverse");
 
-                reversed = tot_time_forward > tot_time_reverse;
+                if(use_time_selection)
+                {
+                    reversed = tot_time_forward > tot_time_reverse;
+                }
                 
                 auto prelim_result = PerformAstarForLazySP(g,
                                                            (!reversed ? start_index : goal_index),
@@ -370,6 +386,8 @@ namespace arc_dijkstras
                 }
                 reversed = !reversed;
             }
+            std::cout << "LazySP did not find a path in the time limit of " << time_limit_seconds <<"s\n";
+            return std::make_pair(std::vector<int64_t>(), std::numeric_limits<double>::infinity());
         }
 
     };

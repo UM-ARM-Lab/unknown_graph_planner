@@ -11,6 +11,7 @@ static int numNodesAtDepth(int depth, int dim)
 
 void SDHaltonGraph::generateGraph(int max_depth)
 {
+    std::cout << deepest_layer << "\n";
     int dim=2;
     
     auto qs = halton::haltonPoints(numNodesAtDepth(max_depth, dim)-2, dim);
@@ -48,10 +49,14 @@ int64_t SDHaltonGraph::addVertexAndEdges(int depth, std::vector<double> q)
     DepthNode new_node = DepthNode(depth, q);
     int64_t new_node_ind = addNode(new_node.toRaw());
     int64_t above_ind = getNodeAt(depth - 1, q);
+
     if(above_ind >= 0)
     {
-        addEdgesBetweenNodes(new_node_ind, above_ind,
-                             verticalEdgeCost(new_node, DepthNode(getNode(above_ind).getValue())));
+        if(!(ignore_last_vertical && depth == deepest_layer))
+        {
+            addEdgesBetweenNodes(new_node_ind, above_ind,
+                                 verticalEdgeCost(new_node, DepthNode(getNode(above_ind).getValue())));
+        }
     }
 
     double edge_radius = 1.4 / std::pow(2, depth);
