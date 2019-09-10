@@ -123,7 +123,7 @@ int main(int argc, char **argv)
     Obstacles obs;
     checkAllEdges(g_all_valid, obs);
 
-    setScene2(obs);
+    setScene1(obs);
 
     checkAllEdges(g_evaluated, obs);    
     
@@ -139,8 +139,8 @@ int main(int argc, char **argv)
     while(ros::ok())
     {
         std::cout << "Planning from start to goal\n";
-        // auto result = Plan(g, obs, start, goal);
-        auto result = AstarPlan(g, obs, start, goal);
+        auto result = Plan(g, obs, start, goal);
+        // auto result = AstarPlan(g, obs, start, goal);
         std::cout << "Plan complete\n";
         viz.vizGraph(g);
         viz.vizPath(result.first, g);
