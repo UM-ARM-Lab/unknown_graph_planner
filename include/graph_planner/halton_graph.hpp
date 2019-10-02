@@ -192,7 +192,12 @@ public:
                 continue;
             }
             double d = EigenHelpers::Distance(nodes_[near_ind].getValue(), q);
-            assert( d <= radius && "near point is further than allowed radius");
+            if(d > radius)
+            {
+                std::cerr << "Warning: edge has distance " << d
+                          << ", which is larger than allowed radius " << radius << "\n";
+            }
+            // assert( d <= radius && "point is further than allowed radius");
             addEdgesBetweenNodes(new_node_ind, near_ind, d);
         }
         return new_node_ind;
