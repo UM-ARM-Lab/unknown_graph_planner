@@ -185,6 +185,12 @@ target_link_libraries(sd_video
 add_executable(wip_LPA src/wip_LPA.cpp)
 
 
+add_executable(simple_graph_example src/simple_graph_example.cpp)
+target_link_libraries(simple_graph_example
+  ${catkin_LIBRARIES}
+)
+
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

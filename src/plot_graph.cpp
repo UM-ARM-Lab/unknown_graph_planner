@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     ros::Publisher graph_invalid_pub = n.advertise<visualization_msgs::Marker>("invalid_graph", 10);
     ros::Publisher path_pub = n.advertise<visualization_msgs::Marker>("path", 10);
     ros::Publisher points_pub = n.advertise<visualization_msgs::Marker>("points", 10);
-    ros::Publisher obs_pub = n.advertise<visualization_msgs::MarkerArray>("obs", 10);
+    ros::Publisher obs_pub = n.advertise<visualization_msgs::MarkerArray>("obstacles", 10);
     ros::Rate r(20);
 
     Obstacles2D::Obstacles obs = makeObstacles();
