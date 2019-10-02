@@ -9,3 +9,8 @@ This repo is not a pure library, and has many experimental ideas across a variet
 ## Dependencies
 1. Ros
 2. arc_utilities (currently on the `bsaund` branch)
+
+
+## Basic Demo
+1. Open Rviz, using the `graph.rviz` file
+2. run `rosrun graph_planner simple_graph_example`
