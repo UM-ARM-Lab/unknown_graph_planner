@@ -295,8 +295,8 @@ public:
 class Grid : public RDiscGraph
 {
 public:
-    Grid(int rows):
-        RDiscGraph(1.0/((double)rows - 1.0000001) * 1.4143)
+    Grid(int rows, bool eight_connected=true):
+        RDiscGraph(1.0/((double)rows - 1.0000001) * (eight_connected ? 1.4143 : 1.4))
     {
         for(int i=0; i<rows; i++)
         {
