@@ -176,6 +176,16 @@ public:
         return indices[0][0];
     }
 
+    int64_t getNodeAt(const std::vector<double> &q) const
+    {
+        int64_t nearest = getNearest(q);
+        if(EigenHelpers::Distance(q, getNode(nearest).getValue()) > 0.000001)
+        {
+            return -1;
+        }
+        return nearest;
+    }
+
     int64_t addVertexAndEdges(const std::vector<double> &q)
     {
         return addVertexAndEdges(q, r_disc);
