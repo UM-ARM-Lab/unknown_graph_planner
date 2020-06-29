@@ -273,7 +273,7 @@ public:
 
 
     void vizObstacles(const Obstacles2D::Obstacles &obs, double z_scale = 0.01, std::string ns="",
-                      std_msgs::ColorRGBA color = colorLookup("red"))
+                      std_msgs::ColorRGBA color = colorLookup("red")) const
     {
         obs_pub.publish(obs.toMarkerArray(z_scale, ns, color));
     }
@@ -286,12 +286,12 @@ public:
         path_pub.publish(toVisualizationMsg(path, g, id, color));
     }
 
-    void vizTitle(std::string text)
+    void vizTitle(std::string text) const
     {
         vizText(text, 1000, -0.1, 0.5);
     }
 
-    void vizText(std::string text, int id, double x, double y, std::string ns = "text")
+    void vizText(std::string text, int id, double x, double y, std::string ns = "text") const
     {
         visualization_msgs::Marker m;
         m.id = id;
