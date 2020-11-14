@@ -8,7 +8,7 @@ This repo is not a pure library, and has many experimental ideas across a variet
 
 ## Dependencies
 1. Ros
-2. arc_utilities (currently on the `bsaund` branch)
+2. arc_utilities
 
 
 ## Basic Demo
