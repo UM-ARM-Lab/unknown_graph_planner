@@ -156,15 +156,22 @@ namespace CTP
     arc_helpers::AstarResult exploitationPath(BeliefGraph &g, Location start, Location goal)
     {
         using namespace arc_dijkstras;
-        const auto eval_fun = [&g](GraphD &g, GraphEdge &e)
+        // const auto eval_fun = [&g](GraphD &g, GraphEdge &e)
+        // {
+        //     double p = g.edge_probabilities[getHashable(e)];
+        //     if(p <= 0.5 && e.getValidity() == EDGE_VALIDITY::UNKNOWN)
+        //     {
+        //         return std::numeric_limits<double>::max();
+        //     }
+        //     return e.getWeight();
+        // };
+        // I don't remember what this function was, but I had to change it as it was inconsistent with
+        // other changes
+        const auto eval_fun = [](GraphD &g, GraphEdge &e)
         {
-            double p = g.edge_probabilities[getHashable(e)];
-            if(p <= 0.5 && e.getValidity() == EDGE_VALIDITY::UNKNOWN)
-            {
-                return std::numeric_limits<double>::max();
-            }
             return e.getWeight();
         };
+            
         return LazySP<std::vector<double>>::PerformLazySP(
             g, start, goal, &distanceHeuristic, eval_fun);
     }

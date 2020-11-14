@@ -12,11 +12,26 @@ set(CATKIN_PACKAGES
   )
 
 
+
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_PACKAGES})
+
+message(STATUS "Finding LZ4 libraries")
+find_library(LZ4_LIBRARIES NAMES liblz4.so HINTS "lz4/lib")
+if(LZ4_LIBRARIES)
+  message(STATUS "Found: ${LZ4_LIBRARIES}")
+else()
+  message(STATUS "Not found: ${LZ4_LIBRARIES}")
+  message(FATAL_ERROR "Cannot find required LZ4 libraries")
+endif()
+
+set(EXTERNAL_LIBRARIES
+  ${LZ4_LIBRARIES}
+  )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -131,6 +146,7 @@ add_executable(plot_graph
   )
 target_link_libraries(plot_graph
   ${catkin_LIBRARIES}
+  ${EXTERNAL_LIBRARIES}
   )
 
 add_executable(run_ctp
@@ -139,6 +155,7 @@ add_executable(run_ctp
   )
 target_link_libraries(run_ctp
   ${catkin_LIBRARIES}
+  ${EXTERNAL_LIBRARIES}
   )
 
 add_executable(run_bctp
@@ -147,6 +164,7 @@ add_executable(run_bctp
   )
 target_link_libraries(run_bctp
   ${catkin_LIBRARIES}
+  ${EXTERNAL_LIBRARIES}
   )
 
 
@@ -156,15 +174,29 @@ add_library(increasing_density
   )
 target_link_libraries(increasing_density
   ${catkin_LIBRARIES}
+  ${EXTERNAL_LIBRARIES}
   )
 
 
 add_executable(wip_mcts src/wip_mcts.cpp
-    src/increasing_density_grid)
+  src/increasing_density_grid
+  )
+target_link_libraries(wip_mcts
+  ${EXTERNAL_LIBRARIES}
+  )
+
 add_executable(wip_flann src/wip_flann.cpp)
+target_link_libraries(wip_flann
+  ${EXTERNAL_LIBRARIES}
+  )
+
+  
 add_executable(wip_rdisc src/wip_rdisc.cpp
   src/increasing_density_grid
   src/increasing_density_halton.cpp)
+target_link_libraries(wip_rdisc
+  ${EXTERNAL_LIBRARIES}
+  )
 
 add_executable(run_increasing_density_search
   src/run_increasing_density_search.cpp
@@ -172,6 +204,7 @@ add_executable(run_increasing_density_search
   src/increasing_density_halton.cpp)
 target_link_libraries(run_increasing_density_search
   ${catkin_LIBRARIES}
+  ${EXTERNAL_LIBRARIES}
   )
 
 add_executable(sd_video
@@ -180,14 +213,19 @@ add_executable(sd_video
   src/increasing_density_halton.cpp)
 target_link_libraries(sd_video
   ${catkin_LIBRARIES}
+  ${EXTERNAL_LIBRARIES}
   )
 
 add_executable(wip_LPA src/wip_LPA.cpp)
+target_link_libraries(wip_LPA
+  ${EXTERNAL_LIBRARIES}
+  )
 
 
 add_executable(simple_graph_example src/simple_graph_example.cpp)
 target_link_libraries(simple_graph_example
   ${catkin_LIBRARIES}
+  ${EXTERNAL_LIBRARIES}
 )
 
 
