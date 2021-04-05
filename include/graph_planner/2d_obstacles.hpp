@@ -44,7 +44,7 @@ class Empty : public Obstacle {
   visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01, std::string ns = "",
                                                 std_msgs::ColorRGBA color = DEFAULT_COLOR) const override {
     visualization_msgs::Marker cube;
-    cube.header.frame_id = "/graph_frame";
+    cube.header.frame_id = "graph_frame";
     cube.type = visualization_msgs::Marker::CUBE;
     cube.pose.orientation.w = 1;
     cube.ns = ns;
@@ -75,7 +75,7 @@ class Rect : public Obstacle {
   visualization_msgs::MarkerArray toMarkerArray(double z_scale = 0.01, std::string ns = "",
                                                 std_msgs::ColorRGBA color = DEFAULT_COLOR) const override {
     visualization_msgs::Marker cube;
-    cube.header.frame_id = "/graph_frame";
+    cube.header.frame_id = "graph_frame";
     cube.type = visualization_msgs::Marker::CUBE;
     cube.pose.orientation.w = 1;
     double w = x2 - x1;
@@ -155,7 +155,7 @@ class ConvexPolygon : public Obstacle {
   visualization_msgs::Marker edgeToMarker(const Eigen::Vector2d &p1, const Eigen::Vector2d &p2, double z_scale,
                                           std_msgs::ColorRGBA color) const {
     visualization_msgs::Marker cube;
-    cube.header.frame_id = "/graph_frame";
+    cube.header.frame_id = "graph_frame";
     cube.type = visualization_msgs::Marker::CUBE;
 
     cube.scale.x = (p2 - p1).norm();

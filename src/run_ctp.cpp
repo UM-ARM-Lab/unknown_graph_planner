@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 
   CtpPitfall g;
   // g.saveToFile(filepath);
-  // HaltonGraph g(filepath);
+//   HaltonGraph g(filepath);
 
   Agent agent(0, 1);
   int lookahead = 1;

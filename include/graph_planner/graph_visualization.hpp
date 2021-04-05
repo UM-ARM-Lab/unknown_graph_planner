@@ -60,20 +60,20 @@ static inline geometry_msgs::Point to3DPoint(const SelectiveDensificationGraph &
 template <typename T>
 static inline GraphMarker toVisualizationMsg(const T &g, std::string name = "graph") {
   visualization_msgs::Marker valid_lines, invalid_lines, unknown_lines;
-  valid_lines.header.frame_id = "/graph_frame";
+  valid_lines.header.frame_id = "graph_frame";
   valid_lines.type = visualization_msgs::Marker::LINE_LIST;
   valid_lines.ns = name;
   valid_lines.pose.orientation.w = 1.0;
   valid_lines.scale.x = 0.015;
   valid_lines.color.a = 0.9;
-  invalid_lines.header.frame_id = "/graph_frame";
+  invalid_lines.header.frame_id = "graph_frame";
   invalid_lines.type = visualization_msgs::Marker::LINE_LIST;
   invalid_lines.ns = name;
   invalid_lines.pose.orientation.w = 1.0;
   invalid_lines.scale.x = 0.01;
   invalid_lines.color.a = 0.5;
   invalid_lines.color.r = 0.9;
-  unknown_lines.header.frame_id = "/graph_frame";
+  unknown_lines.header.frame_id = "graph_frame";
   unknown_lines.type = visualization_msgs::Marker::LINE_LIST;
   unknown_lines.ns = name;
   unknown_lines.pose.orientation.w = 1.0;
@@ -115,7 +115,7 @@ template <typename T>
 static inline visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t> path, const T &g, int id = 0,
                                                             std::string color = "blue") {
   visualization_msgs::Marker lines;
-  lines.header.frame_id = "/graph_frame";
+  lines.header.frame_id = "graph_frame";
   lines.type = visualization_msgs::Marker::LINE_STRIP;
   lines.pose.orientation.w = 1.0;
   lines.scale.x = 0.040;
@@ -130,7 +130,7 @@ static inline visualization_msgs::Marker toVisualizationMsg(std::vector<int64_t>
 
 static inline visualization_msgs::Marker pointsToVisualizationMsg(std::vector<CTP::Location> ps, const GraphD &g) {
   visualization_msgs::Marker points;
-  points.header.frame_id = "/graph_frame";
+  points.header.frame_id = "graph_frame";
   points.type = visualization_msgs::Marker::POINTS;
   points.pose.orientation.w = 1.0;
   points.scale.x = 0.015;
@@ -160,7 +160,7 @@ static inline visualization_msgs::MarkerArray toVisualizationMsg(std::vector<std
   for (size_t i = 0; i < 40; i++) {
     visualization_msgs::Marker tm;
     tm.id = i;
-    tm.header.frame_id = "/graph_frame";
+    tm.header.frame_id = "graph_frame";
     tm.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     tm.text = "";
     tm.pose.position.x = 1000;
@@ -241,7 +241,7 @@ class GraphVisualizer {
     visualization_msgs::Marker m;
     m.id = id;
     m.ns = ns;
-    m.header.frame_id = "/graph_frame";
+    m.header.frame_id = "graph_frame";
     m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     m.text = text;
     m.pose.position.x = x;
