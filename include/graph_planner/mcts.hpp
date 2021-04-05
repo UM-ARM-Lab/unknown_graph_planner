@@ -212,6 +212,7 @@ class MCTS {
       cost += b.move(a);
       path.push_back(b.agent.current_node);
     }
+    return cost;
   }
 };
 
@@ -394,6 +395,7 @@ class UCTU : public UCTH {
     // std::cout << "Actual cost: " << cost << "\n";
     // alpha = (cost - pc.length)/pc.prob;
     // std::cout << "Setting alpha to " << alpha << "\n";
+    return cost;
   }
 };
 }  // namespace MCTS
