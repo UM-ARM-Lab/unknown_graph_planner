@@ -75,7 +75,8 @@ inline arc_helpers::AstarResult Plan(SelectiveDensificationGraph &g, const Obsta
     return g.distanceHeuristic(n1, n2);
   };
 
-  auto result = LazySP<std::vector<double>>::PerformLazySP(g, from_node, goal_node, heuristic_function, eval_fun);
+  auto result = LazySP<std::vector<double>>::PerformLazySP(g, from_node, std::vector<int64_t>{goal_node},
+                                                           heuristic_function, eval_fun);
   // auto result =  LazySP<std::vector<double>>::PerformBiLazySP(
   //     g, from_node, goal_node, heuristic_function, eval_fun);
   PROFILE_RECORD("LazySP plan");
@@ -111,7 +112,7 @@ inline arc_helpers::AstarResult AstarPlan(SelectiveDensificationGraph &g, const 
     return g.distanceHeuristic(n1, n2);
   };
 
-  auto result = AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, goal_node, edge_check_fun,
+  auto result = AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, std::vector<int64_t>{goal_node}, edge_check_fun,
                                                                     distance_function, heuristic_function,
                                                                     // &depthDoublingDistance,
                                                                     true);

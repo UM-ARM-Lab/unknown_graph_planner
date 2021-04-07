@@ -40,7 +40,7 @@ class AstarLogging {
    */
   template <typename GraphType, typename GraphEdgeType, typename EdgeValidityFunctionType>
   static arc_helpers::AstarResult PerformLazyAstar_impl(
-      GraphType& graph, const int64_t start_index, const int64_t goal_index,
+      GraphType& graph, const int64_t start_index, const std::vector<int64_t> goal_indices,
       const EdgeValidityFunctionType& edge_validity_check_fn,
       const std::function<double(const Graph<NodeValueType, Allocator>&, const GraphEdge&)>& distance_fn,
       const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
@@ -50,15 +50,24 @@ class AstarLogging {
     if ((start_index < 0) || (start_index >= (int64_t)graph.getNodes().size())) {
       throw std::invalid_argument("Start index out of range");
     }
-    if ((goal_index < 0) || (goal_index >= (int64_t)graph.getNodes().size())) {
-      throw std::invalid_argument("Goal index out of range");
+    for(const auto& goal_index: goal_indices) {
+      if ((goal_index < 0) || (goal_index >= (int64_t)graph.getNodes().size())) {
+        throw std::invalid_argument("Goal index out of range");
+      }
+      if (start_index == goal_index) {
+        throw std::invalid_argument("Start and goal indices must be different");
+      }
     }
-    if (start_index == goal_index) {
-      throw std::invalid_argument("Start and goal indices must be different");
-    }
-    // Make helper function
+    // Make helper heuristic function
     const auto heuristic_function = [&](const int64_t node_index) {
-      return heuristic_fn(graph.getNode(node_index).getValue(), graph.getNode(goal_index).getValue());
+      double min_heuristic = std::numeric_limits<double>::infinity();
+      for(const auto goal_index: goal_indices){
+        double h = heuristic_fn(graph.getNode(node_index).getValue(), graph.getNode(goal_index).getValue());
+        if(h < min_heuristic){
+          min_heuristic = h;
+        }
+      }
+      return min_heuristic;
     };
 
     // Profiling information
@@ -85,10 +94,16 @@ class AstarLogging {
 
       num_node_expansions++;
 
-      if (n.id() == goal_index) {
-        // Solution found
-        g_value[n.id()] = std::make_pair(n.backpointer(), n.costToCome());
-        break;
+      for(const auto goal_index: goal_indices) {
+        if (n.id() == goal_index) {
+          // Solution found
+          g_value[n.id()] = std::make_pair(n.backpointer(), n.costToCome());
+          PROFILE_RECORD_DOUBLE("astar_num_node_expansions", num_node_expansions);
+          PROFILE_RECORD_DOUBLE("astar_num_edge_expansions", num_edge_expansions);
+          PROFILE_RECORD_DOUBLE("astar_num_lower_cost_edge_expansions", num_useful_expansions);
+
+          return ExtractAstarResult(g_value, start_index, goal_index);
+        }
       }
 
       PROFILE_START("astar_add_neighbors");
@@ -133,24 +148,20 @@ class AstarLogging {
       }
       PROFILE_RECORD("astar_add_neighbors");
     }
-    PROFILE_RECORD_DOUBLE("astar_num_node_expansions", num_node_expansions);
-    PROFILE_RECORD_DOUBLE("astar_num_edge_expansions", num_edge_expansions);
-    PROFILE_RECORD_DOUBLE("astar_num_lower_cost_edge_expansions", num_useful_expansions);
-
-    return ExtractAstarResult(g_value, start_index, goal_index);
+    throw std::logic_error("No solution found");
   }
 
  public:
   // Version that takes const graph and const edge_validity_check
   static arc_helpers::AstarResult PerformLazyAstar(
-      const Graph<NodeValueType, Allocator>& graph, const int64_t start_index, const int64_t goal_index,
+      const Graph<NodeValueType, Allocator>& graph, const int64_t start_index, const std::vector<int64_t>& goal_indices,
       const std::function<bool(const Graph<NodeValueType, Allocator>&, const GraphEdge&)>& edge_validity_check_fn,
       const std::function<double(const Graph<NodeValueType, Allocator>&, const GraphEdge&)>& distance_fn,
       const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
       const bool limit_pqueue_duplicates) {
     return PerformLazyAstar_impl<const Graph<NodeValueType, Allocator>, const GraphEdge,
                                  std::function<bool(const Graph<NodeValueType, Allocator>&, const GraphEdge&)>>(
-        graph, start_index, goal_index, edge_validity_check_fn, distance_fn, heuristic_fn, limit_pqueue_duplicates);
+        graph, start_index, goal_indices, edge_validity_check_fn, distance_fn, heuristic_fn, limit_pqueue_duplicates);
   }
 
   // Version that takes non-const graph and non-const edge_validity_check
@@ -158,18 +169,18 @@ class AstarLogging {
   //  the intent is that edge validity check can change the edge validitys from
   //  "Unknown" to "Invalid" or "Valid"
   static arc_helpers::AstarResult PerformLazyAstar(
-      Graph<NodeValueType, Allocator>& graph, const int64_t start_index, const int64_t goal_index,
+      Graph<NodeValueType, Allocator>& graph, const int64_t start_index, const std::vector<int64_t>& goal_indices,
       const std::function<bool(Graph<NodeValueType, Allocator>&, GraphEdge&)>& edge_validity_check_fn,
       const std::function<double(const Graph<NodeValueType, Allocator>&, const GraphEdge&)>& distance_fn,
       const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
       const bool limit_pqueue_duplicates) {
     return PerformLazyAstar_impl<Graph<NodeValueType, Allocator>, GraphEdge,
                                  std::function<bool(Graph<NodeValueType, Allocator>&, GraphEdge&)>>(
-        graph, start_index, goal_index, edge_validity_check_fn, distance_fn, heuristic_fn, limit_pqueue_duplicates);
+        graph, start_index, goal_indices, edge_validity_check_fn, distance_fn, heuristic_fn, limit_pqueue_duplicates);
   }
 
   static arc_helpers::AstarResult PerformAstar(
-      const Graph<NodeValueType, Allocator>& graph, const int64_t start_index, const int64_t goal_index,
+      const Graph<NodeValueType, Allocator>& graph, const int64_t start_index, const std::vector<int64_t> goal_indices,
       const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
       const bool limit_pqueue_duplicates) {
     const auto edge_validity_check_function = [&](const Graph<NodeValueType, Allocator>& search_graph,
@@ -185,7 +196,7 @@ class AstarLogging {
       UNUSED(search_graph);
       return edge.getWeight();
     };
-    return PerformLazyAstar(graph, start_index, goal_index, edge_validity_check_function, distance_function,
+    return PerformLazyAstar(graph, start_index, goal_indices, edge_validity_check_function, distance_function,
                             heuristic_fn, limit_pqueue_duplicates);
   }
 };

@@ -89,7 +89,8 @@ inline arc_helpers::AstarResult AstarPlan(RDiscGraph &g, const Obstacles2D::Obst
     return EigenHelpers::Distance(q1, q2);
   };
 
-  auto result = AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, goal_node, edge_check_fun,
+  auto result = AstarLogging<std::vector<double>>::PerformLazyAstar(g, from_node, std::vector<int64_t>{goal_node},
+                                                                    edge_check_fun,
                                                                     distance_function, heuristic_function, true);
   PROFILE_RECORD("AStar plan");
   return result;

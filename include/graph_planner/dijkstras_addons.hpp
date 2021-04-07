@@ -57,7 +57,7 @@ class LazySP {
    *   evalutedEdges is the true edge cost for any evaluated edges
    */
   static arc_helpers::AstarResult PerformAstarForLazySP(
-      const Graph<NodeValueType, Allocator>& graph, int64_t start_index, int64_t goal_index,
+      const Graph<NodeValueType, Allocator>& graph, int64_t start_index, std::vector<int64_t> goal_indices,
       const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
       const bool limit_pqueue_duplicates, const EvaluatedEdges& evaluatedEdges) {
     const auto edge_validity_check_function = [&](const Graph<NodeValueType, Allocator>& search_graph,
@@ -76,28 +76,12 @@ class LazySP {
         // std::cout << "Found already evaluted edge!\n";
         return evaluatedEdges.at(getHashable(edge));
       }
-      // double planning_cost = 0;
-      // if(edge.getValidity() == arc_dijkstras::EDGE_VALIDITY::UNKNOWN)
-      // {
-      // PROFILE_START("astar_adding planning cost");
-      // planning_cost += 0.06;
-      // planning_cost += 1;
-      // PROFILE_RECORD("astar_adding planning cost");
-      // }
-      // else
-      // {
-      //     PROFILE_START("astar_not_adding_planning_cost");
-      //     PROFILE_RECORD("astar_not_adding_planning_cost");
-      // }
-
-      // std::cout << "Using heuristic weight\n";
-      // return edge.getWeight() + planning_cost;
       return edge.getWeight();
     };
 
     return AstarLogging<NodeValueType>::PerformLazyAstar(
         // return SimpleGraphAstar<NodeValueType>::PerformLazyAstar(
-        graph, start_index, goal_index, edge_validity_check_function, distance_function, heuristic_fn,
+        graph, start_index, goal_indices, edge_validity_check_function, distance_function, heuristic_fn,
         limit_pqueue_duplicates);
   }
 
@@ -214,7 +198,7 @@ class LazySP {
   // }
 
   static arc_helpers::AstarResult PerformLazySP(
-      Graph<NodeValueType, Allocator>& g, int64_t start_index, int64_t goal_index,
+      Graph<NodeValueType, Allocator>& g, int64_t start_index, const std::vector<int64_t>& goal_indices,
       const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
       const std::function<double(Graph<NodeValueType, Allocator>&, GraphEdge&)>& eval_edge_fn,
       const std::function<std::vector<int>(const std::vector<int64_t>&, Graph<NodeValueType, Allocator>&,
@@ -225,7 +209,7 @@ class LazySP {
 
     while (true) {
       PROFILE_START("lazy_sp a_star");
-      auto prelim_result = PerformAstarForLazySP(g, start_index, goal_index, heuristic_fn, false, evaluated_edges);
+      auto prelim_result = PerformAstarForLazySP(g, start_index, goal_indices, heuristic_fn, false, evaluated_edges);
       PROFILE_RECORD("lazy_sp a_star");
       num_astar_iters++;
 
@@ -238,7 +222,45 @@ class LazySP {
     }
   }
 
-  /***
+
+  /**
+   * Unidirectional lazysp with a single goal
+   * @param g
+   * @param start_index
+   * @param goal_indices
+   * @param heuristic_fn
+   * @param eval_edge_fn
+   * @param selector
+   * @return
+   */
+  static arc_helpers::AstarResult PerformLazySP(
+      Graph<NodeValueType, Allocator>& g, int64_t start_index, const int64_t goal_index,
+      const std::function<double(const NodeValueType&, const NodeValueType&)>& heuristic_fn,
+      const std::function<double(Graph<NodeValueType, Allocator>&, GraphEdge&)>& eval_edge_fn,
+      const std::function<std::vector<int>(const std::vector<int64_t>&, Graph<NodeValueType, Allocator>&,
+                                           EvaluatedEdges&)>& selector = &ForwardSelector) {
+    EvaluatedEdges evaluated_edges;
+
+    int num_astar_iters = 0;
+
+    while (true) {
+      PROFILE_START("lazy_sp a_star");
+      auto prelim_result = PerformAstarForLazySP(g, start_index, std::vector<int64_t>{goal_index}, heuristic_fn, false, evaluated_edges);
+      PROFILE_RECORD("lazy_sp a_star");
+      num_astar_iters++;
+
+      auto path = prelim_result.first;
+
+      if (checkPath(path, g, evaluated_edges, eval_edge_fn, selector)) {
+        PROFILE_RECORD_DOUBLE("lazysp astar iters", num_astar_iters);
+        return prelim_result;
+      }
+    }
+  }
+
+
+
+      /***
    *   Bidirectional LazySP
    *   This uses unidirectional A*, searching from start to goal, or goal to start
    *   Edge are reused across searches
@@ -273,7 +295,8 @@ class LazySP {
       }
 
       auto prelim_result =
-          PerformAstarForLazySP(g, (!reversed ? start_index : goal_index), (!reversed ? goal_index : start_index),
+          PerformAstarForLazySP(g, (!reversed ? start_index : goal_index),
+                                std::vector<int64_t>{!reversed ? goal_index : start_index},
                                 heuristic_fn, true, evaluated_edges);
 
       PROFILE_RECORD("lazy_sp a_star");
