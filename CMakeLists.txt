@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(graph_planner)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
 # add_compile_options(-I/usr/include/python2.7)
 # add_compile_options(-lpython2.7)
 

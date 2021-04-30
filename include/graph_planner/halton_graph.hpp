@@ -9,11 +9,12 @@
 #include <cmath>
 #include <flann/flann.hpp>
 #include <vector>
+#include <optional>
 
 #include "dijkstras_addons.hpp"
 #include "halton.hpp"
 
-inline double distanceHeuristic(std::vector<double> q1, std::vector<double> q2) {
+inline double distanceHeuristic(const std::vector<double>& q1, const std::vector<double>& q2) {
   return EigenHelpers::Distance(q1, q2);
 }
 
@@ -75,9 +76,9 @@ class RDiscGraph : public GraphD {
   double r_disc;
   flann::Index<flann::L2<double>> index;
 
-  RDiscGraph(double r_disc) : r_disc(r_disc), index(flann::Matrix<double>(), flann::KDTreeIndexParams(1)) {}
+  explicit RDiscGraph(double r_disc) : r_disc(r_disc), index(flann::Matrix<double>(), flann::KDTreeIndexParams(1)) {}
 
-  RDiscGraph(const std::string& filepath) : index(flann::Matrix<double>(), flann::KDTreeIndexParams(1)) {
+  explicit RDiscGraph(const std::string& filepath) : index(flann::Matrix<double>(), flann::KDTreeIndexParams(1)) {
     loadFromFile(filepath);
     for (auto n : nodes_) {
       addToKDTree(n.getValue());
@@ -143,12 +144,12 @@ class RDiscGraph : public GraphD {
     return indices[0][0];
   }
 
-  int64_t getNodeAt(const std::vector<double>& q) const {
+  [[nodiscard]] std::optional<int64_t> getNodeAt(const std::vector<double>& q) const {
     int64_t nearest = getNearest(q);
     if (EigenHelpers::Distance(q, getNode(nearest).getValue()) > 0.000001) {
-      return -1;
+      return std::optional<int64_t>();
     }
-    return nearest;
+    return std::optional<int64_t>(nearest);
   }
 
   int64_t addVertexAndEdges(const std::vector<double>& q) { return addVertexAndEdges(q, r_disc); }
